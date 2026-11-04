@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>mcp-lint eval chart</title>
+<style>
+  :root {
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --without: #eb6834;  /* categorical slot 2 */
+    --with: #2a78d6;     /* categorical slot 1 */
+  }
+  html, body { margin: 0; background: var(--surface); }
+  body { width: 1200px; height: 1200px; font-family: "Segoe UI", system-ui, -apple-system, sans-serif; color: var(--ink); }
+  svg { display: block; }
+  text { font-family: inherit; }
+</style>
+</head>
+<body>
+<svg id="c" width="1200" height="1200" viewBox="0 0 1200 1200"></svg>
+<script>
+const data = [
+  { name: "All tasks", sub: "15 tasks, 3 servers", without: 53, with: 98, bold: true },
+  { name: "markitdown-mcp", sub: "lint score 0 → 99", without: 0, with: 100 },
+  { name: "server-filesystem", sub: "lint score 12 → 96", without: 80, with: 100 },
+  { name: "mcp-server-git", sub: "lint score 87 → 94", without: 80, with: 93 },
+];
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("c");
+function el(tag, attrs, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  svg.appendChild(e);
+  return e;
+}
+const css = getComputedStyle(document.documentElement);
+const v = n => css.getPropertyValue(n).trim();
+
+// Title block
+el("text", { x: 72, y: 112, "font-size": 50, "font-weight": 700, fill: v("--ink") }, "Fixing what mcp-lint flags took");
+el("text", { x: 72, y: 172, "font-size": 50, "font-weight": 700, fill: v("--ink") }, "agent success from 53% to 98%");
+el("text", { x: 72, y: 222, "font-size": 24, fill: v("--ink-2") },
+   "Tasks answered correctly, Claude Haiku in Claude Code, 15 held-out tasks × 3 runs each");
+
+// Legend
+const ly = 282;
+[["Without fixes", "--without"], ["With mcp-lint fixes", "--with"]].forEach(([label, c], i) => {
+  const x = 72 + i * 260;
+  el("rect", { x, y: ly - 18, width: 22, height: 22, rx: 4, fill: v(c) });
+  el("text", { x: x + 34, y: ly, "font-size": 24, fill: v("--ink") }, label);
+});
+
+// Plot
+const plotTop = 350, bottom = 950, left = 136, right = 1128;
+const y = p => bottom - (bottom - plotTop) * p / 100;
+[0, 25, 50, 75, 100].forEach(t => {
+  el("line", { x1: left, x2: right, y1: y(t), y2: y(t), stroke: t === 0 ? v("--axis") : v("--grid"), "stroke-width": t === 0 ? 2 : 1 });
+  el("text", { x: left - 16, y: y(t) + 8, "font-size": 22, fill: v("--muted"), "text-anchor": "end" }, t + "%");
+});
+
+const gw = (right - left) / data.length, bw = 92, gap = 4;
+data.forEach((d, i) => {
+  const cx = left + gw * i + gw / 2;
+  [["without", "--without", cx - gap / 2 - bw], ["with", "--with", cx + gap / 2]].forEach(([k, c, x]) => {
+    const val = d[k];
+    const h = Math.max(bottom - y(val), 0);
+    if (h > 0) {
+      // rounded top only, square at the baseline
+      const r = 6, yt = y(val);
+      el("path", { d: `M${x},${bottom} V${yt + r} Q${x},${yt} ${x + r},${yt} H${x + bw - r} Q${x + bw},${yt} ${x + bw},${yt + r} V${bottom} Z`, fill: v(c) });
+    } else {
+      el("rect", { x, y: bottom - 4, width: bw, height: 4, fill: v(c) });
+    }
+    el("text", { x: x + bw / 2, y: y(val) - 14, "font-size": 30, "font-weight": 700, fill: v("--ink"), "text-anchor": "middle" }, val + "%");
+  });
+  el("text", { x: cx, y: bottom + 46, "font-size": 25, "font-weight": d.bold ? 700 : 600, fill: v("--ink"), "text-anchor": "middle" }, d.name);
+  el("text", { x: cx, y: bottom + 80, "font-size": 21, fill: v("--ink-2"), "text-anchor": "middle" }, d.sub);
+});
+// separator between overall and per-server groups
+el("line", { x1: left + gw, x2: left + gw, y1: plotTop - 10, y2: bottom + 90, stroke: v("--grid"), "stroke-width": 2, "stroke-dasharray": "6 6" });
+
+// Footnote
+el("text", { x: 72, y: 1122, "font-size": 20, fill: v("--muted") },
+   "Fixes applied by a proxy in front of each unmodified server: paging large outputs and clearer tool descriptions.");
+el("text", { x: 72, y: 1152, "font-size": 20, fill: v("--muted") },
+   "Overall difference +44 points (95% CI +18 to +71). Git's gain is within noise. github.com/7shep/mcp-linter");
+</script>
+</body>
+</html>

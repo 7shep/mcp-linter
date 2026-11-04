@@ -192,6 +192,8 @@ Do mcp-lint's findings matter to a real agent? [`eval/REPORT.md`](eval/REPORT.md
 
 **Result:** on 15 held-out tasks across server-filesystem, markitdown-mcp and mcp-server-git (90 runs), success rose from 53% to 98%. Nearly all of that came from paging long responses, and the worst-scored server (markitdown, 0/100) gained the most. Tokens per task did **not** go down: paging turns quick give-ups into long successes. See the report for the full numbers and caveats.
 
+![Task success with and without mcp-lint fixes: all tasks 53% to 98%, markitdown-mcp 0% to 100%, server-filesystem 80% to 100%, mcp-server-git 80% to 93%](eval/chart/success.png)
+
 ```bash
 mcp-lint proxy --descriptions eval/fixes/mcp-server-git.json -- uvx mcp-server-git   # serve fixed tools over stdio
 mcp-lint eval --setup                                   # build the sandbox + repo, write eval/tasks/
