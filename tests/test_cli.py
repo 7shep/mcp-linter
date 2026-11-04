@@ -103,6 +103,27 @@ class RunCommandTests(unittest.TestCase):
         _, out = run_cli("run", "--error-probes", "--probe", DEMO_FIXTURES, "--", sys.executable, DEMO_SERVER)
         self.assertIn("! P4 1 of 4 error probes said only that the call failed", out)
 
+    def test_server_env_is_minimal_unless_passed(self):
+        env_server = os.path.join(HERE, "fixtures", "env_server.py")
+        os.environ["MCP_LINT_TEST_SECRET"] = "hunter2"
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                fixtures = os.path.join(tmp, "f.json")
+                with open(fixtures, "w", encoding="utf-8") as fh:
+                    json.dump({"probes": [{"tool": "show_secret"}]}, fh)
+                report = os.path.join(tmp, "r.json")
+
+                def secret(*extra):
+                    run_cli("run", "--probe", fixtures, "--json", report, *extra,
+                            "--", sys.executable, env_server)
+                    with open(report, encoding="utf-8") as fh:
+                        return json.load(fh)["probes"][0]["preview"]
+
+                self.assertEqual(secret(), "secret=<unset>")
+                self.assertEqual(secret("--pass-env", "MCP_LINT_TEST_SECRET"), "secret=hunter2")
+        finally:
+            del os.environ["MCP_LINT_TEST_SECRET"]
+
     def test_init_fixtures_from_live_server(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = os.path.join(tmp, "fixtures.json")

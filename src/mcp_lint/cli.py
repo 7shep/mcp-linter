@@ -35,6 +35,9 @@ def _build_parser() -> argparse.ArgumentParser:
                         help="exit 1 if any finding is at or above this level (default: error)")
 
     def server_cmd(sp: argparse.ArgumentParser) -> None:
+        sp.add_argument("--pass-env", action="append", default=[], metavar="NAME",
+                        help="forward this environment variable to the server (repeatable); "
+                        "by default servers get only a minimal safe set, never your API keys")
         sp.add_argument("server", nargs=argparse.REMAINDER,
                         help="server command after '--', e.g. -- npx -y some-server")
 
@@ -88,7 +91,7 @@ def _init_fixtures(args: argparse.Namespace) -> int:
         from mcp_lint.client import fetch_tools
 
         try:
-            tools = asyncio.run(fetch_tools(cmd[0], cmd[1:])).tools
+            tools = asyncio.run(fetch_tools(cmd[0], cmd[1:], args.pass_env)).tools
         except Exception as exc:  # noqa: BLE001
             return _err(f"could not connect to server: {exc!r}")
     else:
@@ -117,9 +120,10 @@ def main(argv: list[str] | None = None) -> int:
             if args.probe or args.error_probes:
                 fixtures = load_fixtures(args.probe) if args.probe else []
                 info, probes = asyncio.run(fetch_and_probe(
-                    cmd[0], cmd[1:], fixtures, args.probe_timeout, auto_errors=args.error_probes))
+                    cmd[0], cmd[1:], fixtures, args.probe_timeout, auto_errors=args.error_probes,
+                    pass_env=args.pass_env))
             else:
-                info = asyncio.run(fetch_tools(cmd[0], cmd[1:]))
+                info = asyncio.run(fetch_tools(cmd[0], cmd[1:], args.pass_env))
         except (FixtureError, OSError) as exc:
             return _err(str(exc))
         except Exception as exc:  # noqa: BLE001 - surface any connection failure plainly

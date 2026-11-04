@@ -60,6 +60,7 @@ Options:
 | `--probe FIXTURES` | (`run` only) Also call the tools listed in a fixtures file; see [Probing](#probing) |
 | `--error-probes` | (`run` only) Send generated bad arguments to read-only tools and check the errors (P4). Works without a fixtures file |
 | `--probe-timeout SECONDS` | Per-call timeout for probes (default 30) |
+| `--pass-env NAME` | (`run`, `init-fixtures`) Forward an environment variable to the server; repeatable. Servers otherwise get only a minimal safe set (PATH, TEMP, home folder...), so your API keys and tokens never reach a server you didn't hand them to |
 
 ## Probing
 
