@@ -34,6 +34,18 @@ class ProbeResult:
     chars: int = 0
     tokens: int = 0  # estimated, same method as definition tokens
     latency_ms: int | None = None
+    target: str | None = None  # parameter a bad-args probe gets wrong
+    auto: bool = False  # generated, not from a fixtures file
+    may_succeed: bool = False  # success on this expect_error probe is not a defect
+
+    @property
+    def error_text(self) -> str:
+        """What the agent would read for a failed call."""
+        if self.status == "protocol_error":
+            # reason is "ExceptionType: message"; the type name is client-side.
+            reason = self.reason or ""
+            return reason.split(": ", 1)[1] if ": " in reason else reason
+        return self.text or (json.dumps(self.structured) if self.structured is not None else "")
 
     @property
     def ran(self) -> bool:
@@ -47,7 +59,8 @@ class ProbeResult:
 
 
 def _base(p: Probe) -> dict[str, Any]:
-    return {"tool": p.tool, "label": p.label, "args": p.args, "expect_error": p.expect_error}
+    return {"tool": p.tool, "label": p.label, "args": p.args, "expect_error": p.expect_error,
+            "target": p.target, "auto": p.auto, "may_succeed": p.may_succeed}
 
 
 def capture(probe: Probe, result: Any, latency_ms: int) -> ProbeResult:

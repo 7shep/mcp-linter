@@ -2,7 +2,7 @@
 
 A linter for [MCP](https://modelcontextprotocol.io) servers. It connects to a server, reads its tool definitions, and flags the things that make tools hard for agents to use, based on Anthropic's [Writing effective tools for agents](https://www.anthropic.com/engineering/writing-tools-for-agents).
 
-> Work in progress: static rules S1–S7 and probe rules P1 and P5 are done; P2–P4, scoring and eval mode are next. See the [roadmap](#roadmap).
+> Work in progress: static rules S1–S7 and probe rules P1, P4 and P5 are done; P2, P3, scoring and eval mode are next. See the [roadmap](#roadmap).
 
 ## Install
 
@@ -58,11 +58,12 @@ Options:
 | `--min-severity info\|warning\|error` | Hide terminal findings below this level |
 | `--fail-on info\|warning\|error\|never` | Exit 1 if any finding is at or above this level (default `error`) |
 | `--probe FIXTURES` | (`run` only) Also call the tools listed in a fixtures file; see [Probing](#probing) |
+| `--error-probes` | (`run` only) Send generated bad arguments to read-only tools and check the errors (P4). Works without a fixtures file |
 | `--probe-timeout SECONDS` | Per-call timeout for probes (default 30) |
 
 ## Probing
 
-By default mcp-lint only reads tool definitions. With `--probe` it also **calls** tools and records what comes back: status, size in estimated tokens, content types, and latency. Probe rules (P1, P5; see [Rules](#rules)) check these results.
+By default mcp-lint only reads tool definitions. With `--probe` it also **calls** tools and records what comes back: status, size in estimated tokens, content types, and latency. Probe rules (P1, P4, P5; see [Rules](#rules)) check these results.
 
 Only tools listed in a fixtures file are ever called. Generate a starter file, then edit it:
 
@@ -118,6 +119,8 @@ Reading a 20,000-line file through server-filesystem returns about 87k tokens in
 
 mcp-server-fetch is a good example of the post's advice: it truncates by default and tells the agent how to get the next chunk.
 
+**Error quality:** `--error-probes` sent 83 bad calls to six reference servers (filesystem, git, fetch, time, memory, everything) and P4 found nothing. Every error named the bad argument and what was expected, for example `Invalid timezone: 'No time zone found with key …'` or `path outside allowed directories: … not in …`. These are the MCP team's reference implementations, so a clean result is fair. Third-party servers are next.
+
 ## Rules
 
 | ID | Severity | Checks |
@@ -135,7 +138,12 @@ Probe rules (only with `--probe`; they read what tools actually returned):
 | ID | Severity | Checks |
 |---|---|---|
 | P1 | warning / error | A response over ~5k tokens, or over ~25k (Claude Code's default cap on tool output, so the agent sees it cut off) |
+| P4 | warning / info | Error responses to bad input that won't help an agent fix its call: a leaked stack trace, an empty or opaque message ("Error executing tool X", "Internal error"), no mention of the bad input or what's expected, or invalid arguments accepted without an error |
 | P5 | info / warning | A tool returned over ~1k / ~5k tokens but has no way to ask for less: no `response_format`, `verbosity`, `fields`-style parameter, or concise/detailed enum |
+
+P4 checks every probe marked `expect_error`. Add `--error-probes` to generate them: for each **read-only** tool, mcp-lint sends a missing required argument, a wrong type, an invalid enum value, and an *unknown value* (well-formed but pointing at nothing, like `/mcp-lint/does/not/exist.txt` or `https://mcp-lint.invalid/...`). The first three test schema validation, which frameworks like zod and pydantic usually handle well. The unknown value gets past validation and tests the tool's **own** error handling, which is where opaque messages come from. A success on an unknown-value probe isn't flagged, since a search for something missing can rightly return nothing.
+
+One trap P4 catches: in the MCP Python SDK 2.x, a tool that raises anything other than `ToolError` (a plain `ValueError`, say) has its message hidden. The agent only sees `Error executing tool <name>`.
 
 P5 only fires when a probe showed a big response. A tool that always returns 20 tokens doesn't need a concise mode. Probes measure what the fixtures ask for, so a probe that requests 400 log entries shows what an agent *could* pull in one call.
 
@@ -154,7 +162,7 @@ S4's thresholds were tuned on 8 official reference servers (105 tools). Similar 
 
 ## Roadmap
 
-- **More probe rules:** P2 opaque-ID share, P3 missing pagination, P4 error-message quality (with bad-argument probes generated from schemas).
+- **More probe rules:** P2 opaque-ID share, P3 missing pagination.
 - **Per-tool score**, weighted by how much each problem costs an agent: tokens spent and context wasted, not a flat count of warnings.
 - **Eval mode:** generate multi-step agent tasks, run them before and after a fixing proxy rewrites the tools, and report the change in success rate and tokens.
 

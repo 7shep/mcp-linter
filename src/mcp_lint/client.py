@@ -13,7 +13,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.types import PaginatedRequestParams
 
-from mcp_lint.fixtures import Probe
+from mcp_lint.fixtures import Probe, error_probes
 from mcp_lint.models import ToolDef
 from mcp_lint.probe import ProbeResult, call_probe
 
@@ -73,10 +73,17 @@ async def fetch_tools(command: str, args: list[str]) -> ServerInfo:
 
 
 async def fetch_and_probe(
-    command: str, args: list[str], probes: list[Probe], timeout: float
+    command: str, args: list[str], probes: list[Probe], timeout: float,
+    auto_errors: bool = False,
 ) -> tuple[ServerInfo, list[ProbeResult]]:
-    """List tools, then run each runnable probe in order on the same session."""
+    """List tools, then run each runnable probe in order on the same session.
+
+    With ``auto_errors``, bad-argument probes generated from the schemas of
+    read-only tools run after the fixture probes.
+    """
     async with connect(command, args) as (session, info):
         by_name = {t.name: t for t in info.tools}
+        if auto_errors:
+            probes = list(probes) + error_probes(info.tools)
         results = [await call_probe(session, p, by_name, timeout) for p in probes]
         return info, results

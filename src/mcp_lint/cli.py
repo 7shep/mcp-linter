@@ -42,6 +42,9 @@ def _build_parser() -> argparse.ArgumentParser:
     common(run)
     run.add_argument("--probe", metavar="FIXTURES",
                      help="also call the tools listed in this fixtures file")
+    run.add_argument("--error-probes", action="store_true",
+                     help="also send generated bad arguments to read-only tools and "
+                     "check the error messages (P4); works without a fixtures file")
     run.add_argument("--probe-timeout", type=float, default=30.0, metavar="SECONDS",
                      help="per-call timeout for probes (default: 30)")
     server_cmd(run)
@@ -111,9 +114,10 @@ def main(argv: list[str] | None = None) -> int:
         from mcp_lint.client import fetch_and_probe, fetch_tools  # needs the mcp SDK
 
         try:
-            if args.probe:
-                fixtures = load_fixtures(args.probe)
-                info, probes = asyncio.run(fetch_and_probe(cmd[0], cmd[1:], fixtures, args.probe_timeout))
+            if args.probe or args.error_probes:
+                fixtures = load_fixtures(args.probe) if args.probe else []
+                info, probes = asyncio.run(fetch_and_probe(
+                    cmd[0], cmd[1:], fixtures, args.probe_timeout, auto_errors=args.error_probes))
             else:
                 info = asyncio.run(fetch_tools(cmd[0], cmd[1:]))
         except (FixtureError, OSError) as exc:

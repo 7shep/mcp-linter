@@ -90,6 +90,19 @@ class RunCommandTests(unittest.TestCase):
         self.assertIn("! P5", out)
         self.assertEqual(code, 1)  # P1 error trips the default --fail-on error
 
+    def test_error_probes_on_live_server(self):
+        # Generated probes only, no fixtures: only the read-only tool is probed.
+        code, out = run_cli("run", "--error-probes", "--", sys.executable, DEMO_SERVER)
+        self.assertIn("search_contacts (auto: missing query)", out)
+        self.assertIn("search_contacts (auto: unknown query)", out)
+        self.assertNotIn("get (auto:", out)  # `get` isn't marked read-only
+        self.assertIn("3 ran, 0 blocked, 0 skipped", out)
+        self.assertNotIn(" P4 ", out)  # SDK validation errors name the bad argument
+
+        # The fixture's empty query hits the SDK's hidden-error path.
+        _, out = run_cli("run", "--error-probes", "--probe", DEMO_FIXTURES, "--", sys.executable, DEMO_SERVER)
+        self.assertIn("! P4 1 of 4 error probes said only that the call failed", out)
+
     def test_init_fixtures_from_live_server(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = os.path.join(tmp, "fixtures.json")
