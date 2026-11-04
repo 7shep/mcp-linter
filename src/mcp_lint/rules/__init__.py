@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from mcp_lint.models import Finding, ToolDef
-from mcp_lint.rules.static import STATIC_RULES
+from mcp_lint.rules.static import STATIC_RULES, TOOLSET_RULES
 
 
 def run_static(tools: list[ToolDef]) -> list[Finding]:
@@ -11,4 +11,6 @@ def run_static(tools: list[ToolDef]) -> list[Finding]:
     for tool in tools:
         for rule in STATIC_RULES:
             findings.extend(rule(tool))
+    for set_rule in TOOLSET_RULES:
+        findings.extend(set_rule(tools))
     return findings

@@ -45,12 +45,15 @@ class ToolDef:
 
 @dataclass
 class Finding:
+    """One problem. ``tool`` is None for server-wide findings."""
+
     rule: str
     severity: Severity
-    tool: str
+    tool: str | None
     message: str
     param: str | None = None
     hint: str | None = None
+    related: list[str] | None = None  # other tools involved, e.g. an S4 duplicate
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)

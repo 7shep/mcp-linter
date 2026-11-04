@@ -27,6 +27,8 @@ class CheckCommandTests(unittest.TestCase):
         self.assertIn("delete_thing", out)
         self.assertIn("S2 [user]", out)
         self.assertIn("1/3 tools clean", out)
+        self.assertIn("(server)", out)  # S5: no shared prefix
+        self.assertIn("tokens (estimated)", out)
 
     def test_fail_on_never(self):
         code, _ = run_cli("check", SAMPLE, "--fail-on", "never")
@@ -42,6 +44,9 @@ class CheckCommandTests(unittest.TestCase):
         self.assertEqual(data["summary"]["error"], 1)
         by_name = {t["name"]: t["findings"] for t in data["tools"]}
         self.assertEqual(by_name["search_contacts"], [])
+        self.assertEqual([f["rule"] for f in data["server_findings"]], ["S5"])
+        self.assertGreater(data["definition_tokens"]["total"], 0)
+        self.assertIn("estimate", data["definition_tokens"]["method"])
 
 
 class RunCommandTests(unittest.TestCase):
