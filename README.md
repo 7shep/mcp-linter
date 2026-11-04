@@ -42,7 +42,7 @@ mcp-lint check tools.json --json report.json
 Example output:
 
 ```
-mcp-lint 0.1.0  server: demo-server
+mcp-lint 1.0.0  server: demo-server
 2 tools checked, definitions ~165 tokens (estimated)
 
 (server)
