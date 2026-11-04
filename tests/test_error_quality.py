@@ -89,6 +89,15 @@ class ErrorIssueTests(unittest.TestCase):
     def test_accepted_invalid_args(self):
         self.assertEqual(error_issues(err("results", status="ok")), ["accepted"])
 
+    def test_error_reported_as_success(self):
+        # Real duckduckgo-mcp-server responses: error text, but isError not set.
+        for text in ("Error: Refusing to fetch https://mcp-lint.invalid/x (could not resolve host)",
+                     "Error: Unknown link reference 'x'.", "[ERROR] bad path", "Failed: timeout"):
+            self.assertEqual(error_issues(err(text, status="ok")), ["error_as_success"], text)
+            self.assertEqual(error_issues(err(text, status="ok", may_succeed=True)), ["error_as_success"])
+        # Words like "errors" or "Failed" mid-sentence in real content don't count.
+        self.assertEqual(error_issues(err("Errors in Python: a guide", status="ok", may_succeed=True)), [])
+
     def test_unknown_value_may_succeed(self):
         self.assertEqual(error_issues(err("no matches", status="ok", may_succeed=True)), [])
 

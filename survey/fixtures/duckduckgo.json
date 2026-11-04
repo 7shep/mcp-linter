@@ -1,0 +1,7 @@
+{"probes": [
+ {"tool": "search", "args": {"query": "model context protocol tool design"}, "allow_destructive": true},
+ {"tool": "fetch_content", "label": "default", "args": {"url": "https://docs.python.org/3/library/functions.html"}, "allow_destructive": true},
+ {"tool": "fetch_content", "label": "max_length 1M", "args": {"url": "https://docs.python.org/3/library/functions.html", "max_length": 999999}, "allow_destructive": true},
+ {"tool": "fetch_content", "label": "unresolvable url", "args": {"url": "https://mcp-lint.invalid/x"}, "expect_error": true, "allow_destructive": true},
+ {"tool": "expand_link", "label": "bad token", "args": {"token": "mcp-lint-not-a-token"}, "expect_error": true, "allow_destructive": true}
+]}

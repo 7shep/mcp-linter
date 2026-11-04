@@ -1,0 +1,7 @@
+{"probes": [
+ {"tool": "search_documentation", "args": {"search_phrase": "S3 bucket policy examples"}, "allow_destructive": true},
+ {"tool": "read_documentation", "label": "default", "args": {"url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-bucket-policies.html"}, "allow_destructive": true},
+ {"tool": "read_documentation", "label": "max_length 1M", "args": {"url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-bucket-policies.html", "max_length": 999999}, "allow_destructive": true},
+ {"tool": "read_documentation", "label": "non-AWS url", "args": {"url": "https://example.com/x.html"}, "expect_error": true, "allow_destructive": true},
+ {"tool": "read_documentation", "label": "missing page", "args": {"url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/mcp-lint-does-not-exist.html"}, "expect_error": true, "allow_destructive": true}
+]}

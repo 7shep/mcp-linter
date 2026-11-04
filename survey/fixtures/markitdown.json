@@ -1,0 +1,6 @@
+{"probes": [
+ {"tool": "convert_to_markdown", "label": "20k-line file", "args": {"uri": "file:///${FIXTURES_DIR}/../sandbox/big.txt"}, "allow_destructive": true},
+ {"tool": "convert_to_markdown", "label": "web page", "args": {"uri": "https://docs.python.org/3/library/functions.html"}, "allow_destructive": true},
+ {"tool": "convert_to_markdown", "label": "missing file", "args": {"uri": "file:///${FIXTURES_DIR}/../sandbox/nope.txt"}, "expect_error": true, "allow_destructive": true},
+ {"tool": "convert_to_markdown", "label": "garbage uri", "args": {"uri": "not a uri"}, "expect_error": true, "allow_destructive": true}
+]}

@@ -4,6 +4,16 @@ A linter for [MCP](https://modelcontextprotocol.io) servers. It connects to a se
 
 > Work in progress: static rules S1–S7 and probe rules P1, P4 and P5 are done; P2, P3, scoring and eval mode are next. See the [roadmap](#roadmap).
 
+## Findings
+
+From running it on 18 servers, 8 official and 10 popular third-party ones. Full tables are in [RESULTS.md](RESULTS.md), and the setup to reproduce them is in [`survey/`](survey/).
+
+- **Two servers return whole documents with no limit.** Microsoft's markitdown-mcp turned a 20,000-line file into one ~87,000-token response, and the official server-filesystem did the same. That's over three times Claude Code's 25,000-token cap on tool output.
+- **Desktop Commander gets it right:** it reads the same file 1,000 lines at a time (~4,000 tokens) and tells the agent how many lines remain.
+- **Notion, Firecrawl and Desktop Commander each spend over 10,000 tokens** just describing their tools, on every request. Notion's 24 descriptions are mostly under 15 words; the tokens go into parameter schemas.
+- **4 of 10 third-party servers annotate none of their tools**, so clients can't tell which are read-only.
+- **Error messages are mostly good** across 137 bad calls. One server (duckduckgo-mcp-server) returns errors as successful results.
+
 ## Install
 
 Needs Python 3.10+.
@@ -104,24 +114,6 @@ Probes
       tool is not marked read-only, so it may change data; add "allow_destructive": true to run it (sandbox only)
 ```
 
-Reading a 20,000-line file through server-filesystem returns about 87k tokens in one response, over three times Claude Code's default 25k cap on tool output.
-
-### Probe results on reference servers
-
-| Server | Probe | Response (est.) | Findings |
-|---|---|---|---|
-| server-filesystem | `read_text_file` on a 20k-line file | ~87,000 tokens | P1 error, P5 warning |
-| server-filesystem | `directory_tree` on a small sandbox | ~5,400 tokens | P1 warning, P5 warning |
-| mcp-server-git | `git_log` with `max_count: 400` | ~15,000 tokens | P1 warning, P5 warning |
-| mcp-server-git | `git_diff_staged` with a 5k-line file | ~7,300 tokens | P1 warning, P5 warning |
-| mcp-server-git | `git_log` default (10 commits) | ~380 tokens | none |
-| mcp-server-fetch | `fetch` default (truncates at 5,000 chars) | ~1,300 tokens | none |
-| mcp-server-fetch | `fetch` with `max_length: 999999` | ~21,000 tokens | P1 warning, P5 warning |
-
-mcp-server-fetch is a good example of the post's advice: it truncates by default and tells the agent how to get the next chunk.
-
-**Error quality:** `--error-probes` sent 83 bad calls to six reference servers (filesystem, git, fetch, time, memory, everything) and P4 found nothing. Every error named the bad argument and what was expected, for example `Invalid timezone: 'No time zone found with key …'` or `path outside allowed directories: … not in …`. These are the MCP team's reference implementations, so a clean result is fair. Third-party servers are next.
-
 ## Rules
 
 | ID | Severity | Checks |
@@ -139,7 +131,7 @@ Probe rules (only with `--probe`; they read what tools actually returned):
 | ID | Severity | Checks |
 |---|---|---|
 | P1 | warning / error | A response over ~5k tokens, or over ~25k (Claude Code's default cap on tool output, so the agent sees it cut off) |
-| P4 | warning / info | Error responses to bad input that won't help an agent fix its call: a leaked stack trace, an empty or opaque message ("Error executing tool X", "Internal error"), no mention of the bad input or what's expected, or invalid arguments accepted without an error |
+| P4 | warning / info | Error responses to bad input that won't help an agent fix its call: a leaked stack trace, an empty or opaque message ("Error executing tool X", "Internal error"), no mention of the bad input or what's expected, an error returned as a successful result (no `isError`), or invalid arguments accepted without an error |
 | P5 | info / warning | A tool returned over ~1k / ~5k tokens but has no way to ask for less: no `response_format`, `verbosity`, `fields`-style parameter, or concise/detailed enum |
 
 P4 checks every probe marked `expect_error`. Add `--error-probes` to generate them: for each **read-only** tool, mcp-lint sends a missing required argument, a wrong type, an invalid enum value, and an *unknown value* (well-formed but pointing at nothing, like `/mcp-lint/does/not/exist.txt` or `https://mcp-lint.invalid/...`). The first three test schema validation, which frameworks like zod and pydantic usually handle well. The unknown value gets past validation and tests the tool's **own** error handling, which is where opaque messages come from. A success on an unknown-value probe isn't flagged, since a search for something missing can rightly return nothing.
@@ -150,16 +142,7 @@ P5 only fires when a probe showed a big response. A tool that always returns 20 
 
 All rules run offline with no API key. Token counts are **estimates** (4 characters per token of compact JSON) and are labelled as such. Findings with no tool (S5 prefix/style notes, S6) appear under `(server)` in the terminal and in `server_findings` in the JSON report.
 
-S4's thresholds were tuned on 8 official reference servers (105 tools). Similar text alone flagged unrelated tools with templated descriptions ("Create a new X in a repository"), so a pair must also share parameters. It still flags pairs like `get_pull_request` / `get_pull_request_files`. The post suggests consolidating those, but you may decide they're fine as separate tools.
-
-### Sample results
-
-| Server | Tools | Definition tokens (est.) | S4 overlaps | S7 unbounded lists |
-|---|---|---|---|---|
-| server-filesystem | 14 | ~2,000 | `read_file`/`read_text_file`, `list_directory`/`list_directory_with_sizes` | 2 |
-| server-github | 26 | ~4,000 | `get_pull_request` vs its `_files`/`_comments`/`_reviews` variants, `get_issue`/`get_pull_request` | 0 |
-| mcp-server-git | 12 | ~1,200 | `git_diff_staged`/`git_diff_unstaged` | 0 |
-| @playwright/mcp | 25 | ~4,600 | none | 0 |
+S4's thresholds were tuned on 8 official reference servers (105 tools) and checked on 10 third-party ones. Similar text alone flagged unrelated tools with templated descriptions ("Create a new X in a repository"), so a pair must also share parameters. Pairs whose names use different action verbs (`retrieve-a-block` / `delete-a-block`) are skipped. It still flags pairs like `get_pull_request` / `get_pull_request_files`. The post suggests consolidating those, but you may decide they're fine as separate tools.
 
 ## Roadmap
 

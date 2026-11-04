@@ -110,6 +110,10 @@ _OPAQUE = re.compile(
     r"(error|err)?[\s:#-]*-?\d{1,6})[\s.!]*$",
     re.IGNORECASE,
 )
+# A "successful" result whose text is really an error message.
+_ERROR_PREFIX = re.compile(
+    r"^\s*(\[(error|err)\]|(error|err|exception|failed|failure)\b)[\s:!-]", re.IGNORECASE
+)
 # Words that tell the agent what valid input looks like or what to do next.
 _GUIDANCE = re.compile(
     r"\b(expected|must|should|required|requires|valid|allowed|one of|did you mean|"
@@ -122,6 +126,8 @@ _GUIDANCE = re.compile(
 def error_issues(r: ProbeResult) -> list[str]:
     """Problem kinds in one expected-error probe's response."""
     if r.status == "ok":
+        if _ERROR_PREFIX.match(r.error_text):
+            return ["error_as_success"]
         return [] if r.may_succeed else ["accepted"]
     text = r.error_text.strip()
     if not text:
@@ -152,6 +158,9 @@ _P4_KINDS = {
               "Return a message saying what was wrong and how to fix it."),
     "no_guidance": (Severity.INFO, "didn't name the bad input or say how to fix it",
                     "Mention the argument and what's expected, e.g. \"'limit' must be 1-50\"."),
+    "error_as_success": (Severity.INFO, "returned an error message as a successful result",
+                         "Set isError: true on error results (raise ToolError in the Python SDK) "
+                         "so clients and agents can tell a failed call from a real answer."),
     "accepted": (Severity.INFO, "accepted invalid arguments without an error",
                  "Validate input against the schema so agents learn about mistakes "
                  "instead of getting results for a request they didn't mean."),

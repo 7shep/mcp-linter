@@ -1,0 +1,5 @@
+{"probes": [
+ {"tool": "resolve-library-id", "args": {"query": "react hooks effect cleanup", "libraryName": "react"}},
+ {"tool": "query-docs", "args": {"libraryId": "/facebook/react", "query": "useEffect cleanup function"}},
+ {"tool": "query-docs", "label": "bad library id", "args": {"libraryId": "/no/such-library-xyz", "query": "x"}, "expect_error": true}
+]}

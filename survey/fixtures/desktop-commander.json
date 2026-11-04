@@ -1,0 +1,7 @@
+{"probes": [
+ {"tool": "read_file", "label": "small", "args": {"path": "${FIXTURES_DIR}/../sandbox/notes.txt"}},
+ {"tool": "read_file", "label": "20k lines", "args": {"path": "${FIXTURES_DIR}/../sandbox/big.txt"}},
+ {"tool": "read_file", "label": "missing file", "args": {"path": "${FIXTURES_DIR}/../sandbox/nope.txt"}, "expect_error": true},
+ {"tool": "list_directory", "label": "300 files", "args": {"path": "${FIXTURES_DIR}/../sandbox/sub"}},
+ {"tool": "start_search", "label": "content search", "args": {"path": "${FIXTURES_DIR}/../sandbox", "pattern": "line number 1", "searchType": "content"}}
+]}

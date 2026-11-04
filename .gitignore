@@ -8,3 +8,4 @@ dist/
 .pytest_cache/
 report.json
 .env
+survey/sandbox/

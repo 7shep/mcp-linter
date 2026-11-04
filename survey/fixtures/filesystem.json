@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "probes": [
+    {"tool": "list_allowed_directories", "args": {}},
+    {"tool": "read_text_file", "label": "small", "args": {"path": "${FIXTURES_DIR}/../sandbox/notes.txt"}},
+    {"tool": "read_text_file", "label": "big", "args": {"path": "${FIXTURES_DIR}/../sandbox/big.txt"}},
+    {"tool": "read_text_file", "label": "missing file", "args": {"path": "${FIXTURES_DIR}/../sandbox/nope.txt"}, "expect_error": true},
+    {"tool": "read_text_file", "label": "wrong type", "args": {"path": 42}, "expect_error": true},
+    {"tool": "list_directory", "label": "300 files", "args": {"path": "${FIXTURES_DIR}/../sandbox/sub"}},
+    {"tool": "directory_tree", "args": {"path": "${FIXTURES_DIR}/../sandbox"}},
+    {"tool": "search_files", "args": {"path": "${FIXTURES_DIR}/../sandbox", "pattern": "file_1"}},
+    {"tool": "get_file_info", "args": {"path": "${FIXTURES_DIR}/../sandbox/notes.txt"}},
+    {"tool": "write_file", "label": "should be blocked", "args": {"path": "${FIXTURES_DIR}/../sandbox/x.txt", "content": "x"}}
+  ]
+}
