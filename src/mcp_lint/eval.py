@@ -242,6 +242,20 @@ def load_results(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def valid_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Rows that count: no limit hit or infra error, first row per run key."""
+    seen: set[tuple[str, str, str, int]] = set()
+    out = []
+    for r in rows:
+        if r.get("limit_hit") or r.get("infra_error") or r.get("excluded"):
+            continue
+        key = run_key(r["task"], r["condition"], r["model"], r["run"])
+        if key not in seen:
+            seen.add(key)
+            out.append(r)
+    return out
+
+
 def _read_proxy_log(path: Path) -> dict[str, Any] | None:
     if not path.exists():
         return None
@@ -291,6 +305,10 @@ def run_one(task: Task, condition: str, run: int, *, model: str, base: Path, max
             record["error"] = f"{parsed['subtype']}: {text[:300]}"
     record["wall_ms"] = done.duration_ms
     record["proxy"] = _read_proxy_log(proxy_log)
+    if condition != "baseline" and record["proxy"] is None and not record.get("tool_calls"):
+        # The proxy never handled a call and the agent made none: almost always
+        # the proxy failing to start. Not an agent result, so it is re-run.
+        record["infra_error"] = "proxy handled no calls and the agent made none"
     shutil.rmtree(work, ignore_errors=True)
     err = (record.get("error") or "") + ("" if parsed else done.stderr)
     if (record.get("is_error") or parsed is None) and LIMIT_ERROR.search(err):
@@ -309,16 +327,35 @@ def run_eval(tasks: list[Task], conditions: list[str], runs: int, results: Path,
     balanced across conditions. Stops launching at the first usage/rate limit.
     """
     done = {run_key(r["task"], r["condition"], r["model"], r["run"]) for r in load_results(results)
-            if not r.get("limit_hit")}
+            if not r.get("limit_hit") and not r.get("infra_error")}
     todo = [(t, c, r) for r in range(1, runs + 1) for t in tasks for c in conditions
             if run_key(t.id, c, model, r) not in done]
     skipped = len(tasks) * len(conditions) * runs - len(todo)
     if max_new is not None:
         todo = todo[:max_new]
     results.parent.mkdir(parents=True, exist_ok=True)
+    lock_path = results.with_name(results.name + ".lock")
+    try:  # one runner per results file, or runs get duplicated
+        fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError:
+        raise RuntimeError(f"{lock_path} exists: another runner may be using {results}. "
+                           "Delete the lock file if not.") from None
+    os.write(fd, str(os.getpid()).encode())
+    os.close(fd)
+    try:
+        return _run_todo(todo, results, stats_init={"skipped": skipped}, model=model, base=base,
+                         max_turns=max_turns, runner=runner, timeout=timeout, workers=workers,
+                         claude=claude, log=log)
+    finally:
+        os.remove(lock_path)
+
+
+def _run_todo(todo: list[tuple[Task, str, int]], results: Path, *, stats_init: dict[str, int],
+              model: str, base: Path, max_turns: int, runner: Runner, timeout: float,
+              workers: int, claude: str, log: Callable[[str], None]) -> dict[str, int]:
     lock = threading.Lock()
     stop = threading.Event()
-    stats = {"skipped": skipped, "ran": 0, "failed_to_start": 0, "limit": 0}
+    stats = {**stats_init, "ran": 0, "infra_error": 0, "limit": 0}
 
     def work(item: tuple[Task, str, int]) -> None:
         task, cond, run = item
@@ -330,6 +367,7 @@ def run_eval(tasks: list[Task], conditions: list[str], runs: int, results: Path,
             with open(results, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(rec) + "\n")
             stats["ran"] += 1
+            stats["infra_error"] += bool(rec.get("infra_error"))
             if rec.get("limit_hit"):
                 stats["limit"] += 1
                 stop.set()
@@ -515,6 +553,7 @@ def add_eval_parser(sub: Any) -> None:
     ev.add_argument("--workers", type=int, default=1, help="runs in parallel")
     ev.add_argument("--timeout", type=float, default=600, help="seconds per run")
     ev.add_argument("--claude", default="claude", help="claude executable")
+    ev.add_argument("--out", metavar="PATH", help="--report: write the tables here (UTF-8)")
 
 
 def eval_main(args: argparse.Namespace) -> int:
@@ -527,10 +566,15 @@ def eval_main(args: argparse.Namespace) -> int:
         print(f"sandbox and repo ready under {base}")
         return 0
     if args.report:
-        rows = load_results(Path(args.results))
-        print(report_tables(rows, args.split))
-        print()
-        print(per_task_table(rows, args.split))
+        rows = valid_rows(load_results(Path(args.results)))
+        text = report_tables(rows, args.split) + "\n\n" + per_task_table(rows, args.split) + "\n"
+        if args.out:
+            Path(args.out).write_text(text, encoding="utf-8")
+            print(f"wrote {args.out}")
+        else:
+            if hasattr(sys.stdout, "reconfigure"):
+                sys.stdout.reconfigure(encoding="utf-8")  # the tables use "Δ"
+            print(text)
         return 0
     build(base)  # make sure the sandbox exists (no-op when it does)
     tasks = load_tasks(task_dir)

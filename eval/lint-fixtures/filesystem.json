@@ -1,0 +1,7 @@
+{"version": 1, "probes": [
+ {"tool": "list_allowed_directories", "args": {}},
+ {"tool": "read_text_file", "label": "log.txt", "args": {"path": "${EVAL_BASE}/sandbox/log.txt"}},
+ {"tool": "read_text_file", "label": "inventory.csv", "args": {"path": "${EVAL_BASE}/sandbox/inventory.csv"}},
+ {"tool": "list_directory", "label": "300 files", "args": {"path": "${EVAL_BASE}/sandbox/sub"}},
+ {"tool": "read_text_file", "label": "missing file", "args": {"path": "${EVAL_BASE}/sandbox/nope.txt"}, "expect_error": true}
+]}

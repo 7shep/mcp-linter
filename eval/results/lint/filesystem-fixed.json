@@ -1,0 +1,688 @@
+{
+  "mcp_lint_version": "0.1.0",
+  "server": {
+    "name": "secure-filesystem-server (mcp-lint proxy)",
+    "version": "2.1.0",
+    "command": [
+      ".venv/Scripts/python.exe",
+      "-m",
+      "mcp_lint",
+      "proxy",
+      "--descriptions",
+      "eval/fixes/server-filesystem.json",
+      "--",
+      "npx",
+      "-y",
+      "@modelcontextprotocol/server-filesystem@2.1.0",
+      "C:/Users/alex/AppData/Local/Temp/mcp-lint-eval"
+    ]
+  },
+  "tool_count": 14,
+  "definition_tokens": {
+    "total": 3132,
+    "method": "estimate: 4 chars per token of compact JSON"
+  },
+  "summary": {
+    "info": 21,
+    "warning": 2,
+    "error": 0
+  },
+  "server_findings": [
+    {
+      "rule": "S5",
+      "severity": "info",
+      "tool": null,
+      "message": "Tool names have no shared service prefix.",
+      "param": null,
+      "hint": "Prefix names by service (e.g. 'github_create_issue') so they stay distinct when an agent has many servers loaded. Some clients add a namespace for you.",
+      "related": null,
+      "kind": null
+    }
+  ],
+  "tools": [
+    {
+      "name": "read_file",
+      "definition_tokens": 213,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "read_file",
+          "message": "Parameter 'path' has no description.",
+          "param": "path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S4",
+          "severity": "warning",
+          "tool": "read_file",
+          "message": "Overlaps with 'read_text_file' (text similarity 0.59, 100% shared parameters); an agent may not know which to pick.",
+          "param": null,
+          "hint": "Merge them into one tool with a parameter, or say in each description when to use it instead of the other.",
+          "related": [
+            "read_text_file"
+          ],
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "read_text_file",
+      "definition_tokens": 289,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "read_text_file",
+          "message": "Parameter 'path' has no description.",
+          "param": "path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "P5",
+          "severity": "info",
+          "tool": "read_text_file",
+          "message": "Returned up to ~2,009 tokens but has no option for a shorter response.",
+          "param": null,
+          "hint": "Add a 'response_format' parameter (e.g. enum ['concise', 'detailed']) so agents can skip fields they don't need.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "read_media_file",
+      "definition_tokens": 185,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "read_media_file",
+          "message": "Parameter 'path' has no description.",
+          "param": "path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "read_multiple_files",
+      "definition_tokens": 250,
+      "findings": []
+    },
+    {
+      "name": "write_file",
+      "definition_tokens": 192,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "write_file",
+          "message": "Parameter 'path' has no description.",
+          "param": "path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "write_file",
+          "message": "Parameter 'content' has no description.",
+          "param": "content",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "edit_file",
+      "definition_tokens": 261,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "edit_file",
+          "message": "Parameter 'path' has no description.",
+          "param": "path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "edit_file",
+          "message": "Parameter 'edits' has no description.",
+          "param": "edits",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "create_directory",
+      "definition_tokens": 204,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "create_directory",
+          "message": "Parameter 'path' has no description.",
+          "param": "path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "list_directory",
+      "definition_tokens": 203,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "list_directory",
+          "message": "Parameter 'path' has no description.",
+          "param": "path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S4",
+          "severity": "warning",
+          "tool": "list_directory",
+          "message": "Overlaps with 'list_directory_with_sizes' (text similarity 0.85, 75% shared parameters); an agent may not know which to pick.",
+          "param": null,
+          "hint": "Merge them into one tool with a parameter, or say in each description when to use it instead of the other.",
+          "related": [
+            "list_directory_with_sizes"
+          ],
+          "kind": null
+        },
+        {
+          "rule": "P5",
+          "severity": "info",
+          "tool": "list_directory",
+          "message": "Returned up to ~1,473 tokens but has no option for a shorter response.",
+          "param": null,
+          "hint": "Add a 'response_format' parameter (e.g. enum ['concise', 'detailed']) so agents can skip fields they don't need.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "list_directory_with_sizes",
+      "definition_tokens": 238,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "list_directory_with_sizes",
+          "message": "Parameter 'path' has no description.",
+          "param": "path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "directory_tree",
+      "definition_tokens": 235,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "directory_tree",
+          "message": "Parameter 'path' has no description.",
+          "param": "path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "directory_tree",
+          "message": "Parameter 'excludePatterns' has no description.",
+          "param": "excludePatterns",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "move_file",
+      "definition_tokens": 219,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "move_file",
+          "message": "Parameter 'source' has no description.",
+          "param": "source",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "move_file",
+          "message": "Parameter 'destination' has no description.",
+          "param": "destination",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "search_files",
+      "definition_tokens": 260,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "search_files",
+          "message": "Parameter 'path' has no description.",
+          "param": "path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "search_files",
+          "message": "Parameter 'pattern' has no description.",
+          "param": "pattern",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "search_files",
+          "message": "Parameter 'excludePatterns' has no description.",
+          "param": "excludePatterns",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "get_file_info",
+      "definition_tokens": 204,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "get_file_info",
+          "message": "Parameter 'path' has no description.",
+          "param": "path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "list_allowed_directories",
+      "definition_tokens": 179,
+      "findings": []
+    }
+  ],
+  "score": {
+    "score": 96,
+    "grade": "A",
+    "waste_tokens": 643,
+    "probed": true,
+    "half_life_tokens": 5000,
+    "tools": [
+      {
+        "tool": "list_directory",
+        "score": 91,
+        "grade": "A",
+        "waste_tokens": 700,
+        "costs": [
+          {
+            "source": "S4",
+            "tokens": 500,
+            "note": "S4 overlaps another tool"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [path]"
+          },
+          {
+            "source": "P5",
+            "tokens": 100,
+            "note": "P5 no concise mode"
+          }
+        ]
+      },
+      {
+        "tool": "read_file",
+        "score": 92,
+        "grade": "A",
+        "waste_tokens": 600,
+        "costs": [
+          {
+            "source": "S4",
+            "tokens": 500,
+            "note": "S4 overlaps another tool"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [path]"
+          }
+        ]
+      },
+      {
+        "tool": "search_files",
+        "score": 96,
+        "grade": "A",
+        "waste_tokens": 300,
+        "costs": [
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [pattern]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [excludePatterns]"
+          }
+        ]
+      },
+      {
+        "tool": "read_text_file",
+        "score": 97,
+        "grade": "A",
+        "waste_tokens": 200,
+        "costs": [
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [path]"
+          },
+          {
+            "source": "P5",
+            "tokens": 100,
+            "note": "P5 no concise mode"
+          }
+        ]
+      },
+      {
+        "tool": "write_file",
+        "score": 97,
+        "grade": "A",
+        "waste_tokens": 200,
+        "costs": [
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [content]"
+          }
+        ]
+      },
+      {
+        "tool": "edit_file",
+        "score": 97,
+        "grade": "A",
+        "waste_tokens": 200,
+        "costs": [
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [edits]"
+          }
+        ]
+      },
+      {
+        "tool": "directory_tree",
+        "score": 97,
+        "grade": "A",
+        "waste_tokens": 200,
+        "costs": [
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [excludePatterns]"
+          }
+        ]
+      },
+      {
+        "tool": "move_file",
+        "score": 97,
+        "grade": "A",
+        "waste_tokens": 200,
+        "costs": [
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [source]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [destination]"
+          }
+        ]
+      },
+      {
+        "tool": "read_media_file",
+        "score": 99,
+        "grade": "A",
+        "waste_tokens": 100,
+        "costs": [
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [path]"
+          }
+        ]
+      },
+      {
+        "tool": "create_directory",
+        "score": 99,
+        "grade": "A",
+        "waste_tokens": 100,
+        "costs": [
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [path]"
+          }
+        ]
+      },
+      {
+        "tool": "list_directory_with_sizes",
+        "score": 99,
+        "grade": "A",
+        "waste_tokens": 100,
+        "costs": [
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [path]"
+          }
+        ]
+      },
+      {
+        "tool": "get_file_info",
+        "score": 99,
+        "grade": "A",
+        "waste_tokens": 100,
+        "costs": [
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [path]"
+          }
+        ]
+      },
+      {
+        "tool": "read_multiple_files",
+        "score": 100,
+        "grade": "A",
+        "waste_tokens": 0,
+        "costs": []
+      },
+      {
+        "tool": "list_allowed_directories",
+        "score": 100,
+        "grade": "A",
+        "waste_tokens": 0,
+        "costs": []
+      }
+    ]
+  },
+  "probes": [
+    {
+      "tool": "list_allowed_directories",
+      "label": "",
+      "args": {},
+      "expect_error": false,
+      "status": "ok",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": {
+        "content": "Allowed directories:\nC:\\Users\\alex\\AppData\\Local\\Temp\\mcp-lint-eval"
+      },
+      "chars": 67,
+      "tokens": 17,
+      "latency_ms": 72,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "Allowed directories:\nC:\\Users\\alex\\AppData\\Local\\Temp\\mcp-lint-eval"
+    },
+    {
+      "tool": "read_text_file",
+      "label": "log.txt",
+      "args": {
+        "path": "C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/sandbox/log.txt"
+      },
+      "expect_error": false,
+      "status": "ok",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": null,
+      "chars": 8033,
+      "tokens": 2009,
+      "latency_ms": 15,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "[showing lines 1-112 of 8000; pass offset=112 for more]\n2026-03-01T00:00:00 INFO  gateway req=r-nux5bo user=u3198 latency=1399ms\n2026-03-01T00:00:07 WARN  search req=r-ya8e3y user=u7300 latency=348ms\n2026-03-01T00:00:14 INFO  gateway req=r-b2k94p user=u4825 latency=1412ms\n2026-03-01T00:00:21 INFO  notify req=r-hssnhu user=u3405 latency=845ms\n2026-03-01T00:00:28 ERROR gateway req=r-96575y user=u973"
+    },
+    {
+      "tool": "read_text_file",
+      "label": "inventory.csv",
+      "args": {
+        "path": "C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/sandbox/inventory.csv"
+      },
+      "expect_error": false,
+      "status": "ok",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": null,
+      "chars": 8027,
+      "tokens": 2007,
+      "latency_ms": 4,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "[showing lines 1-202 of 3001; pass offset=202 for more]\nsku,name,qty,price,warehouse\nSKU-94905,quiet anchor,546,529.43,Austin\nSKU-88546,calm saddle,851,833.51,Lyon\nSKU-14167,amber easel,24,397.44,Reno\nSKU-90638,faint garnet,375,457.22,Osaka\nSKU-37763,mellow anchor,583,631.70,Lyon\nSKU-87817,umber island,222,470.94,Leeds\nSKU-19822,rapid needle,817,74.57,Lyon\nSKU-55126,brisk urn,76,913.75,Austin\nSKU-"
+    },
+    {
+      "tool": "list_directory",
+      "label": "300 files",
+      "args": {
+        "path": "C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/sandbox/sub"
+      },
+      "expect_error": false,
+      "status": "ok",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": {
+        "content": "[FILE] file_1.txt\n[FILE] file_10.txt\n[FILE] file_100.txt\n[FILE] file_101.txt\n[FILE] file_102.txt\n[FILE] file_103.txt\n[FILE] file_104.txt\n[FILE] file_105.txt\n[FILE] file_106.txt\n[FILE] file_107.txt\n[FILE] file_108.txt\n[FILE] file_109.txt\n[FILE] file_11.txt\n[FILE] file_110.txt\n[FILE] file_111.txt\n[FILE] file_112.txt\n[FILE] file_113.txt\n[FILE] file_114.txt\n[FILE] file_115.txt\n[FILE] file_116.txt\n[FILE] file_117.txt\n[FILE] file_118.txt\n[FILE] file_119.txt\n[FILE] file_12.txt\n[FILE] file_120.txt\n[FILE] file_121.txt\n[FILE] file_122.txt\n[FILE] file_123.txt\n[FILE] file_124.txt\n[FILE] file_125.txt\n[FILE] file_126.txt\n[FILE] file_127.txt\n[FILE] file_128.txt\n[FILE] file_129.txt\n[FILE] file_13.txt\n[FILE] file_130.txt\n[FILE] file_131.txt\n[FILE] file_132.txt\n[FILE] file_133.txt\n[FILE] file_134.txt\n[FILE] file_135.txt\n[FILE] file_136.txt\n[FILE] file_137.txt\n[FILE] file_138.txt\n[FILE] file_139.txt\n[FILE] file_14.txt\n[FILE] file_140.txt\n[FILE] file_141.txt\n[FILE] file_142.txt\n[FILE] file_143.txt\n[FILE] file_144.txt\n[FILE] file_145.txt\n[FILE] file_146.txt\n[FILE] file_147.txt\n[FILE] file_148.txt\n[FILE] file_149.txt\n[FILE] file_15.txt\n[FILE] file_150.txt\n[FILE] file_151.txt\n[FILE] file_152.txt\n[FILE] file_153.txt\n[FILE] file_154.txt\n[FILE] file_155.txt\n[FILE] file_156.txt\n[FILE] file_157.txt\n[FILE] file_158.txt\n[FILE] file_159.txt\n[FILE] file_16.txt\n[FILE] file_160.txt\n[FILE] file_161.txt\n[FILE] file_162.txt\n[FILE] file_163.txt\n[FILE] file_164.txt\n[FILE] file_165.txt\n[FILE] file_166.txt\n[FILE] file_167.txt\n[FILE] file_168.txt\n[FILE] file_169.txt\n[FILE] file_17.txt\n[FILE] file_170.txt\n[FILE] file_171.txt\n[FILE] file_172.txt\n[FILE] file_173.txt\n[FILE] file_174.txt\n[FILE] file_175.txt\n[FILE] file_176.txt\n[FILE] file_177.txt\n[FILE] file_178.txt\n[FILE] file_179.txt\n[FILE] file_18.txt\n[FILE] file_180.txt\n[FILE] file_181.txt\n[FILE] file_182.txt\n[FILE] file_183.txt\n[FILE] file_184.txt\n[FILE] file_185.txt\n[FILE] file_186.txt\n[FILE] file_187.txt\n[FILE] file_188.txt\n[FILE] file_189.txt\n[FILE] file_19.txt\n[FILE] file_190.txt\n[FILE] file_191.txt\n[FILE] file_192.txt\n[FILE] file_193.txt\n[FILE] file_194.txt\n[FILE] file_195.txt\n[FILE] file_196.txt\n[FILE] file_197.txt\n[FILE] file_198.txt\n[FILE] file_199.txt\n[FILE] file_2.txt\n[FILE] file_20.txt\n[FILE] file_200.txt\n[FILE] file_201.txt\n[FILE] file_202.txt\n[FILE] file_203.txt\n[FILE] file_204.txt\n[FILE] file_205.txt\n[FILE] file_206.txt\n[FILE] file_207.txt\n[FILE] file_208.txt\n[FILE] file_209.txt\n[FILE] file_21.txt\n[FILE] file_210.txt\n[FILE] file_211.txt\n[FILE] file_212.txt\n[FILE] file_213.txt\n[FILE] file_214.txt\n[FILE] file_215.txt\n[FILE] file_216.txt\n[FILE] file_217.txt\n[FILE] file_218.txt\n[FILE] file_219.txt\n[FILE] file_22.txt\n[FILE] file_220.txt\n[FILE] file_221.txt\n[FILE] file_222.txt\n[FILE] file_223.txt\n[FILE] file_224.txt\n[FILE] file_225.txt\n[FILE] file_226.txt\n[FILE] file_227.txt\n[FILE] file_228.txt\n[FILE] file_229.txt\n[FILE] file_23.txt\n[FILE] file_230.txt\n[FILE] file_231.txt\n[FILE] file_232.txt\n[FILE] file_233.txt\n[FILE] file_234.txt\n[FILE] file_235.txt\n[FILE] file_236.txt\n[FILE] file_237.txt\n[FILE] file_238.txt\n[FILE] file_239.txt\n[FILE] file_24.txt\n[FILE] file_240.txt\n[FILE] file_241.txt\n[FILE] file_242.txt\n[FILE] file_243.txt\n[FILE] file_244.txt\n[FILE] file_245.txt\n[FILE] file_246.txt\n[FILE] file_247.txt\n[FILE] file_248.txt\n[FILE] file_249.txt\n[FILE] file_25.txt\n[FILE] file_250.txt\n[FILE] file_251.txt\n[FILE] file_252.txt\n[FILE] file_253.txt\n[FILE] file_254.txt\n[FILE] file_255.txt\n[FILE] file_256.txt\n[FILE] file_257.txt\n[FILE] file_258.txt\n[FILE] file_259.txt\n[FILE] file_26.txt\n[FILE] file_260.txt\n[FILE] file_261.txt\n[FILE] file_262.txt\n[FILE] file_263.txt\n[FILE] file_264.txt\n[FILE] file_265.txt\n[FILE] file_266.txt\n[FILE] file_267.txt\n[FILE] file_268.txt\n[FILE] file_269.txt\n[FILE] file_27.txt\n[FILE] file_270.txt\n[FILE] file_271.txt\n[FILE] file_272.txt\n[FILE] file_273.txt\n[FILE] file_274.txt\n[FILE] file_275.txt\n[FILE] file_276.txt\n[FILE] file_277.txt\n[FILE] file_278.txt\n[FILE] file_279.txt\n[FILE] file_28.txt\n[FILE] file_280.txt\n[FILE] file_281.txt\n[FILE] file_282.txt\n[FILE] file_283.txt\n[FILE] file_284.txt\n[FILE] file_285.txt\n[FILE] file_286.txt\n[FILE] file_287.txt\n[FILE] file_288.txt\n[FILE] file_289.txt\n[FILE] file_29.txt\n[FILE] file_290.txt\n[FILE] file_291.txt\n[FILE] file_292.txt\n[FILE] file_293.txt\n[FILE] file_294.txt\n[FILE] file_295.txt\n[FILE] file_296.txt\n[FILE] file_297.txt\n[FILE] file_298.txt\n[FILE] file_299.txt\n[FILE] file_3.txt\n[FILE] file_30.txt\n[FILE] file_300.txt\n[FILE] file_31.txt\n[FILE] file_32.txt\n[FILE] file_33.txt\n[FILE] file_34.txt\n[FILE] file_35.txt\n[FILE] file_36.txt\n[FILE] file_37.txt\n[FILE] file_38.txt\n[FILE] file_39.txt\n[FILE] file_4.txt\n[FILE] file_40.txt\n[FILE] file_41.txt\n[FILE] file_42.txt\n[FILE] file_43.txt\n[FILE] file_44.txt\n[FILE] file_45.txt\n[FILE] file_46.txt\n[FILE] file_47.txt\n[FILE] file_48.txt\n[FILE] file_49.txt\n[FILE] file_5.txt\n[FILE] file_50.txt\n[FILE] file_51.txt\n[FILE] file_52.txt\n[FILE] file_53.txt\n[FILE] file_54.txt\n[FILE] file_55.txt\n[FILE] file_56.txt\n[FILE] file_57.txt\n[FILE] file_58.txt\n[FILE] file_59.txt\n[FILE] file_6.txt\n[FILE] file_60.txt\n[FILE] file_61.txt\n[FILE] file_62.txt\n[FILE] file_63.txt\n[FILE] file_64.txt\n[FILE] file_65.txt\n[FILE] file_66.txt\n[FILE] file_67.txt\n[FILE] file_68.txt\n[FILE] file_69.txt\n[FILE] file_7.txt\n[FILE] file_70.txt\n[FILE] file_71.txt\n[FILE] file_72.txt\n[FILE] file_73.txt\n[FILE] file_74.txt\n[FILE] file_75.txt\n[FILE] file_76.txt\n[FILE] file_77.txt\n[FILE] file_78.txt\n[FILE] file_79.txt\n[FILE] file_8.txt\n[FILE] file_80.txt\n[FILE] file_81.txt\n[FILE] file_82.txt\n[FILE] file_83.txt\n[FILE] file_84.txt\n[FILE] file_85.txt\n[FILE] file_86.txt\n[FILE] file_87.txt\n[FILE] file_88.txt\n[FILE] file_89.txt\n[FILE] file_9.txt\n[FILE] file_90.txt\n[FILE] file_91.txt\n[FILE] file_92.txt\n[FILE] file_93.txt\n[FILE] file_94.txt\n[FILE] file_95.txt\n[FILE] file_96.txt\n[FILE] file_97.txt\n[FILE] file_98.txt\n[FILE] file_99.txt"
+      },
+      "chars": 5891,
+      "tokens": 1473,
+      "latency_ms": 4,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "[FILE] file_1.txt\n[FILE] file_10.txt\n[FILE] file_100.txt\n[FILE] file_101.txt\n[FILE] file_102.txt\n[FILE] file_103.txt\n[FILE] file_104.txt\n[FILE] file_105.txt\n[FILE] file_106.txt\n[FILE] file_107.txt\n[FILE] file_108.txt\n[FILE] file_109.txt\n[FILE] file_11.txt\n[FILE] file_110.txt\n[FILE] file_111.txt\n[FILE] file_112.txt\n[FILE] file_113.txt\n[FILE] file_114.txt\n[FILE] file_115.txt\n[FILE] file_116.txt\n[FIL"
+    },
+    {
+      "tool": "read_text_file",
+      "label": "missing file",
+      "args": {
+        "path": "C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/sandbox/nope.txt"
+      },
+      "expect_error": true,
+      "status": "tool_error",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": null,
+      "chars": 105,
+      "tokens": 27,
+      "latency_ms": 3,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "ENOENT: no such file or directory, open 'C:\\Users\\alex\\AppData\\Local\\Temp\\mcp-lint-eval\\sandbox\\nope.txt'"
+    }
+  ]
+}

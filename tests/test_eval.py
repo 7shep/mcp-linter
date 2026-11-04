@@ -13,6 +13,7 @@ from mcp_lint.eval import (
     report_tables,
     run_eval,
     summarize,
+    valid_rows,
 )
 from mcp_lint.evaltasks import Task, check_answer, extract_answer, generate, make_tasks
 
@@ -192,7 +193,6 @@ class FakeRunner:
             return Completed(1, stream("Claude AI usage limit reached", is_error=True), "", 10)
         cfg = json.loads(Path(cmd[cmd.index("--mcp-config") + 1]).read_text(encoding="utf-8"))
         fixed = "proxy" in cfg["mcpServers"]["srv"]["args"]
-        task_id = next(t for t, a in self.answers.items() if t in stdin) if False else None
         answer = self.correct(stdin) if fixed else "wrong"
         return Completed(0, stream(f"done\nANSWER: {answer}", turns=2 if fixed else 6), "", 10)
 
@@ -256,6 +256,34 @@ class RunEvalTests(unittest.TestCase):
         runner = MarkerRunner(tasks)
         self.run_eval(runner, tasks, runs=1)
         self.assertEqual(runner.calls, 4)  # the limit-hit run is retried
+
+    def test_proxy_start_failure_is_marked_and_rerun(self):
+        tasks = fake_tasks()[:1]
+
+        def broken(cmd, stdin, cwd, timeout):  # no tool calls, no proxy log
+            return Completed(0, json.dumps({"type": "result", "subtype": "success", "num_turns": 1,
+                                            "result": "No tools.", "usage": {}}), "", 5)
+
+        run_eval(tasks, ["fixed"], 1, self.results, base=self.base, runner=broken, log=lambda _: None)
+        [row] = load_results(self.results)
+        self.assertIn("infra_error", row)
+        self.assertEqual(valid_rows([row]), [])
+        runner = MarkerRunner(tasks)
+        run_eval(tasks, ["fixed"], 1, self.results, base=self.base, runner=runner, log=lambda _: None)
+        self.assertEqual(runner.calls, 1)
+
+    def test_refuses_a_second_runner(self):
+        lock = self.results.with_name(self.results.name + ".lock")
+        lock.write_text("123")
+        with self.assertRaises(RuntimeError):
+            self.run_eval(MarkerRunner(fake_tasks()), fake_tasks())
+        lock.unlink()
+        self.run_eval(MarkerRunner(fake_tasks()), fake_tasks(), runs=1)
+        self.assertFalse(lock.exists())
+
+    def test_valid_rows_drops_duplicates(self):
+        r = {"task": "a", "condition": "fixed", "model": "haiku", "run": 1, "success": True}
+        self.assertEqual(len(valid_rows([r, dict(r, success=False), dict(r, run=2, limit_hit=True)])), 1)
 
     def test_survives_a_half_written_line(self):
         self.results.write_text('{"task": "t0", "condition": "fixed", "model": "haiku", "run": 1}\n{"tru',

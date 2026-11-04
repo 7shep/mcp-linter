@@ -1,0 +1,7 @@
+{"version": 1, "probes": [
+ {"tool": "git_status", "args": {"repo_path": "${EVAL_BASE}/repo"}},
+ {"tool": "git_log", "label": "default", "args": {"repo_path": "${EVAL_BASE}/repo"}},
+ {"tool": "git_log", "label": "900 commits", "args": {"repo_path": "${EVAL_BASE}/repo", "max_count": 900}},
+ {"tool": "git_show", "label": "HEAD", "args": {"repo_path": "${EVAL_BASE}/repo", "revision": "HEAD"}},
+ {"tool": "git_show", "label": "bad revision", "args": {"repo_path": "${EVAL_BASE}/repo", "revision": "nope123"}, "expect_error": true}
+]}

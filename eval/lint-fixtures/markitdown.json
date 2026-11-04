@@ -1,0 +1,5 @@
+{"version": 1, "probes": [
+ {"tool": "convert_to_markdown", "label": "log.txt", "args": {"uri": "${EVAL_BASE_URI}/sandbox/log.txt"}, "allow_destructive": true},
+ {"tool": "convert_to_markdown", "label": "report.html", "args": {"uri": "${EVAL_BASE_URI}/sandbox/report.html"}, "allow_destructive": true},
+ {"tool": "convert_to_markdown", "label": "missing file", "args": {"uri": "${EVAL_BASE_URI}/sandbox/nope.txt"}, "expect_error": true, "allow_destructive": true}
+]}

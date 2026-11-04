@@ -1,0 +1,21 @@
+[1/72] markitdown-02 baseline run1: FAIL answer="Unable to determine. The converted content exceeded the output limit and was only saved to files I couldn't read here, so line 3,932 was not checked." turns=8 tokens=77,371
+[2/72] markitdown-02 fixed run1: OK  answer='r-mi58c2' turns=3 tokens=31,627
+[3/72] markitdown-06 baseline run1: FAIL answer='Unable to determine. The MCP conversion tool returns an oversized result that I could not query, so the qty of SKU-21495 is unknown.' turns=6 tokens=52,514
+[4/72] git-15 baseline run1: FAIL answer='141' turns=16 tokens=294,887
+[5/72] git-15 fixed run1: OK  answer='146' turns=19 tokens=1,020,970
+[6/72] markitdown-06 fixed run1: OK  answer='737' turns=21 tokens=182,811
+[7/72] markitdown-11 baseline run1: FAIL answer='Unable to determine. The converted output exceeded the inline limit and was saved to a file I cannot search with the tools available to me.' turns=2 tokens=14,657
+[8/72] markitdown-11 fixed run1: OK  answer='Woven Mirror Wagon' turns=3 tokens=35,180
+[9/72] markitdown-12 baseline run1: FAIL answer='Unable to determine. The converted output was too large to read, and I had no tool to search the saved file.' turns=6 tokens=52,744
+[10/72] markitdown-12 fixed run1: OK  answer='Eager Garnet Orchard' turns=3 tokens=31,622
+[11/72] markitdown-15 baseline run1: FAIL answer='Unable to determine; the converted output was too large to read and no file-search tool was available.' turns=2 tokens=14,639
+[12/72] filesystem-01 baseline run2: OK  answer='r-3r2uj2' turns=3 tokens=34,853
+[13/72] filesystem-01 fixed run2: OK  answer='r-3r2uj2' turns=2 tokens=23,115
+[14/72] filesystem-02 fixed run2: OK  answer='r-8ukpwv' turns=3 tokens=36,174
+[15/72] markitdown-15 fixed run1: OK  answer='400' turns=32 tokens=157,249
+[16/72] filesystem-08 baseline run2: OK  answer='111' turns=2 tokens=23,241
+[17/72] filesystem-08 fixed run2: OK  answer='111' turns=2 tokens=26,650
+[18/72] filesystem-10 baseline run2: OK  answer='11' turns=2 tokens=22,993
+[19/72] filesystem-10 fixed run2: FAIL answer=None turns=1 tokens=6,720
+[20/72] filesystem-02 baseline run2: FAIL answer='Unable to determine. Line 7,082 could not be read with the available tools because of output size limits, so I did not find its request ID.' turns=8 tokens=97,080
+[21/72] filesystem-15 fixed run2: FAIL answer=None turns=1 tokens=6,250
