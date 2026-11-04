@@ -1,0 +1,140 @@
+{
+ "seed": 20261104,
+ "tasks": [
+  {
+   "id": "markitdown-01",
+   "server": "markitdown",
+   "split": "dev",
+   "prompt": "Convert {SANDBOX_URI}/log.txt to markdown. What is the request ID (the value after req=) on line 256?",
+   "answer": "r-dtugym",
+   "match": "exact",
+   "kind": "log_line"
+  },
+  {
+   "id": "markitdown-02",
+   "server": "markitdown",
+   "split": "test",
+   "prompt": "Convert {SANDBOX_URI}/log.txt to markdown. What is the request ID (the value after req=) on line 3,932?",
+   "answer": "r-mi58c2",
+   "match": "exact",
+   "kind": "log_line"
+  },
+  {
+   "id": "markitdown-03",
+   "server": "markitdown",
+   "split": "dev",
+   "prompt": "Convert {SANDBOX_URI}/log.txt to markdown. What is the request ID (the value after req=) on line 2,895?",
+   "answer": "r-1pg7mz",
+   "match": "exact",
+   "kind": "log_line"
+  },
+  {
+   "id": "markitdown-04",
+   "server": "markitdown",
+   "split": "dev",
+   "prompt": "Convert {SANDBOX_URI}/log.txt to markdown. What is the request ID (the value after req=) on line 6,929?",
+   "answer": "r-n3wkjt",
+   "match": "exact",
+   "kind": "log_line"
+  },
+  {
+   "id": "markitdown-05",
+   "server": "markitdown",
+   "split": "dev",
+   "prompt": "Convert {SANDBOX_URI}/log.txt to markdown. What is the request ID (the value after req=) on the last line?",
+   "answer": "r-3cy1zv",
+   "match": "exact",
+   "kind": "log_last"
+  },
+  {
+   "id": "markitdown-06",
+   "server": "markitdown",
+   "split": "test",
+   "prompt": "Convert {SANDBOX_URI}/inventory.csv to markdown. What is the qty of SKU-21495?",
+   "answer": "737",
+   "match": "int",
+   "kind": "csv_qty"
+  },
+  {
+   "id": "markitdown-07",
+   "server": "markitdown",
+   "split": "dev",
+   "prompt": "Convert {SANDBOX_URI}/inventory.csv to markdown. What is the qty of SKU-97067?",
+   "answer": "148",
+   "match": "int",
+   "kind": "csv_qty"
+  },
+  {
+   "id": "markitdown-08",
+   "server": "markitdown",
+   "split": "dev",
+   "prompt": "Convert {SANDBOX_URI}/inventory.csv to markdown. What is the qty of SKU-21143?",
+   "answer": "984",
+   "match": "int",
+   "kind": "csv_qty"
+  },
+  {
+   "id": "markitdown-09",
+   "server": "markitdown",
+   "split": "dev",
+   "prompt": "Convert {SANDBOX_URI}/inventory.csv to markdown. What is the price of SKU-90232? Answer with the number only.",
+   "answer": "961.04",
+   "match": "num",
+   "kind": "csv_price"
+  },
+  {
+   "id": "markitdown-10",
+   "server": "markitdown",
+   "split": "dev",
+   "prompt": "Convert {SANDBOX_URI}/inventory.csv to markdown. Which warehouse holds SKU-91462?",
+   "answer": "Austin",
+   "match": "exact",
+   "kind": "csv_warehouse"
+  },
+  {
+   "id": "markitdown-11",
+   "server": "markitdown",
+   "split": "test",
+   "prompt": "Convert {SANDBOX_URI}/report.html to markdown. What is the title of Section 60? Give the title only, without \"Section N:\".",
+   "answer": "Woven Mirror Wagon",
+   "match": "exact",
+   "kind": "html_section"
+  },
+  {
+   "id": "markitdown-12",
+   "server": "markitdown",
+   "split": "test",
+   "prompt": "Convert {SANDBOX_URI}/report.html to markdown. What is the title of Section 297? Give the title only, without \"Section N:\".",
+   "answer": "Eager Garnet Orchard",
+   "match": "exact",
+   "kind": "html_section"
+  },
+  {
+   "id": "markitdown-13",
+   "server": "markitdown",
+   "split": "dev",
+   "prompt": "Convert {SANDBOX_URI}/report.html to markdown. What is the title of Section 293? Give the title only, without \"Section N:\".",
+   "answer": "Young Ribbon Candle",
+   "match": "exact",
+   "kind": "html_section"
+  },
+  {
+   "id": "markitdown-14",
+   "server": "markitdown",
+   "split": "dev",
+   "prompt": "Convert {SANDBOX_URI}/report.html to markdown. What is the title of Section 256? Give the title only, without \"Section N:\".",
+   "answer": "Rapid Easel Quill",
+   "match": "exact",
+   "kind": "html_section"
+  },
+  {
+   "id": "markitdown-15",
+   "server": "markitdown",
+   "split": "test",
+   "prompt": "Convert {SANDBOX_URI}/report.html to markdown. How many numbered sections (\"Section N: ...\") does the report have?",
+   "answer": "400",
+   "match": "int",
+   "kind": "html_count"
+  }
+ ]
+}

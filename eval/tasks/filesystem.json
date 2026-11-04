@@ -1,0 +1,140 @@
+{
+ "seed": 20261104,
+ "tasks": [
+  {
+   "id": "filesystem-01",
+   "server": "filesystem",
+   "split": "test",
+   "prompt": "In the file {SANDBOX}/log.txt, what is the request ID (the value after req=) on line 105?",
+   "answer": "r-3r2uj2",
+   "match": "exact",
+   "kind": "log_line"
+  },
+  {
+   "id": "filesystem-02",
+   "server": "filesystem",
+   "split": "test",
+   "prompt": "In the file {SANDBOX}/log.txt, what is the request ID (the value after req=) on line 7,082?",
+   "answer": "r-8ukpwv",
+   "match": "exact",
+   "kind": "log_line"
+  },
+  {
+   "id": "filesystem-03",
+   "server": "filesystem",
+   "split": "dev",
+   "prompt": "In the file {SANDBOX}/log.txt, what is the request ID (the value after req=) on line 7,959?",
+   "answer": "r-6svuqd",
+   "match": "exact",
+   "kind": "log_line"
+  },
+  {
+   "id": "filesystem-04",
+   "server": "filesystem",
+   "split": "dev",
+   "prompt": "In the file {SANDBOX}/log.txt, what is the request ID (the value after req=) on line 2,737?",
+   "answer": "r-9wtfdh",
+   "match": "exact",
+   "kind": "log_line"
+  },
+  {
+   "id": "filesystem-05",
+   "server": "filesystem",
+   "split": "dev",
+   "prompt": "In {SANDBOX}/log.txt, what is the latency in milliseconds on line 6,453? Answer with the number only.",
+   "answer": "1637",
+   "match": "int",
+   "kind": "log_latency"
+  },
+  {
+   "id": "filesystem-06",
+   "server": "filesystem",
+   "split": "dev",
+   "prompt": "How many lines does the file {SANDBOX}/log.txt have?",
+   "answer": "8000",
+   "match": "int",
+   "kind": "log_count"
+  },
+  {
+   "id": "filesystem-07",
+   "server": "filesystem",
+   "split": "dev",
+   "prompt": "In {SANDBOX}/log.txt, what is the request ID (the value after req=) on the last line of the file?",
+   "answer": "r-3cy1zv",
+   "match": "exact",
+   "kind": "log_last"
+  },
+  {
+   "id": "filesystem-08",
+   "server": "filesystem",
+   "split": "test",
+   "prompt": "How many files in the folder {SANDBOX}/sub have names starting with \"file_1\"?",
+   "answer": "111",
+   "match": "int",
+   "kind": "sub_count"
+  },
+  {
+   "id": "filesystem-09",
+   "server": "filesystem",
+   "split": "dev",
+   "prompt": "How many files in the folder {SANDBOX}/sub have names starting with \"file_3\"?",
+   "answer": "12",
+   "match": "int",
+   "kind": "sub_count"
+  },
+  {
+   "id": "filesystem-10",
+   "server": "filesystem",
+   "split": "test",
+   "prompt": "How many files in the folder {SANDBOX}/sub have names starting with \"file_25\"?",
+   "answer": "11",
+   "match": "int",
+   "kind": "sub_count"
+  },
+  {
+   "id": "filesystem-11",
+   "server": "filesystem",
+   "split": "dev",
+   "prompt": "In {SANDBOX}/inventory.csv, what is the qty of SKU-30120?",
+   "answer": "170",
+   "match": "int",
+   "kind": "csv_qty"
+  },
+  {
+   "id": "filesystem-12",
+   "server": "filesystem",
+   "split": "dev",
+   "prompt": "In {SANDBOX}/inventory.csv, what is the qty of SKU-74430?",
+   "answer": "547",
+   "match": "int",
+   "kind": "csv_qty"
+  },
+  {
+   "id": "filesystem-13",
+   "server": "filesystem",
+   "split": "dev",
+   "prompt": "In {SANDBOX}/inventory.csv, what is the qty of SKU-51959?",
+   "answer": "434",
+   "match": "int",
+   "kind": "csv_qty"
+  },
+  {
+   "id": "filesystem-14",
+   "server": "filesystem",
+   "split": "dev",
+   "prompt": "In {SANDBOX}/inventory.csv, which warehouse holds SKU-50433?",
+   "answer": "Reno",
+   "match": "exact",
+   "kind": "csv_warehouse"
+  },
+  {
+   "id": "filesystem-15",
+   "server": "filesystem",
+   "split": "test",
+   "prompt": "In {SANDBOX}/report.html, what is the title of Section 293? Give the title only, without \"Section N:\".",
+   "answer": "Young Ribbon Candle",
+   "match": "exact",
+   "kind": "html_section"
+  }
+ ]
+}

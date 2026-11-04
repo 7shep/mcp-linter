@@ -1,0 +1,16 @@
+{
+  "_note": "Hand-written replacements for descriptions mcp-lint flags with S1 (under 15 words). Only S1-flagged tools are listed. Each says what it returns and how it differs from its neighbours.",
+  "descriptions": {
+    "git_status": "Show the working tree status of the repository at repo_path: the current branch and which files are staged, modified or untracked. Use before committing.",
+    "git_diff_unstaged": "Show changes in the working directory that are not yet staged (like 'git diff'). For staged changes use git_diff_staged; to compare branches or commits use git_diff.",
+    "git_diff_staged": "Show changes that are staged for the next commit (like 'git diff --cached'). For unstaged changes use git_diff_unstaged.",
+    "git_diff": "Show the differences between the working tree and 'target', which can be a branch name, tag or commit hash (like 'git diff <target>'). To see one commit's own changes use git_show.",
+    "git_commit": "Record the currently staged changes as a new commit with the given message. Stage files first with git_add. Returns the new commit's hash.",
+    "git_add": "Stage the listed files (paths relative to repo_path) for the next commit, like 'git add <files>'. Use git_status to see which files changed.",
+    "git_reset": "Unstage all staged changes (like 'git reset'). Working tree files are left as they are.",
+    "git_log": "List commits on the current branch, newest first: each entry has the commit hash, author, date and message. Returns max_count commits (default 10); raise it to see further back, or filter by date with start_timestamp/end_timestamp.",
+    "git_create_branch": "Create a new branch named branch_name, starting from base_branch (a branch name or commit) or from the current HEAD if base_branch is omitted. Does not switch to it.",
+    "git_checkout": "Switch the working tree to an existing branch (like 'git checkout <branch_name>'). Create branches with git_create_branch.",
+    "git_branch": "List branches: local, remote or all (branch_type). Optionally only branches that contain, or don't contain, a given commit."
+  }
+}

@@ -4,6 +4,8 @@
     mcp-lint run --probe fixtures.json -- <server command>
     mcp-lint check tools.json
     mcp-lint init-fixtures fixtures.json -- <server command>
+    mcp-lint proxy [--no-paging] [--descriptions FIXES.json] -- <server command>
+    mcp-lint eval --setup | --run | --report
 """
 
 from __future__ import annotations
@@ -67,6 +69,22 @@ def _build_parser() -> argparse.ArgumentParser:
                       help="build from a saved tools/list file instead of a live server")
     init.add_argument("--force", action="store_true", help="overwrite an existing file")
     server_cmd(init)
+
+    proxy = sub.add_parser("proxy", help="serve a server's tools over stdio with fixes applied")
+    proxy.add_argument("--no-paging", action="store_true",
+                       help="don't cut long responses or add offset/limit parameters")
+    proxy.add_argument("--page-tokens", type=int, default=2000, metavar="N",
+                       help="page size in estimated tokens (default: 2000)")
+    proxy.add_argument("--descriptions", metavar="FIXES_JSON",
+                       help='replace tool descriptions from {"descriptions": {tool: text}}')
+    proxy.add_argument("--no-errors", action="store_true",
+                       help="don't set isError on error text returned as a success")
+    proxy.add_argument("--log", metavar="PATH", help="append one JSON line per proxied call")
+    server_cmd(proxy)
+
+    from mcp_lint.eval import add_eval_parser
+
+    add_eval_parser(sub)
     return p
 
 
@@ -109,10 +127,35 @@ def _init_fixtures(args: argparse.Namespace) -> int:
     return 0
 
 
+def _proxy(args: argparse.Namespace) -> int:
+    from mcp_lint.proxy import FixOptions, load_descriptions, serve
+
+    cmd = _server_cmd(args.server)
+    if not cmd:
+        return _err("give the upstream server command after '--'")
+    try:
+        descriptions = load_descriptions(args.descriptions) if args.descriptions else {}
+    except (OSError, ValueError) as exc:
+        return _err(str(exc))
+    opts = FixOptions(paging=not args.no_paging, page_tokens=args.page_tokens,
+                      descriptions=descriptions, errors=not args.no_errors)
+    try:
+        asyncio.run(serve(cmd[0], cmd[1:], opts, args.pass_env, args.log))
+    except KeyboardInterrupt:
+        pass
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     if args.command == "init-fixtures":
         return _init_fixtures(args)
+    if args.command == "proxy":
+        return _proxy(args)
+    if args.command == "eval":
+        from mcp_lint.eval import eval_main
+
+        return eval_main(args)
 
     probes = None
     if args.command == "run":
