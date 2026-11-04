@@ -190,6 +190,8 @@ The constants are rough guesses, kept in one place ([`score.py`](src/mcp_lint/sc
 
 Do mcp-lint's findings matter to a real agent? [`eval/REPORT.md`](eval/REPORT.md) has the before/after experiment: Claude Code (headless, `--model haiku`) answers checkable questions with one MCP server connected, once with the server as it ships and once behind `mcp-lint proxy`, which fixes what mcp-lint flags.
 
+**Result:** on 15 held-out tasks across server-filesystem, markitdown-mcp and mcp-server-git (90 runs), success rose from 53% to 98%. Nearly all of that came from paging long responses, and the worst-scored server (markitdown, 0/100) gained the most. Tokens per task did **not** go down: paging turns quick give-ups into long successes. See the report for the full numbers and caveats.
+
 ```bash
 mcp-lint proxy --descriptions eval/fixes/mcp-server-git.json -- uvx mcp-server-git   # serve fixed tools over stdio
 mcp-lint eval --setup                                   # build the sandbox + repo, write eval/tasks/

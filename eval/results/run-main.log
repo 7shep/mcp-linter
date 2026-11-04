@@ -1,21 +1,52 @@
-[1/72] markitdown-02 baseline run1: FAIL answer="Unable to determine. The converted content exceeded the output limit and was only saved to files I couldn't read here, so line 3,932 was not checked." turns=8 tokens=77,371
-[2/72] markitdown-02 fixed run1: OK  answer='r-mi58c2' turns=3 tokens=31,627
-[3/72] markitdown-06 baseline run1: FAIL answer='Unable to determine. The MCP conversion tool returns an oversized result that I could not query, so the qty of SKU-21495 is unknown.' turns=6 tokens=52,514
-[4/72] git-15 baseline run1: FAIL answer='141' turns=16 tokens=294,887
-[5/72] git-15 fixed run1: OK  answer='146' turns=19 tokens=1,020,970
-[6/72] markitdown-06 fixed run1: OK  answer='737' turns=21 tokens=182,811
-[7/72] markitdown-11 baseline run1: FAIL answer='Unable to determine. The converted output exceeded the inline limit and was saved to a file I cannot search with the tools available to me.' turns=2 tokens=14,657
-[8/72] markitdown-11 fixed run1: OK  answer='Woven Mirror Wagon' turns=3 tokens=35,180
-[9/72] markitdown-12 baseline run1: FAIL answer='Unable to determine. The converted output was too large to read, and I had no tool to search the saved file.' turns=6 tokens=52,744
-[10/72] markitdown-12 fixed run1: OK  answer='Eager Garnet Orchard' turns=3 tokens=31,622
-[11/72] markitdown-15 baseline run1: FAIL answer='Unable to determine; the converted output was too large to read and no file-search tool was available.' turns=2 tokens=14,639
-[12/72] filesystem-01 baseline run2: OK  answer='r-3r2uj2' turns=3 tokens=34,853
-[13/72] filesystem-01 fixed run2: OK  answer='r-3r2uj2' turns=2 tokens=23,115
-[14/72] filesystem-02 fixed run2: OK  answer='r-8ukpwv' turns=3 tokens=36,174
-[15/72] markitdown-15 fixed run1: OK  answer='400' turns=32 tokens=157,249
-[16/72] filesystem-08 baseline run2: OK  answer='111' turns=2 tokens=23,241
-[17/72] filesystem-08 fixed run2: OK  answer='111' turns=2 tokens=26,650
-[18/72] filesystem-10 baseline run2: OK  answer='11' turns=2 tokens=22,993
-[19/72] filesystem-10 fixed run2: FAIL answer=None turns=1 tokens=6,720
-[20/72] filesystem-02 baseline run2: FAIL answer='Unable to determine. Line 7,082 could not be read with the available tools because of output size limits, so I did not find its request ID.' turns=8 tokens=97,080
-[21/72] filesystem-15 fixed run2: FAIL answer=None turns=1 tokens=6,250
+[1/51] filesystem-10 fixed run2: OK  answer='11' turns=2 tokens=26,436
+[2/51] filesystem-15 fixed run2: OK  answer='Young Ribbon Candle' turns=4 tokens=77,743
+[3/51] git-09 baseline run2: OK  answer='59902' turns=12 tokens=288,685
+[4/51] git-06 fixed run2: OK  answer='Bilal Haddad' turns=20 tokens=464,715
+[5/51] git-09 fixed run2: OK  answer='59902' turns=20 tokens=409,554
+[6/51] git-12 fixed run2: OK  answer='note-q8jvgp' turns=9 tokens=164,420
+[7/51] git-12 baseline run2: OK  answer='note-q8jvgp' turns=10 tokens=278,525
+[8/51] git-14 fixed run2: OK  answer='TCK-8238' turns=5 tokens=80,336
+[9/51] git-14 baseline run2: OK  answer='TCK-8238' turns=20 tokens=164,707
+[10/51] markitdown-02 baseline run2: FAIL answer='Not determined. The conversion output was too large to return inline, and I had no tool available to read line 3,932 from the saved output files.' turns=5 tokens=41,680
+[11/51] markitdown-02 fixed run2: OK  answer='r-mi58c2' turns=3 tokens=28,307
+[12/51] markitdown-06 baseline run2: FAIL answer='Not determined. The conversion output exceeded the inline limit, and I had no tool to search the saved file for SKU-21495.' turns=5 tokens=41,852
+[13/51] git-15 baseline run2: FAIL answer='141' turns=14 tokens=458,264
+[14/51] markitdown-11 baseline run2: FAIL answer='Unable to determine. The conversion output was too large to return inline, and I could not search the saved file without a shell or file-search tool.' turns=4 tokens=32,126
+[15/51] markitdown-11 fixed run2: OK  answer='Woven Mirror Wagon' turns=3 tokens=34,995
+[16/51] markitdown-06 fixed run2: OK  answer='737' turns=21 tokens=1,188,738
+[17/51] markitdown-12 baseline run2: FAIL answer='Unable to determine. The converted output was saved to a file I cannot read with the available tools.' turns=2 tokens=14,420
+[18/51] git-15 fixed run2: OK  answer='146' turns=19 tokens=1,118,435
+[19/51] markitdown-12 fixed run2: OK  answer='Eager Garnet Orchard' turns=3 tokens=33,614
+[20/51] markitdown-15 baseline run2: FAIL answer='Unable to determine. The conversion output exceeded the tool limit and was saved to a file I cannot read with the tools available here.' turns=2 tokens=14,527
+[21/51] filesystem-01 fixed run3: OK  answer='r-3r2uj2' turns=3 tokens=35,574
+[22/51] filesystem-01 baseline run3: OK  answer='r-3r2uj2' turns=3 tokens=35,721
+[23/51] markitdown-15 fixed run2: OK  answer='400' turns=6 tokens=126,176
+[24/51] filesystem-02 fixed run3: OK  answer='r-8ukpwv' turns=2 tokens=22,606
+[25/51] filesystem-08 baseline run3: OK  answer='111' turns=2 tokens=23,232
+[26/51] filesystem-08 fixed run3: OK  answer='111' turns=2 tokens=26,583
+[27/51] filesystem-10 baseline run3: OK  answer='11' turns=2 tokens=22,975
+[28/51] filesystem-10 fixed run3: OK  answer='11' turns=2 tokens=26,363
+[29/51] filesystem-02 baseline run3: FAIL answer='Unable to determine; line 7,082 could not be retrieved with the available tools.' turns=9 tokens=101,699
+[30/51] filesystem-15 baseline run3: OK  answer='Young Ribbon Candle' turns=6 tokens=93,837
+[31/51] filesystem-15 fixed run3: OK  answer='Young Ribbon Candle' turns=4 tokens=77,764
+[32/51] git-09 baseline run3: OK  answer='59902' turns=8 tokens=285,237
+[33/51] git-06 baseline run3: OK  answer='Bilal Haddad' turns=12 tokens=493,891
+[34/51] git-06 fixed run3: FAIL answer='No commit mentions TCK-3993 in its subject line, so no author can be named.' turns=14 tokens=237,660
+[35/51] git-09 fixed run3: OK  answer='59902' turns=19 tokens=242,151
+[36/51] git-12 baseline run3: OK  answer='note-q8jvgp' turns=9 tokens=216,380
+[37/51] git-12 fixed run3: OK  answer='note-q8jvgp' turns=12 tokens=220,715
+[38/51] git-14 baseline run3: OK  answer='TCK-8238' turns=13 tokens=92,960
+[39/51] git-14 fixed run3: OK  answer='TCK-8238' turns=5 tokens=82,512
+[40/51] markitdown-02 baseline run3: FAIL answer='Not determined. The conversion tool returned an oversized-output error on every attempt, so I could not read line 3,932.' turns=8 tokens=76,045
+[41/51] markitdown-02 fixed run3: OK  answer='r-mi58c2' turns=3 tokens=31,635
+[42/51] markitdown-06 baseline run3: FAIL answer='Not determined. The MCP conversion output is 157,368 characters, too large to return inline, and I have no tool here to search the saved result file for SKU-21495.' turns=2 tokens=14,623
+[43/51] git-15 baseline run3: FAIL answer='141' turns=16 tokens=428,210
+[44/51] markitdown-06 fixed run3: OK  answer='737' turns=21 tokens=1,185,823
+[45/51] markitdown-11 baseline run3: FAIL answer="Unable to determine (the converted content exceeded the tool's output limit and I had no search tool to extract Section 60)" turns=3 tokens=23,030
+[46/51] git-15 fixed run3: OK  answer='146' turns=20 tokens=251,611
+[47/51] markitdown-11 fixed run3: OK  answer='Woven Mirror Wagon' turns=3 tokens=33,459
+[48/51] markitdown-12 baseline run3: FAIL answer="Unable to determine. The conversion output exceeded the tool's size limit and I had no tool to search the saved result for Section 297." turns=2 tokens=14,714
+[49/51] markitdown-12 fixed run3: OK  answer='Eager Garnet Orchard' turns=4 tokens=59,122
+[50/51] markitdown-15 baseline run3: FAIL answer="Unable to determine. The converted output exceeded the tool's size limit, and I had no tool available to search the saved file." turns=5 tokens=42,088
+[51/51] markitdown-15 fixed run3: OK  answer='400' turns=32 tokens=154,228
+{"skipped": 39, "ran": 51, "infra_error": 0, "limit": 0}
