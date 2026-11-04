@@ -47,6 +47,13 @@ class S4Tests(unittest.TestCase):
         ]
         self.assertEqual(s4_near_duplicates(tools), [])
 
+    def test_opposite_actions_pass(self):
+        # Real false positives from Notion and Chrome DevTools.
+        for a, b in (("API-retrieve-a-block", "API-delete-a-block"), ("screencast_start", "screencast_stop")):
+            tools = [t(a, "Retrieve a block object using the ID specified.", ["block_id"]),
+                     t(b, "Delete a block object using the ID specified.", ["block_id"])]
+            self.assertEqual(s4_near_duplicates(tools), [], (a, b))
+
     def test_different_tools_pass(self):
         tools = [
             t("get_weather", "Current weather for a city.", ["city"]),

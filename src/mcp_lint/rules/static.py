@@ -154,6 +154,18 @@ def _param_overlap(a: ToolDef, b: ToolDef) -> float:
     return len(pa & pb) / len(union) if union else 1.0
 
 
+def _different_actions(a: ToolDef, b: ToolDef) -> bool:
+    """True if both names contain action verbs and the verbs differ.
+
+    'retrieve-a-block' vs 'delete-a-block' or 'screencast_start' vs
+    'screencast_stop' share parameters and wording but do opposite things.
+    Pairs with the same verb (read_file / read_text_file) still count.
+    """
+    va = set(split_name(a.name)) & VERBS
+    vb = set(split_name(b.name)) & VERBS
+    return bool(va and vb and va != vb)
+
+
 def s4_near_duplicates(tools: list[ToolDef]) -> list[Finding]:
     """S4: pairs of tools with similar descriptions that take similar parameters."""
     sims = similarity_matrix(tools)
@@ -161,6 +173,8 @@ def s4_near_duplicates(tools: list[ToolDef]) -> list[Finding]:
     for i, a in enumerate(tools):
         for j in range(i + 1, len(tools)):
             b = tools[j]
+            if _different_actions(a, b):
+                continue
             text = round(sims[i][j], 2)
             params = round(_param_overlap(a, b), 2)
             if text >= DUPLICATE_TEXT_THRESHOLD and params >= DUPLICATE_PARAM_THRESHOLD:
