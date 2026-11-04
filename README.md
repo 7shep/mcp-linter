@@ -4,6 +4,8 @@ A linter for [MCP](https://modelcontextprotocol.io) servers. It connects to a se
 
 > Static rules S1–S7, probe rules P1–P5, a token-weighted score, a fixing proxy and an eval mode are done. See [Eval](#eval) for whether the findings matter.
 
+![Task success with and without mcp-lint fixes: all tasks 53% to 98%, markitdown-mcp 0% to 100%, server-filesystem 80% to 100%, mcp-server-git 80% to 93%](eval/chart/success.png)
+
 ## Findings
 
 From running it on 18 servers, 8 official and 10 popular third-party ones. Full tables are in [RESULTS.md](RESULTS.md), and the setup to reproduce them is in [`survey/`](survey/).
@@ -190,9 +192,7 @@ The constants are rough guesses, kept in one place ([`score.py`](src/mcp_lint/sc
 
 Do mcp-lint's findings matter to a real agent? [`eval/REPORT.md`](eval/REPORT.md) has the before/after experiment: Claude Code (headless, `--model haiku`) answers checkable questions with one MCP server connected, once with the server as it ships and once behind `mcp-lint proxy`, which fixes what mcp-lint flags.
 
-**Result:** on 15 held-out tasks across server-filesystem, markitdown-mcp and mcp-server-git (90 runs), success rose from 53% to 98%. Nearly all of that came from paging long responses, and the worst-scored server (markitdown, 0/100) gained the most. Tokens per task did **not** go down: paging turns quick give-ups into long successes. See the report for the full numbers and caveats.
-
-![Task success with and without mcp-lint fixes: all tasks 53% to 98%, markitdown-mcp 0% to 100%, server-filesystem 80% to 100%, mcp-server-git 80% to 93%](eval/chart/success.png)
+**Result:** on 15 held-out tasks across server-filesystem, markitdown-mcp and mcp-server-git (90 runs), success rose from 53% to 98%. Nearly all of that came from paging long responses, and the worst-scored server (markitdown, 0/100) gained the most. Tokens per task did **not** go down: paging turns quick give-ups into long successes. See the report for the full numbers and caveats. The chart at the top of this README shows the per-server results.
 
 ```bash
 mcp-lint proxy --descriptions eval/fixes/mcp-server-git.json -- uvx mcp-server-git   # serve fixed tools over stdio
