@@ -58,7 +58,9 @@ class RunCommandTests(unittest.TestCase):
         self.assertIn("demo-server", out)
         self.assertIn("2 tools checked", out)
         self.assertIn("S2 [id]", out)
-        self.assertNotIn("search_contacts\n", out)  # clean tool has no section
+        self.assertNotIn("search_contacts\n", out.split("Score:")[0])  # clean tool has no findings section
+        self.assertIn("100 A  search_contacts", out)
+        self.assertIn("static checks only", out)
         self.assertEqual(code, 1)
 
     def test_probe_live_server(self):

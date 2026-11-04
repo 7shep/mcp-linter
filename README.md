@@ -2,7 +2,7 @@
 
 A linter for [MCP](https://modelcontextprotocol.io) servers. It connects to a server, reads its tool definitions, and flags the things that make tools hard for agents to use, based on Anthropic's [Writing effective tools for agents](https://www.anthropic.com/engineering/writing-tools-for-agents).
 
-> Work in progress: static rules S1–S7 and probe rules P1–P5 are done; a weighted per-tool score and eval mode are next. See the [roadmap](#roadmap).
+> Work in progress: static rules S1–S7, probe rules P1–P5 and a token-weighted score are done; eval mode is next. See the [roadmap](#roadmap).
 
 ## Findings
 
@@ -67,6 +67,7 @@ Options:
 | `--json PATH` | Also write a machine-readable report |
 | `--min-severity info\|warning\|error` | Hide terminal findings below this level |
 | `--fail-on info\|warning\|error\|never` | Exit 1 if any finding is at or above this level (default `error`) |
+| `--fail-under SCORE` | Also exit 1 if the server score (0-100) is below this; see [Score](#score) |
 | `--probe FIXTURES` | (`run` only) Also call the tools listed in a fixtures file; see [Probing](#probing) |
 | `--error-probes` | (`run` only) Send generated bad arguments to read-only tools and check the errors (P4). Works without a fixtures file |
 | `--include-responses` | (`run` only) Keep full probe response text in the `--json` report instead of a 400-character preview |
@@ -147,9 +148,46 @@ All rules run offline with no API key. Token counts are **estimates** (4 charact
 
 S4's thresholds were tuned on 8 official reference servers (105 tools) and checked on 10 third-party ones. Similar text alone flagged unrelated tools with templated descriptions ("Create a new X in a repository"), so a pair must also share parameters. Pairs whose names use different action verbs (`retrieve-a-block` / `delete-a-block`) are skipped. It still flags pairs like `get_pull_request` / `get_pull_request_files`. The post suggests consolidating those, but you may decide they're fine as separate tools.
 
+## Score
+
+Every run ends with a score: each tool's, and the server's, out of 100. It's weighted by **how many tokens each problem costs an agent**, not by counting warnings. One 87k-token response matters far more than a dozen short descriptions.
+
+```
+Score: 25/100 (D)  ~20,066 tokens wasted per session (estimated; static checks + probes)
+    0 F  read_text_file   87,224-token response: ~85,224, P5 no concise mode: ~300, S3 undescribed param [path]: ~100
+   51 C  directory_tree   5,419-token response: ~3,419, P3 no paging hint: ~1,000, P5 no concise mode: ~300
+   86 B  read_file        S1 short description: ~500, S4 overlaps another tool: ~500, S3 undescribed param [path]: ~100
+   ...
+```
+
+That's server-filesystem: one tool that dumps whole files sinks the server.
+
+Each finding becomes an estimate of tokens wasted per session:
+
+- **Measured from probes:**
+  - response tokens over a 2,000-token budget (P1)
+  - characters spent on unlabelled IDs (P2)
+
+  Responses the probe *asked* to be big (it set `max_length`, `max_count` and so on) aren't charged. Neither are responses that say what's left ("19000 remaining"): the agent controls those.
+- **Measured from definitions:** tokens over 300 per tool, counted twice per session. Definitions are resent every turn but usually prompt-cached, so this assumes about 20 turns at about 10% cost.
+- **Estimated, for problems that cause retries or wrong picks:**
+
+| Finding | Estimated waste (tokens per session) |
+|---|---|
+| No description (S1) | 2,000 |
+| Unbounded list, if not measured (S7) | 2,000 |
+| Opaque or empty error, leaked stack trace (P4) | 1,500 |
+| Big response, no paging hint, no paging params (P3) | 1,000 |
+| Error with no guidance (P4) | 700 |
+| Short description (S1), overlapping tool (S4), error as success / accepted bad input (P4) | 500 |
+| Vague or untyped parameter (S2, S3) | 300 |
+
+A **tool's score** halves for every 5,000 wasted tokens. The **server's waste** adds up all definition overhead, since that's paid every session whichever tools are used. To that it adds the average per-tool usage waste, times 3 tools used per session. The server score halves for every 10,000.
+
+The constants are rough guesses, kept in one place ([`score.py`](src/mcp_lint/score.py)) so they can be argued with. Treat the ordering as the result, not the exact numbers. Without `--probe` the score covers only static checks, and the report says so. `--fail-under SCORE` exits 1 when the server scores below a threshold.
+
 ## Roadmap
 
-- **Per-tool score**, weighted by how much each problem costs an agent: tokens spent and context wasted, not a flat count of warnings.
 - **Eval mode:** generate multi-step agent tasks, run them before and after a fixing proxy rewrites the tools, and report the change in success rate and tokens.
 
 ## Development

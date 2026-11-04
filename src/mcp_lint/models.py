@@ -66,6 +66,7 @@ class Finding:
     param: str | None = None
     hint: str | None = None
     related: list[str] | None = None  # other tools involved, e.g. an S4 duplicate
+    kind: str | None = None  # sub-type for scoring, e.g. P4 "opaque" vs "no_guidance"
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)

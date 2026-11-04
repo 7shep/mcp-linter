@@ -9,6 +9,7 @@ from typing import Any
 from mcp_lint import __version__
 from mcp_lint.models import Finding, Severity, ToolDef
 from mcp_lint.probe import ProbeResult
+from mcp_lint.score import ServerScore
 from mcp_lint.text import CHARS_PER_TOKEN, definition_json, estimate_tokens
 
 _MARK = {Severity.ERROR: "x", Severity.WARNING: "!", Severity.INFO: "i"}
@@ -21,6 +22,17 @@ def summary(findings: list[Finding]) -> dict[str, int]:
 
 def definition_tokens(tools: list[ToolDef]) -> int:
     return sum(estimate_tokens(definition_json(t)) for t in tools)
+
+
+def render_scores(s: ServerScore, top: int = 3) -> str:
+    """Score section: server grade, then tools worst first with their biggest costs."""
+    basis = "static checks + probes" if s.probed else "static checks only; run with --probe to measure responses"
+    lines = [f"Score: {s.score}/100 ({s.grade})  ~{s.waste:,} tokens wasted per session (estimated; {basis})"]
+    width = max((len(t.tool) for t in s.tools), default=4)
+    for t in s.tools:
+        top_costs = ", ".join(f"{c.note}: ~{c.tokens:,}" for c in t.costs[:top])
+        lines.append(f"  {t.score:>3} {t.grade}  {t.tool:<{width}}  {top_costs}".rstrip())
+    return "\n".join(lines)
 
 
 def render_probes(results: list[ProbeResult]) -> str:
@@ -47,8 +59,11 @@ def render_probes(results: list[ProbeResult]) -> str:
 
 
 def to_json(server: dict[str, Any], tools: list[ToolDef], findings: list[Finding],
-            probes: list[ProbeResult] | None = None, include_responses: bool = False) -> dict[str, Any]:
+            probes: list[ProbeResult] | None = None, include_responses: bool = False,
+            score: ServerScore | None = None) -> dict[str, Any]:
     data = _to_json(server, tools, findings)
+    if score is not None:
+        data["score"] = score.to_dict()
     if probes is not None:
         data["probes"] = [r.to_dict(include_text=include_responses) for r in probes]
     return data

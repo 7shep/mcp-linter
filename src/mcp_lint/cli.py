@@ -16,9 +16,10 @@ import sys
 
 from mcp_lint.fixtures import FixtureError, load_fixtures, template
 from mcp_lint.models import Severity, ToolDef
-from mcp_lint.report import render_probes, render_text, to_json, write_json
+from mcp_lint.report import render_probes, render_scores, render_text, to_json, write_json
 from mcp_lint.rules import run_static
 from mcp_lint.rules.probe import run_probe_rules
+from mcp_lint.score import score_server
 
 FAIL_ON = {"error": Severity.ERROR, "warning": Severity.WARNING, "info": Severity.INFO}
 
@@ -33,6 +34,8 @@ def _build_parser() -> argparse.ArgumentParser:
                         help="hide terminal findings below this level (default: info)")
         sp.add_argument("--fail-on", choices=["info", "warning", "error", "never"], default="error",
                         help="exit 1 if any finding is at or above this level (default: error)")
+        sp.add_argument("--fail-under", type=int, metavar="SCORE",
+                        help="also exit 1 if the server score is below this (0-100)")
 
     def server_cmd(sp: argparse.ArgumentParser) -> None:
         sp.add_argument("--pass-env", action="append", default=[], metavar="NAME",
@@ -143,11 +146,17 @@ def main(argv: list[str] | None = None) -> int:
     if probes is not None:
         print()
         print(render_probes(probes))
+    score = score_server(tools, findings, probes)
+    print()
+    print(render_scores(score))
     if args.json:
         write_json(args.json, to_json(server, tools, findings, probes,
-                                      include_responses=getattr(args, "include_responses", False)))
+                                      include_responses=getattr(args, "include_responses", False),
+                                      score=score))
         print(f"\nJSON report written to {args.json}")
 
+    if args.fail_under is not None and score.score < args.fail_under:
+        return 1
     if args.fail_on != "never":
         threshold = FAIL_ON[args.fail_on].rank
         if any(f.severity.rank >= threshold for f in findings):

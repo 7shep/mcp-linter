@@ -190,7 +190,7 @@ def p4_error_quality(tools: dict[str, ToolDef], results: list[ProbeResult]) -> l
         msg = f"{len(rs)} of {totals[tool]} error probes {what}"
         excerpt = " ".join(example.agent_text.split())[:90]
         msg += f" (e.g. '{_probe_name(example)}'" + (f": \"{excerpt}\")." if excerpt and kind != "accepted" else ").")
-        findings.append(Finding(rule="P4", severity=severity, tool=tool, message=msg, hint=hint))
+        findings.append(Finding(rule="P4", severity=severity, tool=tool, message=msg, hint=hint, kind=kind))
     return findings
 
 

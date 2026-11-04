@@ -14,6 +14,38 @@ mcp-lint run on 18 MCP servers (8 official reference servers and 10 popular thir
    - Desktop Commander's `get_config` accepted an invalid `origin` value without complaint.
    - Desktop Commander passes raw validation output to the agent (`Error: [ { "code": "invalid_type", … } ]`). It names the bad argument, so P4 doesn't flag it, but it's noisy.
 
+## Scores
+
+Token-weighted scores ([how they work](README.md#score)), worst first. "Probed" servers were called with fixtures and `--error-probes`. "Static" ones need API keys to call, so only their definitions were scored, which leaves out response problems.
+
+| Server | Score | Est. waste / session | Basis | What drives it |
+|---|---|---|---|---|
+| markitdown-mcp | **0 F** | ~87,100 | probed | one ~87k-token response, no paging |
+| @notionhq/notion-mcp-server | **18 F** | ~24,700 | static | ~18.7k tokens of definitions; short descriptions |
+| server-filesystem | **25 D** | ~20,100 | probed | `read_text_file` ~87k response; `directory_tree` ~5.4k |
+| firecrawl-mcp | **31 D** | ~16,800 | static | ~13.2k tokens of definitions (`firecrawl_search` alone ~2.2k) |
+| desktop-commander | **38 D** | ~13,900 | probed | ~12.5k tokens of definitions. Its responses page well and aren't charged |
+| aws-documentation-mcp-server | 73 C | ~4,600 | probed | ~3.7k tokens of definitions for 5 tools |
+| mcp-server-git | 78 B | ~3,700 | probed | `git_diff_staged` ~7.3k response |
+| duckduckgo-mcp-server | 82 B | ~2,800 | probed | errors returned as successes |
+| server-github | 83 B | ~2,700 | static | short descriptions, overlapping PR tools |
+| chrome-devtools-mcp | 87 B | ~2,100 | probed | short descriptions |
+| tavily-mcp | 90 A | ~1,600 | static | |
+| server-memory | 91 A | ~1,300 | probed | short descriptions |
+| context7-mcp | 92 A | ~1,300 | probed | |
+| @playwright/mcp | 92 A | ~1,200 | static | short descriptions |
+| mcp-server-time | 93 A | ~1,000 | probed | short descriptions |
+| server-everything | 95 A | ~800 | probed | |
+| mcp-server-fetch | 98 A | ~300 | probed | truncates by default and says how to get more |
+| exa-mcp-server | 100 A | 0 | static | |
+
+Desktop Commander scores low despite being the good paging example, because ~12.5k tokens of tool definitions are resent with every request. The score treats that as its biggest cost. That's a design choice, and RESULTS reports it rather than hiding it. Its file reads still beat markitdown's: compare the response costs, 0 vs ~85,000.
+
+Building the score went through two rounds of fixes, both found by checking whether rankings made sense:
+
+1. Averaging tool *scores* gave server-filesystem a B despite its 87k-token tool. The server score now comes from waste: definitions summed, since they're paid every session; usage averaged over tools, times 3 tools used per session.
+2. mcp-server-fetch first scored 7/100, because a probe deliberately asked for `max_length: 999999`. Responses the probe asked to be big, or that say what's left, are no longer charged.
+
 ## Third-party servers
 
 | Server | Version | Downloads/mo | Tools | Definition tokens | Annotated read-only | Static findings (warnings) |
