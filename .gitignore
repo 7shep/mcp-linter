@@ -9,3 +9,4 @@ dist/
 report.json
 .env
 survey/sandbox/
+.claude/settings.local.json
