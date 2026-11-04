@@ -1,0 +1,140 @@
+{
+ "seed": 20261104,
+ "tasks": [
+  {
+   "id": "git-01",
+   "server": "git",
+   "split": "dev",
+   "prompt": "In the git repository at {REPO}, which commit's message mentions TCK-1213? Give its commit hash (at least the first 7 characters).",
+   "answer": "7a9d7b854c4a8dc5bb819755f402a16a4cc1a51a",
+   "match": "sha",
+   "kind": "commit_sha"
+  },
+  {
+   "id": "git-02",
+   "server": "git",
+   "split": "dev",
+   "prompt": "In the git repository at {REPO}, which commit's message mentions TCK-1046? Give its commit hash (at least the first 7 characters).",
+   "answer": "11cf623feb48ff7440514dfc96965fc525f154a7",
+   "match": "sha",
+   "kind": "commit_sha"
+  },
+  {
+   "id": "git-03",
+   "server": "git",
+   "split": "dev",
+   "prompt": "In the git repository at {REPO}, which commit's message mentions TCK-1403? Give its commit hash (at least the first 7 characters).",
+   "answer": "c3d1f17df40b00beb51d4ed42247b1406537342b",
+   "match": "sha",
+   "kind": "commit_sha"
+  },
+  {
+   "id": "git-04",
+   "server": "git",
+   "split": "dev",
+   "prompt": "In the git repository at {REPO}, which commit's message mentions TCK-1412? Give its commit hash (at least the first 7 characters).",
+   "answer": "d78fc61a39e621077ff16587f13c78f16a51984e",
+   "match": "sha",
+   "kind": "commit_sha"
+  },
+  {
+   "id": "git-05",
+   "server": "git",
+   "split": "dev",
+   "prompt": "In the git repository at {REPO}, which commit's message mentions TCK-2901? Give its commit hash (at least the first 7 characters).",
+   "answer": "2f743b86f518a5967fa7fa8246c9cf9a499dea72",
+   "match": "sha",
+   "kind": "commit_sha"
+  },
+  {
+   "id": "git-06",
+   "server": "git",
+   "split": "test",
+   "prompt": "In the git repository at {REPO}, who is the author of the commit whose message mentions TCK-3993? Give the author's name.",
+   "answer": "Bilal Haddad",
+   "match": "exact",
+   "kind": "commit_author"
+  },
+  {
+   "id": "git-07",
+   "server": "git",
+   "split": "dev",
+   "prompt": "In the git repository at {REPO}, who is the author of the commit whose message mentions TCK-2594? Give the author's name.",
+   "answer": "Ada Moreno",
+   "match": "exact",
+   "kind": "commit_author"
+  },
+  {
+   "id": "git-08",
+   "server": "git",
+   "split": "dev",
+   "prompt": "In the git repository at {REPO}, who is the author of the commit whose message mentions TCK-1281? Give the author's name.",
+   "answer": "Dana Okafor",
+   "match": "exact",
+   "kind": "commit_author"
+  },
+  {
+   "id": "git-09",
+   "server": "git",
+   "split": "test",
+   "prompt": "In the git repository at {REPO}, what number does counter.txt contain in the commit whose message mentions TCK-9064?",
+   "answer": "59902",
+   "match": "int",
+   "kind": "counter_at"
+  },
+  {
+   "id": "git-10",
+   "server": "git",
+   "split": "dev",
+   "prompt": "In the git repository at {REPO}, what number does counter.txt contain in the commit whose message mentions TCK-7739?",
+   "answer": "35629",
+   "match": "int",
+   "kind": "counter_at"
+  },
+  {
+   "id": "git-11",
+   "server": "git",
+   "split": "dev",
+   "prompt": "In the git repository at {REPO}, the commit whose message mentions TCK-6298 added one line to notes.md. What note ID (note-xxxxxx) does that line hold?",
+   "answer": "note-1psm07",
+   "match": "exact",
+   "kind": "note_added"
+  },
+  {
+   "id": "git-12",
+   "server": "git",
+   "split": "test",
+   "prompt": "In the git repository at {REPO}, the commit whose message mentions TCK-5650 added one line to notes.md. What note ID (note-xxxxxx) does that line hold?",
+   "answer": "note-q8jvgp",
+   "match": "exact",
+   "kind": "note_added"
+  },
+  {
+   "id": "git-13",
+   "server": "git",
+   "split": "dev",
+   "prompt": "How many commits are on the main branch of the git repository at {REPO}?",
+   "answer": "900",
+   "match": "int",
+   "kind": "commit_count"
+  },
+  {
+   "id": "git-14",
+   "server": "git",
+   "split": "test",
+   "prompt": "In the git repository at {REPO}, which ticket (TCK-NNNN) does the very first commit's message mention?",
+   "answer": "TCK-8238",
+   "match": "exact",
+   "kind": "first_commit"
+  },
+  {
+   "id": "git-15",
+   "server": "git",
+   "split": "test",
+   "prompt": "How many commits on the main branch of the git repository at {REPO} were authored by Emil Novak?",
+   "answer": "146",
+   "match": "int",
+   "kind": "author_count"
+  }
+ ]
+}

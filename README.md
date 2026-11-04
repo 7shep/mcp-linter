@@ -2,7 +2,7 @@
 
 A linter for [MCP](https://modelcontextprotocol.io) servers. It connects to a server, reads its tool definitions, and flags the things that make tools hard for agents to use, based on Anthropic's [Writing effective tools for agents](https://www.anthropic.com/engineering/writing-tools-for-agents).
 
-> Work in progress: static rules S1–S7, probe rules P1–P5 and a token-weighted score are done; eval mode is next. See the [roadmap](#roadmap).
+> Static rules S1–S7, probe rules P1–P5, a token-weighted score, a fixing proxy and an eval mode are done. See [Eval](#eval) for whether the findings matter.
 
 ## Findings
 
@@ -186,9 +186,24 @@ A **tool's score** halves for every 5,000 wasted tokens. The **server's waste** 
 
 The constants are rough guesses, kept in one place ([`score.py`](src/mcp_lint/score.py)) so they can be argued with. Treat the ordering as the result, not the exact numbers. Without `--probe` the score covers only static checks, and the report says so. `--fail-under SCORE` exits 1 when the server scores below a threshold.
 
-## Roadmap
+## Eval
 
-- **Eval mode:** generate multi-step agent tasks, run them before and after a fixing proxy rewrites the tools, and report the change in success rate and tokens.
+Do mcp-lint's findings matter to a real agent? [`eval/REPORT.md`](eval/REPORT.md) has the before/after experiment: Claude Code (headless, `--model haiku`) answers checkable questions with one MCP server connected, once with the server as it ships and once behind `mcp-lint proxy`, which fixes what mcp-lint flags.
+
+**Result:** on 15 held-out tasks across server-filesystem, markitdown-mcp and mcp-server-git (90 runs), success rose from 53% to 98%. Nearly all of that came from paging long responses, and the worst-scored server (markitdown, 0/100) gained the most. Tokens per task did **not** go down: paging turns quick give-ups into long successes. See the report for the full numbers and caveats.
+
+```bash
+mcp-lint proxy --descriptions eval/fixes/mcp-server-git.json -- uvx mcp-server-git   # serve fixed tools over stdio
+mcp-lint eval --setup                                   # build the sandbox + repo, write eval/tasks/
+mcp-lint eval --run --split test --runs 3               # runs `claude -p`; resumable
+mcp-lint eval --report                                  # tables from eval/results/results.jsonl
+```
+
+The proxy's fixes are each switchable (`--no-paging`, `--no-errors`, `--descriptions FILE`):
+
+- **Paging:** responses over ~2,000 tokens are cut to a page, every tool gains `offset`/`limit` (in lines), and a note says `[showing lines 1-112 of 8000; pass offset=112 for more]`.
+- **Descriptions:** S1-flagged descriptions are replaced from a hand-written file in [`eval/fixes/`](eval/fixes/).
+- **Errors:** error text returned as a success gets `isError` set.
 
 ## Development
 

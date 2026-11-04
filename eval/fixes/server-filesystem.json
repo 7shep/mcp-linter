@@ -1,0 +1,6 @@
+{
+  "_note": "Hand-written replacements for descriptions mcp-lint flags with S1 (under 15 words). Only S1-flagged tools are listed.",
+  "descriptions": {
+    "read_file": "Deprecated alias of read_text_file: reads a text file and returns its contents. Prefer read_text_file, which takes the same 'path', 'head' and 'tail' parameters."
+  }
+}

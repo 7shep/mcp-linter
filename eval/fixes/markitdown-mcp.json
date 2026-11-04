@@ -1,0 +1,6 @@
+{
+  "_note": "Hand-written replacements for descriptions mcp-lint flags with S1 (under 15 words). Only S1-flagged tools are listed.",
+  "descriptions": {
+    "convert_to_markdown": "Convert a document to Markdown text and return it. 'uri' may be an http:, https:, file: or data: URI; local files need a file:/// URI with an absolute path. Supports PDF, Word, Excel, PowerPoint, HTML, CSV (returned as a Markdown table), JSON, XML and plain text. Returns the whole converted document in one response."
+  }
+}

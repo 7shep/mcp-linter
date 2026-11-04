@@ -125,10 +125,15 @@ _GUIDANCE = re.compile(
 )
 
 
+def looks_like_error(text: str) -> bool:
+    """True if a "successful" result's text is really an error message."""
+    return bool(_ERROR_PREFIX.match(text or ""))
+
+
 def error_issues(r: ProbeResult) -> list[str]:
     """Problem kinds in one expected-error probe's response."""
     if r.status == "ok":
-        if _ERROR_PREFIX.match(r.agent_text):
+        if looks_like_error(r.agent_text):
             return ["error_as_success"]
         return [] if r.may_succeed else ["accepted"]
     text = r.agent_text.strip()

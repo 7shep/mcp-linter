@@ -1,0 +1,840 @@
+{
+  "mcp_lint_version": "0.1.0",
+  "server": {
+    "name": "mcp-git",
+    "version": "2026.10.28",
+    "command": [
+      "uvx",
+      "mcp-server-git@2026.10.28",
+      "--repository",
+      "C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/repo"
+    ]
+  },
+  "tool_count": 12,
+  "definition_tokens": {
+    "total": 1240,
+    "method": "estimate: 4 chars per token of compact JSON"
+  },
+  "summary": {
+    "info": 22,
+    "warning": 13,
+    "error": 1
+  },
+  "server_findings": [],
+  "tools": [
+    {
+      "name": "git_status",
+      "definition_tokens": 54,
+      "findings": [
+        {
+          "rule": "S1",
+          "severity": "warning",
+          "tool": "git_status",
+          "message": "Description is only 5 words (aim for 15+).",
+          "param": null,
+          "hint": "Add when to use this tool, what it returns, and any limits.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_status",
+          "message": "Parameter 'repo_path' has no description.",
+          "param": "repo_path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "git_diff_unstaged",
+      "definition_tokens": 84,
+      "findings": [
+        {
+          "rule": "S1",
+          "severity": "warning",
+          "tool": "git_diff_unstaged",
+          "message": "Description is only 11 words (aim for 15+).",
+          "param": null,
+          "hint": "Add when to use this tool, what it returns, and any limits.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_diff_unstaged",
+          "message": "Parameter 'repo_path' has no description.",
+          "param": "repo_path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_diff_unstaged",
+          "message": "Parameter 'context_lines' has no description.",
+          "param": "context_lines",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S4",
+          "severity": "warning",
+          "tool": "git_diff_unstaged",
+          "message": "Overlaps with 'git_diff_staged' (text similarity 0.50, 100% shared parameters); an agent may not know which to pick.",
+          "param": null,
+          "hint": "Merge them into one tool with a parameter, or say in each description when to use it instead of the other.",
+          "related": [
+            "git_diff_staged"
+          ],
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "git_diff_staged",
+      "definition_tokens": 77,
+      "findings": [
+        {
+          "rule": "S1",
+          "severity": "warning",
+          "tool": "git_diff_staged",
+          "message": "Description is only 7 words (aim for 15+).",
+          "param": null,
+          "hint": "Add when to use this tool, what it returns, and any limits.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_diff_staged",
+          "message": "Parameter 'repo_path' has no description.",
+          "param": "repo_path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_diff_staged",
+          "message": "Parameter 'context_lines' has no description.",
+          "param": "context_lines",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "git_diff",
+      "definition_tokens": 88,
+      "findings": [
+        {
+          "rule": "S1",
+          "severity": "warning",
+          "tool": "git_diff",
+          "message": "Description is only 6 words (aim for 15+).",
+          "param": null,
+          "hint": "Add when to use this tool, what it returns, and any limits.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_diff",
+          "message": "Parameter 'repo_path' has no description.",
+          "param": "repo_path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_diff",
+          "message": "Parameter 'target' has no description.",
+          "param": "target",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_diff",
+          "message": "Parameter 'context_lines' has no description.",
+          "param": "context_lines",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "git_commit",
+      "definition_tokens": 69,
+      "findings": [
+        {
+          "rule": "S1",
+          "severity": "warning",
+          "tool": "git_commit",
+          "message": "Description is only 5 words (aim for 15+).",
+          "param": null,
+          "hint": "Add when to use this tool, what it returns, and any limits.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_commit",
+          "message": "Parameter 'repo_path' has no description.",
+          "param": "repo_path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_commit",
+          "message": "Parameter 'message' has no description.",
+          "param": "message",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "git_add",
+      "definition_tokens": 77,
+      "findings": [
+        {
+          "rule": "S1",
+          "severity": "warning",
+          "tool": "git_add",
+          "message": "Description is only 7 words (aim for 15+).",
+          "param": null,
+          "hint": "Add when to use this tool, what it returns, and any limits.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_add",
+          "message": "Parameter 'repo_path' has no description.",
+          "param": "repo_path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_add",
+          "message": "Parameter 'files' has no description.",
+          "param": "files",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "git_reset",
+      "definition_tokens": 53,
+      "findings": [
+        {
+          "rule": "S1",
+          "severity": "warning",
+          "tool": "git_reset",
+          "message": "Description is only 4 words (aim for 15+).",
+          "param": null,
+          "hint": "Add when to use this tool, what it returns, and any limits.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_reset",
+          "message": "Parameter 'repo_path' has no description.",
+          "param": "repo_path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "git_log",
+      "definition_tokens": 226,
+      "findings": [
+        {
+          "rule": "S1",
+          "severity": "warning",
+          "tool": "git_log",
+          "message": "Description is only 4 words (aim for 15+).",
+          "param": null,
+          "hint": "Add when to use this tool, what it returns, and any limits.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_log",
+          "message": "Parameter 'repo_path' has no description.",
+          "param": "repo_path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_log",
+          "message": "Parameter 'max_count' has no description.",
+          "param": "max_count",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "P1",
+          "severity": "error",
+          "tool": "git_log",
+          "message": "Probe 'git_log (900 commits)' returned ~33,545 tokens (estimated), over the 25,000-token cap agents like Claude Code apply, so the agent sees a truncated result.",
+          "param": null,
+          "hint": "Paginate or truncate by default (with a note saying how to get more), and offer a concise response format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "P3",
+          "severity": "info",
+          "tool": "git_log",
+          "message": "Probe 'git_log (900 commits)' returned ~33,545 tokens with no paging cursor or note about what's left (the tool has paging/limit parameters, so the agent asked for this much).",
+          "param": null,
+          "hint": "Return a page at a time by default and say what's left, e.g. '[showing lines 1-1000 of 20000; pass offset=1000 for more]'.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "P5",
+          "severity": "warning",
+          "tool": "git_log",
+          "message": "Returned up to ~33,545 tokens but has no option for a shorter response.",
+          "param": null,
+          "hint": "Add a 'response_format' parameter (e.g. enum ['concise', 'detailed']) so agents can skip fields they don't need.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "git_create_branch",
+      "definition_tokens": 143,
+      "findings": [
+        {
+          "rule": "S1",
+          "severity": "warning",
+          "tool": "git_create_branch",
+          "message": "Description is only 11 words (aim for 15+).",
+          "param": null,
+          "hint": "Add when to use this tool, what it returns, and any limits.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_create_branch",
+          "message": "Parameter 'repo_path' has no description.",
+          "param": "repo_path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_create_branch",
+          "message": "Parameter 'branch_name' has no description.",
+          "param": "branch_name",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "git_checkout",
+      "definition_tokens": 69,
+      "findings": [
+        {
+          "rule": "S1",
+          "severity": "warning",
+          "tool": "git_checkout",
+          "message": "Description is only 2 words (aim for 15+).",
+          "param": null,
+          "hint": "Add when to use this tool, what it returns, and any limits.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_checkout",
+          "message": "Parameter 'repo_path' has no description.",
+          "param": "repo_path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_checkout",
+          "message": "Parameter 'branch_name' has no description.",
+          "param": "branch_name",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "git_show",
+      "definition_tokens": 82,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_show",
+          "message": "Parameter 'repo_path' has no description.",
+          "param": "repo_path",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "git_show",
+          "message": "Parameter 'revision' has no description.",
+          "param": "revision",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "git_branch",
+      "definition_tokens": 218,
+      "findings": [
+        {
+          "rule": "S1",
+          "severity": "warning",
+          "tool": "git_branch",
+          "message": "Description is only 3 words (aim for 15+).",
+          "param": null,
+          "hint": "Add when to use this tool, what it returns, and any limits.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    }
+  ],
+  "score": {
+    "score": 87,
+    "grade": "B",
+    "waste_tokens": 2025,
+    "probed": true,
+    "half_life_tokens": 5000,
+    "tools": [
+      {
+        "tool": "git_diff_unstaged",
+        "score": 85,
+        "grade": "B",
+        "waste_tokens": 1200,
+        "costs": [
+          {
+            "source": "S1",
+            "tokens": 500,
+            "note": "S1 short description"
+          },
+          {
+            "source": "S4",
+            "tokens": 500,
+            "note": "S4 overlaps another tool"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [repo_path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [context_lines]"
+          }
+        ]
+      },
+      {
+        "tool": "git_diff",
+        "score": 90,
+        "grade": "A",
+        "waste_tokens": 800,
+        "costs": [
+          {
+            "source": "S1",
+            "tokens": 500,
+            "note": "S1 short description"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [repo_path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [target]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [context_lines]"
+          }
+        ]
+      },
+      {
+        "tool": "git_diff_staged",
+        "score": 91,
+        "grade": "A",
+        "waste_tokens": 700,
+        "costs": [
+          {
+            "source": "S1",
+            "tokens": 500,
+            "note": "S1 short description"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [repo_path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [context_lines]"
+          }
+        ]
+      },
+      {
+        "tool": "git_commit",
+        "score": 91,
+        "grade": "A",
+        "waste_tokens": 700,
+        "costs": [
+          {
+            "source": "S1",
+            "tokens": 500,
+            "note": "S1 short description"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [repo_path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [message]"
+          }
+        ]
+      },
+      {
+        "tool": "git_add",
+        "score": 91,
+        "grade": "A",
+        "waste_tokens": 700,
+        "costs": [
+          {
+            "source": "S1",
+            "tokens": 500,
+            "note": "S1 short description"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [repo_path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [files]"
+          }
+        ]
+      },
+      {
+        "tool": "git_log",
+        "score": 91,
+        "grade": "A",
+        "waste_tokens": 700,
+        "costs": [
+          {
+            "source": "S1",
+            "tokens": 500,
+            "note": "S1 short description"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [repo_path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [max_count]"
+          }
+        ]
+      },
+      {
+        "tool": "git_create_branch",
+        "score": 91,
+        "grade": "A",
+        "waste_tokens": 700,
+        "costs": [
+          {
+            "source": "S1",
+            "tokens": 500,
+            "note": "S1 short description"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [repo_path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [branch_name]"
+          }
+        ]
+      },
+      {
+        "tool": "git_checkout",
+        "score": 91,
+        "grade": "A",
+        "waste_tokens": 700,
+        "costs": [
+          {
+            "source": "S1",
+            "tokens": 500,
+            "note": "S1 short description"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [repo_path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [branch_name]"
+          }
+        ]
+      },
+      {
+        "tool": "git_status",
+        "score": 92,
+        "grade": "A",
+        "waste_tokens": 600,
+        "costs": [
+          {
+            "source": "S1",
+            "tokens": 500,
+            "note": "S1 short description"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [repo_path]"
+          }
+        ]
+      },
+      {
+        "tool": "git_reset",
+        "score": 92,
+        "grade": "A",
+        "waste_tokens": 600,
+        "costs": [
+          {
+            "source": "S1",
+            "tokens": 500,
+            "note": "S1 short description"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [repo_path]"
+          }
+        ]
+      },
+      {
+        "tool": "git_branch",
+        "score": 93,
+        "grade": "A",
+        "waste_tokens": 500,
+        "costs": [
+          {
+            "source": "S1",
+            "tokens": 500,
+            "note": "S1 short description"
+          }
+        ]
+      },
+      {
+        "tool": "git_show",
+        "score": 97,
+        "grade": "A",
+        "waste_tokens": 200,
+        "costs": [
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [repo_path]"
+          },
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [revision]"
+          }
+        ]
+      }
+    ]
+  },
+  "probes": [
+    {
+      "tool": "git_status",
+      "label": "",
+      "args": {
+        "repo_path": "C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/repo"
+      },
+      "expect_error": false,
+      "status": "ok",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": null,
+      "chars": 71,
+      "tokens": 18,
+      "latency_ms": 160,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "Repository status:\nOn branch main\nnothing to commit, working tree clean"
+    },
+    {
+      "tool": "git_log",
+      "label": "default",
+      "args": {
+        "repo_path": "C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/repo"
+      },
+      "expect_error": false,
+      "status": "ok",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": null,
+      "chars": 1505,
+      "tokens": 377,
+      "latency_ms": 177,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "Commit history:\nCommit: 7418896b3659748d44cbc9aaec24966c159e8a0c\nAuthor: Chen Wei\nDate: 2025-07-07 07:00:00+00:00\nMessage: Rename indexer: tidy basket (TCK-8598)\n\nCommit: 0e17f3aab095437895696c757a2eb17bc6a2c9a4\nAuthor: Dana Okafor\nDate: 2025-07-07 02:00:00+00:00\nMessage: Add scheduler: gentle mirror (TCK-7429)\n\nCommit: 83f3f4f77d26a378bebd2e7dc0352ac93654eaff\nAuthor: Chen Wei\nDate: 2025-07-06 21:"
+    },
+    {
+      "tool": "git_log",
+      "label": "900 commits",
+      "args": {
+        "repo_path": "C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/repo",
+        "max_count": 900
+      },
+      "expect_error": false,
+      "status": "ok",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": null,
+      "chars": 134180,
+      "tokens": 33545,
+      "latency_ms": 290,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "Commit history:\nCommit: 7418896b3659748d44cbc9aaec24966c159e8a0c\nAuthor: Chen Wei\nDate: 2025-07-07 07:00:00+00:00\nMessage: Rename indexer: tidy basket (TCK-8598)\n\nCommit: 0e17f3aab095437895696c757a2eb17bc6a2c9a4\nAuthor: Dana Okafor\nDate: 2025-07-07 02:00:00+00:00\nMessage: Add scheduler: gentle mirror (TCK-7429)\n\nCommit: 83f3f4f77d26a378bebd2e7dc0352ac93654eaff\nAuthor: Chen Wei\nDate: 2025-07-06 21:"
+    },
+    {
+      "tool": "git_show",
+      "label": "HEAD",
+      "args": {
+        "repo_path": "C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/repo",
+        "revision": "HEAD"
+      },
+      "expect_error": false,
+      "status": "ok",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": null,
+      "chars": 337,
+      "tokens": 85,
+      "latency_ms": 168,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "commit 7418896b3659748d44cbc9aaec24966c159e8a0c\nAuthor: Chen Wei <chen@example.test>\nDate:   2025-07-07 07:00:00 +0000\n\n    Rename indexer: tidy basket (TCK-8598)\n\n--- a/counter.txt\n+++ b/counter.txt\n@@ -1 +1 @@\n-98843\n+87200\n\n--- a/notes.md\n+++ b/notes.md\n@@ -899,3 +899,4 @@\n - note-pn4xm4\n - note-ng75ke\n - note-8v8uns\n+- note-v66c5q\n"
+    },
+    {
+      "tool": "git_show",
+      "label": "bad revision",
+      "args": {
+        "repo_path": "C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/repo",
+        "revision": "nope123"
+      },
+      "expect_error": true,
+      "status": "tool_error",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": null,
+      "chars": 73,
+      "tokens": 19,
+      "latency_ms": 80,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "Error executing tool git_show: Ref 'nope123' did not resolve to an object"
+    }
+  ]
+}

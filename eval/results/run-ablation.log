@@ -1,0 +1,16 @@
+[1/15] filesystem-08 descriptions_only run1: OK  answer='111' turns=3 tokens=29,750
+[2/15] filesystem-01 descriptions_only run1: OK  answer='r-3r2uj2' turns=3 tokens=34,958
+[3/15] filesystem-10 descriptions_only run1: OK  answer='11' turns=3 tokens=24,213
+[4/15] filesystem-15 descriptions_only run1: OK  answer='Young Ribbon Candle' turns=5 tokens=82,079
+[5/15] filesystem-02 descriptions_only run1: FAIL answer='Unable to determine; the file could not be read at line 7,082 with the available tools (output limit, and the edit_file dry-run preview was denied).' turns=8 tokens=105,041
+[6/15] git-09 descriptions_only run1: OK  answer='59902' turns=6 tokens=256,070
+[7/15] git-12 descriptions_only run1: OK  answer='note-q8jvgp' turns=6 tokens=227,906
+[8/15] git-06 descriptions_only run1: OK  answer='Bilal Haddad' turns=16 tokens=627,538
+[9/15] markitdown-02 descriptions_only run1: FAIL answer='Not determined. The converted output was saved to a file that I could not read with the available tools.' turns=2 tokens=14,962
+[10/15] markitdown-06 descriptions_only run1: FAIL answer="Unable to determine. The MCP conversion output exceeds the tool's size limit, so the qty of SKU-21495 could not be retrieved." turns=5 tokens=42,369
+[11/15] git-15 descriptions_only run1: OK  answer='146' turns=13 tokens=637,526
+[12/15] git-14 descriptions_only run1: OK  answer='TCK-8238' turns=33 tokens=294,453
+[13/15] markitdown-11 descriptions_only run1: FAIL answer="Unable to determine. The converted output exceeds the tool's response limit and I have no tool that can search the saved file." turns=3 tokens=23,367
+[14/15] markitdown-15 descriptions_only run1: FAIL answer="Unable to determine; the converted report exceeded the tool's output limit and no search tool was available to count the sections." turns=2 tokens=14,886
+[15/15] markitdown-12 descriptions_only run1: FAIL answer='Unable to determine. The converted output was saved to a file I cannot read with the available tools.' turns=2 tokens=14,831
+{"skipped": 0, "ran": 15, "infra_error": 0, "limit": 0}

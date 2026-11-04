@@ -10,3 +10,4 @@ report.json
 .env
 survey/sandbox/
 .claude/settings.local.json
+eval/results/*.lock

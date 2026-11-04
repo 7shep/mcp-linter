@@ -1,0 +1,160 @@
+{
+  "mcp_lint_version": "0.1.0",
+  "server": {
+    "name": "markitdown (mcp-lint proxy)",
+    "version": "",
+    "command": [
+      ".venv/Scripts/python.exe",
+      "-m",
+      "mcp_lint",
+      "proxy",
+      "--descriptions",
+      "eval/fixes/markitdown-mcp.json",
+      "--",
+      "uvx",
+      "markitdown-mcp@0.0.1a7"
+    ]
+  },
+  "tool_count": 1,
+  "definition_tokens": {
+    "total": 205,
+    "method": "estimate: 4 chars per token of compact JSON"
+  },
+  "summary": {
+    "info": 3,
+    "warning": 0,
+    "error": 0
+  },
+  "server_findings": [
+    {
+      "rule": "S5",
+      "severity": "info",
+      "tool": null,
+      "message": "Tool names have no shared service prefix.",
+      "param": null,
+      "hint": "Prefix names by service (e.g. 'github_create_issue') so they stay distinct when an agent has many servers loaded. Some clients add a namespace for you.",
+      "related": null,
+      "kind": null
+    }
+  ],
+  "tools": [
+    {
+      "name": "convert_to_markdown",
+      "definition_tokens": 205,
+      "findings": [
+        {
+          "rule": "S3",
+          "severity": "info",
+          "tool": "convert_to_markdown",
+          "message": "Parameter 'uri' has no description.",
+          "param": "uri",
+          "hint": "Say what the value means and give an example format.",
+          "related": null,
+          "kind": null
+        },
+        {
+          "rule": "P5",
+          "severity": "info",
+          "tool": "convert_to_markdown",
+          "message": "Returned up to ~2,009 tokens but has no option for a shorter response.",
+          "param": null,
+          "hint": "Add a 'response_format' parameter (e.g. enum ['concise', 'detailed']) so agents can skip fields they don't need.",
+          "related": null,
+          "kind": null
+        }
+      ]
+    }
+  ],
+  "score": {
+    "score": 99,
+    "grade": "A",
+    "waste_tokens": 200,
+    "probed": true,
+    "half_life_tokens": 5000,
+    "tools": [
+      {
+        "tool": "convert_to_markdown",
+        "score": 97,
+        "grade": "A",
+        "waste_tokens": 200,
+        "costs": [
+          {
+            "source": "S3",
+            "tokens": 100,
+            "note": "S3 undescribed param [uri]"
+          },
+          {
+            "source": "P5",
+            "tokens": 100,
+            "note": "P5 no concise mode"
+          }
+        ]
+      }
+    ]
+  },
+  "probes": [
+    {
+      "tool": "convert_to_markdown",
+      "label": "log.txt",
+      "args": {
+        "uri": "file:///C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/sandbox/log.txt"
+      },
+      "expect_error": false,
+      "status": "ok",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": null,
+      "chars": 8033,
+      "tokens": 2009,
+      "latency_ms": 181,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "[showing lines 1-112 of 8000; pass offset=112 for more]\n2026-03-01T00:00:00 INFO  gateway req=r-nux5bo user=u3198 latency=1399ms\n2026-03-01T00:00:07 WARN  search req=r-ya8e3y user=u7300 latency=348ms\n2026-03-01T00:00:14 INFO  gateway req=r-b2k94p user=u4825 latency=1412ms\n2026-03-01T00:00:21 INFO  notify req=r-hssnhu user=u3405 latency=845ms\n2026-03-01T00:00:28 ERROR gateway req=r-96575y user=u973"
+    },
+    {
+      "tool": "convert_to_markdown",
+      "label": "report.html",
+      "args": {
+        "uri": "file:///C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/sandbox/report.html"
+      },
+      "expect_error": false,
+      "status": "ok",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": null,
+      "chars": 7865,
+      "tokens": 1967,
+      "latency_ms": 128,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "[showing lines 1-100 of 1601; pass offset=100 for more]\n# Quarterly report\n\n## Section 1: Calm Ribbon Garnet\n\nDrum rapid woven keen easel umber quill mirror hollow lunar yarrow eager calm funnel funnel quiet jolly silver young hollow saddle orchard rapid kettle mellow eager pebble mellow violin faint dusty funnel saddle pebble umber faint hollow young candle pebble proud quiet tidy yarrow garnet.\n"
+    },
+    {
+      "tool": "convert_to_markdown",
+      "label": "missing file",
+      "args": {
+        "uri": "file:///C:/Users/alex/AppData/Local/Temp/mcp-lint-eval/sandbox/nope.txt"
+      },
+      "expect_error": true,
+      "status": "tool_error",
+      "reason": null,
+      "content_types": {
+        "text": 1
+      },
+      "structured": null,
+      "chars": 97,
+      "tokens": 25,
+      "latency_ms": 52,
+      "target": null,
+      "auto": false,
+      "may_succeed": false,
+      "preview": "Error executing tool convert_to_markdown: Could not read the resource: No such file or directory."
+    }
+  ]
+}
