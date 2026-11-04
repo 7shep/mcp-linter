@@ -57,6 +57,52 @@ Options:
 | `--json PATH` | Also write a machine-readable report |
 | `--min-severity info\|warning\|error` | Hide terminal findings below this level |
 | `--fail-on info\|warning\|error\|never` | Exit 1 if any finding is at or above this level (default `error`) |
+| `--probe FIXTURES` | (`run` only) Also call the tools listed in a fixtures file; see [Probing](#probing) |
+| `--probe-timeout SECONDS` | Per-call timeout for probes (default 30) |
+
+## Probing
+
+By default mcp-lint only reads tool definitions. With `--probe` it also **calls** tools and records what comes back: status, size in estimated tokens, content types, and latency. The probe rules (planned, see [roadmap](#roadmap)) will check these results.
+
+Only tools listed in a fixtures file are ever called. Generate a starter file, then edit it:
+
+```bash
+mcp-lint init-fixtures fixtures.json -- npx -y @modelcontextprotocol/server-filesystem ./sandbox
+```
+
+```json
+{
+  "version": 1,
+  "probes": [
+    {"tool": "read_text_file", "label": "big", "args": {"path": "${FIXTURES_DIR}/sandbox/big.txt"}},
+    {"tool": "read_text_file", "label": "missing file", "args": {"path": "${FIXTURES_DIR}/sandbox/nope.txt"}, "expect_error": true},
+    {"tool": "write_file", "args": {"path": "...", "content": "x"}, "allow_destructive": true},
+    {"tool": "move_file", "args": {}, "skip": true}
+  ]
+}
+```
+
+- Generated probes start with `"skip": true`. Fill in the args and delete `skip` to run them.
+- **Safety:** a tool that isn't annotated `readOnlyHint: true` (or `destructiveHint: false`) is treated as one that may change data, as the MCP spec says. mcp-lint won't call it unless the probe sets `"allow_destructive": true`. Only do that against a sandbox.
+- Probes with missing required args, wrong-typed args, or unknown tool names are blocked before any call.
+- `"expect_error": true` marks a probe that's meant to fail, such as bad arguments for testing error messages. Argument checks are skipped for it, but the safety check isn't.
+- `${FIXTURES_DIR}` expands to the fixtures file's folder, and `${NAME}` to an environment variable, so fixtures can point at a local sandbox and keep secrets out of the file.
+
+```bash
+mcp-lint run --probe fixtures.json -- npx -y @modelcontextprotocol/server-filesystem ./sandbox
+```
+
+```
+Probes
+  read_text_file (small)          ok                            ~3 tok  4 ms
+  read_text_file (big)            ok                       ~87,224 tok  7 ms
+  read_text_file (missing file)   tool_error (expected)        ~43 tok  2 ms
+  directory_tree                  ok                        ~5,419 tok  7 ms
+  write_file (should be blocked)  blocked
+      tool is not marked read-only, so it may change data; add "allow_destructive": true to run it (sandbox only)
+```
+
+Reading a 20,000-line file through server-filesystem returns about 87k tokens in one response, over three times Claude Code's default 25k cap on tool output.
 
 ## Rules
 
@@ -85,7 +131,8 @@ S4's thresholds were tuned on 8 official reference servers (105 tools). Similar 
 
 ## Roadmap
 
-- **Probe rules (real calls):** response size, opaque-ID share, missing pagination, error-message quality, `response_format` support, plus a per-tool score.
+- **Probe rules** (on `--probe` results): P1 response size, P2 opaque-ID share, P3 missing pagination, P4 error-message quality, P5 `response_format` support.
+- **Per-tool score**, weighted by how much each problem costs an agent: tokens spent and context wasted, not a flat count of warnings.
 - **Eval mode:** generate multi-step agent tasks, run them before and after a fixing proxy rewrites the tools, and report the change in success rate and tokens.
 
 ## Development

@@ -8,6 +8,7 @@ from typing import Any
 
 from mcp_lint import __version__
 from mcp_lint.models import Finding, Severity, ToolDef
+from mcp_lint.probe import ProbeResult
 from mcp_lint.text import CHARS_PER_TOKEN, definition_json, estimate_tokens
 
 _MARK = {Severity.ERROR: "x", Severity.WARNING: "!", Severity.INFO: "i"}
@@ -22,7 +23,38 @@ def definition_tokens(tools: list[ToolDef]) -> int:
     return sum(estimate_tokens(definition_json(t)) for t in tools)
 
 
-def to_json(server: dict[str, Any], tools: list[ToolDef], findings: list[Finding]) -> dict[str, Any]:
+def render_probes(results: list[ProbeResult]) -> str:
+    """Table of probe calls: what ran, what came back, how big, how slow."""
+    lines = ["Probes"]
+    width = max((len(r.tool) + (len(r.label) + 3 if r.label else 0) for r in results), default=10)
+    for r in results:
+        name = f"{r.tool} ({r.label})" if r.label else r.tool
+        if r.ran:
+            status = r.status + (" (expected)" if r.expect_error and r.status != "ok" else "")
+            size = f"~{r.tokens:,} tok" if r.status != "protocol_error" else ""
+            lines.append(f"  {name:<{width}}  {status:<24} {size:>11}  {r.latency_ms} ms")
+            if r.status == "protocol_error":
+                lines.append(f"      {r.reason}")
+        else:
+            lines.append(f"  {name:<{width}}  {r.status:<24}")
+            if r.status == "blocked":
+                lines.append(f"      {r.reason}")
+    ran = sum(r.ran for r in results)
+    blocked = sum(r.status == "blocked" for r in results)
+    skipped = sum(r.status == "skipped" for r in results)
+    lines.append(f"  {ran} ran, {blocked} blocked, {skipped} skipped")
+    return "\n".join(lines)
+
+
+def to_json(server: dict[str, Any], tools: list[ToolDef], findings: list[Finding],
+            probes: list[ProbeResult] | None = None) -> dict[str, Any]:
+    data = _to_json(server, tools, findings)
+    if probes is not None:
+        data["probes"] = [r.to_dict() for r in probes]
+    return data
+
+
+def _to_json(server: dict[str, Any], tools: list[ToolDef], findings: list[Finding]) -> dict[str, Any]:
     return {
         "mcp_lint_version": __version__,
         "server": server,

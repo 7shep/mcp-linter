@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "probes": [
+    {"tool": "search_contacts", "label": "basic", "args": {"query": "ada", "limit": 5}},
+    {"tool": "search_contacts", "label": "empty query", "args": {"query": ""}, "expect_error": true},
+    {"tool": "search_contacts", "label": "missing query", "args": {}},
+    {"tool": "search_contacts", "label": "skipped", "args": {"query": "x"}, "skip": true},
+    {"tool": "get", "label": "not read-only", "args": {"id": "a1"}},
+    {"tool": "get", "label": "allowed", "args": {"id": "${FIXTURES_DIR}"}, "allow_destructive": true},
+    {"tool": "no_such_tool", "args": {}}
+  ]
+}

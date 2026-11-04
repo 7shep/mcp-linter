@@ -26,6 +26,7 @@ class ToolDef:
     name: str
     description: str | None = None
     input_schema: dict[str, Any] = field(default_factory=dict)
+    annotations: dict[str, Any] = field(default_factory=dict)  # camelCase MCP hints
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ToolDef":
@@ -35,7 +36,19 @@ class ToolDef:
             name=data["name"],
             description=data.get("description"),
             input_schema=schema,
+            annotations=data.get("annotations") or {},
         )
+
+    @property
+    def destructive(self) -> bool:
+        """True if the server says the tool may destroy data.
+
+        Per the MCP spec, destructiveHint defaults to true unless the tool is
+        marked read-only, so a tool with no hints counts as possibly destructive.
+        """
+        if self.annotations.get("readOnlyHint"):
+            return False
+        return self.annotations.get("destructiveHint", True) is not False
 
     @property
     def params(self) -> dict[str, dict[str, Any]]:
