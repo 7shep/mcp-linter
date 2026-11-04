@@ -2,7 +2,7 @@
 
 A linter for [MCP](https://modelcontextprotocol.io) servers. It connects to a server, reads its tool definitions, and flags the things that make tools hard for agents to use, based on Anthropic's [Writing effective tools for agents](https://www.anthropic.com/engineering/writing-tools-for-agents).
 
-> Work in progress: static rules S1–S7 and probe rules P1, P4 and P5 are done; P2, P3, scoring and eval mode are next. See the [roadmap](#roadmap).
+> Work in progress: static rules S1–S7 and probe rules P1–P5 are done; a weighted per-tool score and eval mode are next. See the [roadmap](#roadmap).
 
 ## Findings
 
@@ -69,12 +69,13 @@ Options:
 | `--fail-on info\|warning\|error\|never` | Exit 1 if any finding is at or above this level (default `error`) |
 | `--probe FIXTURES` | (`run` only) Also call the tools listed in a fixtures file; see [Probing](#probing) |
 | `--error-probes` | (`run` only) Send generated bad arguments to read-only tools and check the errors (P4). Works without a fixtures file |
+| `--include-responses` | (`run` only) Keep full probe response text in the `--json` report instead of a 400-character preview |
 | `--probe-timeout SECONDS` | Per-call timeout for probes (default 30) |
 | `--pass-env NAME` | (`run`, `init-fixtures`) Forward an environment variable to the server; repeatable. Servers otherwise get only a minimal safe set (PATH, TEMP, home folder...), so your API keys and tokens never reach a server you didn't hand them to |
 
 ## Probing
 
-By default mcp-lint only reads tool definitions. With `--probe` it also **calls** tools and records what comes back: status, size in estimated tokens, content types, and latency. Probe rules (P1, P4, P5; see [Rules](#rules)) check these results.
+By default mcp-lint only reads tool definitions. With `--probe` it also **calls** tools and records what comes back: status, size in estimated tokens, content types, and latency. Probe rules (P1–P5; see [Rules](#rules)) check these results.
 
 Only tools listed in a fixtures file are ever called. Generate a starter file, then edit it:
 
@@ -131,6 +132,8 @@ Probe rules (only with `--probe`; they read what tools actually returned):
 | ID | Severity | Checks |
 |---|---|---|
 | P1 | warning / error | A response over ~5k tokens, or over ~25k (Claude Code's default cap on tool output, so the agent sees it cut off) |
+| P2 | info / warning | Opaque IDs (UUIDs, long hex like git SHAs, random 20+ char tokens) taking up over 10% / 25% of a response **without readable labels** next to them. A response passes when most records that hold an ID (lines, blank-line-separated blocks, or JSON objects) also hold readable words such as a name or title |
+| P3 | warning / info | A response over ~5k tokens with no paging cursor or note about what's left (checked in its first and last 600 characters). A warning if the tool has no paging or limit parameters; info if it does, since the agent asked for that much |
 | P4 | warning / info | Error responses to bad input that won't help an agent fix its call: a leaked stack trace, an empty or opaque message ("Error executing tool X", "Internal error"), no mention of the bad input or what's expected, an error returned as a successful result (no `isError`), or invalid arguments accepted without an error |
 | P5 | info / warning | A tool returned over ~1k / ~5k tokens but has no way to ask for less: no `response_format`, `verbosity`, `fields`-style parameter, or concise/detailed enum |
 
@@ -146,7 +149,6 @@ S4's thresholds were tuned on 8 official reference servers (105 tools) and check
 
 ## Roadmap
 
-- **More probe rules:** P2 opaque-ID share, P3 missing pagination.
 - **Per-tool score**, weighted by how much each problem costs an agent: tokens spent and context wasted, not a flat count of warnings.
 - **Eval mode:** generate multi-step agent tasks, run them before and after a fixing proxy rewrites the tools, and report the change in success rate and tokens.
 

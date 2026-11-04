@@ -84,7 +84,7 @@ class P5Tests(unittest.TestCase):
 class RunProbeRulesTests(unittest.TestCase):
     def test_runs_all_rules(self):
         rules = sorted(f.rule for f in run_probe_rules([tool()], [result(30_000)]))
-        self.assertEqual(rules, ["P1", "P5"])
+        self.assertEqual(rules, ["P1", "P3", "P5"])
 
     def test_no_results_no_findings(self):
         self.assertEqual(run_probe_rules([tool()], []), [])

@@ -47,10 +47,10 @@ def render_probes(results: list[ProbeResult]) -> str:
 
 
 def to_json(server: dict[str, Any], tools: list[ToolDef], findings: list[Finding],
-            probes: list[ProbeResult] | None = None) -> dict[str, Any]:
+            probes: list[ProbeResult] | None = None, include_responses: bool = False) -> dict[str, Any]:
     data = _to_json(server, tools, findings)
     if probes is not None:
-        data["probes"] = [r.to_dict() for r in probes]
+        data["probes"] = [r.to_dict(include_text=include_responses) for r in probes]
     return data
 
 

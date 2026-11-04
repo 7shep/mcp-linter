@@ -48,6 +48,33 @@ mcp-lint run on 18 MCP servers (8 official reference servers and 10 popular thir
 
 The pattern: tools that truncate by default and take a `max_length` (duckduckgo, aws-docs, mcp-server-fetch) only go big when asked. Tools with no limit (markitdown, server-filesystem's `read_text_file` without `head`/`tail`) go big on ordinary input.
 
+### Paging hints (P3) and opaque IDs (P2)
+
+P3 asks whether a big response tells the agent it was cut or how to get more. The good examples put a one-line note at the start or end:
+
+| Server | Note |
+|---|---|
+| desktop-commander `read_file` | `[Reading 1000 lines from start (total: 20000 lines, 19000 remaining)]` (start) |
+| duckduckgo `fetch_content` | `[Content info: Showing characters 0-8000 of 80129 total. Use start_index=8000 to see more]` (end) |
+| mcp-server-fetch `fetch` | `Content truncated. Call the fetch tool with a start_index of 5000 to get more content.` (end; oddly wrapped in `<error>` tags) |
+
+P3 warnings, for big responses from tools with no way to page:
+
+| Server | Probe | Response |
+|---|---|---|
+| markitdown | `convert_to_markdown` on a 20k-line file | ~87,200 tokens, no note, only a `uri` parameter |
+| mcp-server-git | `git_diff_staged` with a 5k-line file | ~7,300 tokens |
+| server-filesystem | `directory_tree` on a small sandbox | ~5,400 tokens |
+
+Tools that page but were asked for a lot got P3 info, not a warning: fetch, duckduckgo and aws-docs with `max_length: 999999`, `git_log` with 400 commits, and `read_text_file` without `head`/`tail`.
+
+**P2 found nothing** on the servers that could be probed without accounts. They return names, paths and titles, not raw IDs, and git's commit hashes sit next to their messages. The servers most likely to return bare UUIDs (Notion, GitHub) need tokens to call, so P2 is untested on them.
+
+Building P3 and P2 turned up two of mcp-lint's own bugs, both fixed:
+
+- P3 first searched the whole response for words like "remaining", and matched "ignore the remaining items" inside the Python docs page. It now looks only at the first and last 600 characters.
+- P2 first split text into lines, so each `Commit: <sha>` line in a git log looked unlabelled even though its `Message:` line follows. It now treats blank-line-separated blocks as one record.
+
 ## Official reference servers
 
 | Server | Tools | Definition tokens | Notable |

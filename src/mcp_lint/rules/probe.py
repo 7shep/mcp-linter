@@ -8,7 +8,9 @@ https://www.anthropic.com/engineering/writing-tools-for-agents
 
 from __future__ import annotations
 
+import json
 import re
+from typing import Any
 
 from mcp_lint.models import Finding, Severity, ToolDef
 from mcp_lint.probe import ProbeResult
@@ -126,10 +128,10 @@ _GUIDANCE = re.compile(
 def error_issues(r: ProbeResult) -> list[str]:
     """Problem kinds in one expected-error probe's response."""
     if r.status == "ok":
-        if _ERROR_PREFIX.match(r.error_text):
+        if _ERROR_PREFIX.match(r.agent_text):
             return ["error_as_success"]
         return [] if r.may_succeed else ["accepted"]
-    text = r.error_text.strip()
+    text = r.agent_text.strip()
     if not text:
         return ["empty"]
     issues = []
@@ -186,13 +188,188 @@ def p4_error_quality(tools: dict[str, ToolDef], results: list[ProbeResult]) -> l
         severity, what, hint = _P4_KINDS[kind]
         example = rs[0]
         msg = f"{len(rs)} of {totals[tool]} error probes {what}"
-        excerpt = " ".join(example.error_text.split())[:90]
+        excerpt = " ".join(example.agent_text.split())[:90]
         msg += f" (e.g. '{_probe_name(example)}'" + (f": \"{excerpt}\")." if excerpt and kind != "accepted" else ").")
         findings.append(Finding(rule="P4", severity=severity, tool=tool, message=msg, hint=hint))
     return findings
 
 
-PROBE_RULES = [p1_response_size, p4_error_quality, p5_concise_mode]
+# --- P2: opaque IDs -------------------------------------------------------------
+
+# UUIDs and long hex (git SHAs, dashless UUIDs), any case. Hex needs a letter
+# and a digit so plain long numbers don't count.
+_HEX_ID = re.compile(
+    r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b"
+    r"|\b(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{16,}\b",
+    re.IGNORECASE,
+)
+# Random-looking tokens: 20+ chars mixing upper, lower and digits (case matters).
+_RANDOM_ID = re.compile(
+    r"(?<![A-Za-z0-9_-])(?=[A-Za-z0-9_-]*[a-z])(?=[A-Za-z0-9_-]*[A-Z])(?=[A-Za-z0-9_-]*\d)"
+    r"[A-Za-z0-9_-]{20,}(?![A-Za-z0-9_-])"
+)
+OPAQUE_MIN_IDS = 5
+OPAQUE_SHARE_INFO = 0.10
+OPAQUE_SHARE_WARN = 0.25
+
+
+def opaque_share(text: str) -> tuple[int, float, str | None]:
+    """(count of opaque IDs, share of characters they take up, an example)."""
+    if not text:
+        return 0, 0.0, None
+    spans = {m.span(): m.group(0) for m in _HEX_ID.finditer(text)}
+    for m in _RANDOM_ID.finditer(text):
+        if not any(s <= m.start() < e for s, e in spans):
+            spans[m.span()] = m.group(0)
+    if not spans:
+        return 0, 0.0, None
+    chars = sum(e - s for s, e in spans)
+    first = spans[min(spans)]
+    return len(spans), chars / len(text), first
+
+
+LABELLED_SHARE = 0.8  # ID-bearing records that also carry readable words
+_WORD = re.compile(r"[A-Za-z]{3,}")
+_NOT_LABELS = frozenset("id ids uuid guid key sha hash ref url uri http https type null true false none".split())
+
+
+def _records(text: str) -> list[str]:
+    """Split a response into records: JSON objects (their scalar values) or lines."""
+    try:
+        data = json.loads(text)
+    except ValueError:
+        # Multi-line entries (git log: Commit/Author/Date/Message) are usually
+        # separated by blank lines; treat each block as one record.
+        blocks = [b for b in re.split(r"\n\s*\n", text) if b.strip()]
+        if len(blocks) >= 3:
+            return blocks
+        return [line for line in text.splitlines() if line.strip()]
+    out: list[str] = []
+
+    def walk(node: Any) -> None:
+        if isinstance(node, dict):
+            scalars = [str(v) for v in node.values() if not isinstance(v, (dict, list))]
+            if scalars:
+                out.append(" ".join(scalars))
+            for v in node.values():
+                if isinstance(v, (dict, list)):
+                    walk(v)
+        elif isinstance(node, list):
+            scalars = [str(v) for v in node if not isinstance(v, (dict, list))]
+            if scalars:
+                out.append(" ".join(scalars))
+            for v in node:
+                if isinstance(v, (dict, list)):
+                    walk(v)
+        else:
+            out.append(str(node))
+
+    walk(data)
+    return out
+
+
+def labelled_share(text: str) -> float:
+    """Share of ID-bearing records that also contain readable words (names, titles)."""
+    with_ids = labelled = 0
+    for rec in _records(text):
+        stripped = _RANDOM_ID.sub(" ", _HEX_ID.sub(" ", rec))
+        if stripped == rec:
+            continue
+        with_ids += 1
+        words = [w for w in _WORD.findall(stripped) if w.lower() not in _NOT_LABELS]
+        if len(words) >= 2:
+            labelled += 1
+    return labelled / with_ids if with_ids else 1.0
+
+
+def p2_opaque_ids(tools: dict[str, ToolDef], results: list[ProbeResult]) -> list[Finding]:
+    """P2: responses where opaque IDs (UUIDs, hashes, tokens) appear without readable labels.
+
+    IDs next to names ("Apollo checklist (3f2b...)") are what the post recommends,
+    so a response passes when most ID-bearing records also carry readable words.
+    """
+    worst: dict[str, tuple[float, int, str, ProbeResult]] = {}
+    for r in results:
+        if r.status != "ok":
+            continue
+        count, share, example = opaque_share(r.agent_text)
+        if (count >= OPAQUE_MIN_IDS and share >= OPAQUE_SHARE_INFO
+                and labelled_share(r.agent_text) < LABELLED_SHARE):
+            if r.tool not in worst or share > worst[r.tool][0]:
+                worst[r.tool] = (share, count, example or "", r)
+    findings = []
+    for tool, (share, count, example, r) in worst.items():
+        findings.append(
+            Finding(
+                rule="P2",
+                severity=Severity.WARNING if share >= OPAQUE_SHARE_WARN else Severity.INFO,
+                tool=tool,
+                message=f"Probe '{_probe_name(r)}': {count} opaque IDs take up {share:.0%} of the "
+                f"response (e.g. {example[:40]}).",
+                hint="Return readable names or short labels alongside IDs (or instead, when the "
+                "agent won't pass the ID to another tool). Agents handle names far more reliably "
+                "than UUIDs and hashes.",
+            )
+        )
+    return findings
+
+
+# --- P3: big responses with no way forward ---------------------------------------
+
+P3_MIN_TOKENS = RESPONSE_TOKENS_WARN
+# Paging notes sit at the start ("[Reading 1000 lines ... 19000 remaining]") or
+# end ("Use start_index=8000 to see more") of a response. Only look there, so
+# words like "remaining" inside the content itself don't count.
+HINT_WINDOW_CHARS = 600
+# Text that tells the agent the response was cut, or how to get the next part.
+_PAGING_HINT = re.compile(
+    r"\b(next[_ ]?(cursor|page|token)|nextPageToken|cursor|has[_ ]?more|hasMore|truncated|"
+    r"remaining|more results|start_index|offset|page \d+ of|showing \d+ of|of \d+ (results|items|lines))\b",
+    re.IGNORECASE,
+)
+# Parameter-name words that let an agent page or bound a response.
+PAGING_PARAM_WORDS = frozenset(
+    "limit max cursor page offset token per start index length head tail size count top first".split()
+)
+
+
+def has_paging_hint(text: str) -> bool:
+    edges = text[:HINT_WINDOW_CHARS] + "\n" + text[-HINT_WINDOW_CHARS:]
+    return bool(_PAGING_HINT.search(edges))
+
+
+def has_paging_params(tool: ToolDef) -> bool:
+    return any(set(split_name(p)) & PAGING_PARAM_WORDS for p in tool.params)
+
+
+def p3_paging_hints(tools: dict[str, ToolDef], results: list[ProbeResult]) -> list[Finding]:
+    """P3: large responses that don't say they were cut or how to get more."""
+    biggest: dict[str, ProbeResult] = {}
+    for r in results:
+        if r.status == "ok" and r.tokens > P3_MIN_TOKENS and not has_paging_hint(r.agent_text):
+            if r.tool not in biggest or r.tokens > biggest[r.tool].tokens:
+                biggest[r.tool] = r
+    findings = []
+    for name, r in biggest.items():
+        tool = tools.get(name)
+        pages = tool is not None and has_paging_params(tool)
+        findings.append(
+            Finding(
+                rule="P3",
+                severity=Severity.INFO if pages else Severity.WARNING,
+                tool=name,
+                message=f"Probe '{_probe_name(r)}' returned ~{r.tokens:,} tokens with no paging "
+                "cursor or note about what's left"
+                + (" (the tool has paging/limit parameters, so the agent asked for this much)."
+                   if pages else ", and the tool has no paging or limit parameters."),
+                hint="Return a page at a time by default and say what's left, e.g. "
+                "'[showing lines 1-1000 of 20000; pass offset=1000 for more]'.",
+            )
+        )
+    return findings
+
+
+PROBE_RULES = [p1_response_size, p2_opaque_ids, p3_paging_hints, p4_error_quality, p5_concise_mode]
 
 
 def run_probe_rules(tools: list[ToolDef], results: list[ProbeResult]) -> list[Finding]:

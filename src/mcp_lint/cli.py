@@ -48,6 +48,8 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument("--error-probes", action="store_true",
                      help="also send generated bad arguments to read-only tools and "
                      "check the error messages (P4); works without a fixtures file")
+    run.add_argument("--include-responses", action="store_true",
+                     help="keep full probe response text in the --json report (default: 400-char preview)")
     run.add_argument("--probe-timeout", type=float, default=30.0, metavar="SECONDS",
                      help="per-call timeout for probes (default: 30)")
     server_cmd(run)
@@ -142,7 +144,8 @@ def main(argv: list[str] | None = None) -> int:
         print()
         print(render_probes(probes))
     if args.json:
-        write_json(args.json, to_json(server, tools, findings, probes))
+        write_json(args.json, to_json(server, tools, findings, probes,
+                                      include_responses=getattr(args, "include_responses", False)))
         print(f"\nJSON report written to {args.json}")
 
     if args.fail_on != "never":

@@ -39,8 +39,9 @@ class ProbeResult:
     may_succeed: bool = False  # success on this expect_error probe is not a defect
 
     @property
-    def error_text(self) -> str:
-        """What the agent would read for a failed call."""
+    def agent_text(self) -> str:
+        """What the agent would read: text content, else structured content as JSON,
+        or the error message for a protocol error."""
         if self.status == "protocol_error":
             # reason is "ExceptionType: message"; the type name is client-side.
             reason = self.reason or ""
@@ -51,10 +52,12 @@ class ProbeResult:
     def ran(self) -> bool:
         return self.status in ("ok", "tool_error", "protocol_error")
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self, include_text: bool = False) -> dict[str, Any]:
         d = asdict(self)
-        d.pop("text")
-        d["preview"] = self.text[:PREVIEW_CHARS]
+        text = d.pop("text")
+        d["preview"] = text[:PREVIEW_CHARS]
+        if include_text:
+            d["text"] = text
         return d
 
 
