@@ -50,7 +50,11 @@ SERVER_KEY = "srv"  # same in every condition, so tool names are identical
 SERVERS: dict[str, dict[str, Any]] = {
     "filesystem": {
         "label": "@modelcontextprotocol/server-filesystem 2.1.0",
-        "cmd": ["npx", "-y", "@modelcontextprotocol/server-filesystem@2.1.0", "{SANDBOX}"],
+        # Allowed directory = the eval base folder, the same folder Claude Code sends
+        # as its MCP root (its cwd). server-filesystem swaps its allowed directories
+        # for the client's roots, and the proxy's upstream client sends none, so
+        # anything else would give baseline and fixed different access.
+        "cmd": ["npx", "-y", "@modelcontextprotocol/server-filesystem@2.1.0", "{BASE}"],
         # Read-only tools only (all annotated readOnlyHint); write tools stay listed but denied.
         "allow": ["read_file", "read_text_file", "read_multiple_files", "list_directory",
                   "list_directory_with_sizes", "directory_tree", "search_files", "get_file_info",
@@ -250,7 +254,7 @@ def _read_proxy_log(path: Path) -> dict[str, Any] | None:
 
 def run_one(task: Task, condition: str, run: int, *, model: str, base: Path, max_turns: int,
             runner: Runner, timeout: float, claude: str = "claude") -> dict[str, Any]:
-    paths = paths_for(base)
+    paths = {**paths_for(base), "BASE": str(base.resolve())}
     work = base / "runs" / uuid.uuid4().hex[:12]
     work.mkdir(parents=True)
     proxy_log = work / "proxy.jsonl"
@@ -265,7 +269,8 @@ def run_one(task: Task, condition: str, run: int, *, model: str, base: Path, max
         "started_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
     try:
-        done = runner(cmd, task.render(paths) + PROMPT_SUFFIX, str(work), timeout)
+        # cwd is the base folder (not a git repo, no settings), shared by all runs.
+        done = runner(cmd, task.render(paths) + PROMPT_SUFFIX, str(base), timeout)
     except subprocess.TimeoutExpired:
         record.update(success=False, answer=None, error=f"timeout after {timeout:.0f}s")
         shutil.rmtree(work, ignore_errors=True)

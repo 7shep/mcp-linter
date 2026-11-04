@@ -324,7 +324,7 @@ def load_tasks(folder: Path) -> list[Task]:
 
 # ---- answer checking ----
 
-_ANSWER = re.compile(r"^\W*answer\W*:\s*(.*?)\s*$", re.IGNORECASE | re.MULTILINE)
+_ANSWER = re.compile(r"^\W*answer[*_\s]*:[*_]*\s*(.*?)\s*$", re.IGNORECASE | re.MULTILINE)
 
 
 def extract_answer(text: str | None) -> str | None:
