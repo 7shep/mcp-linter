@@ -2,7 +2,7 @@
 
 A linter for [MCP](https://modelcontextprotocol.io) servers. It connects to a server, reads its tool definitions, and flags the things that make tools hard for agents to use, based on Anthropic's [Writing effective tools for agents](https://www.anthropic.com/engineering/writing-tools-for-agents).
 
-> Work in progress: the static rules S1–S7 are done; probe rules and eval mode are next. See the [roadmap](#roadmap).
+> Work in progress: static rules S1–S7 and probe rules P1 and P5 are done; P2–P4, scoring and eval mode are next. See the [roadmap](#roadmap).
 
 ## Install
 
@@ -62,7 +62,7 @@ Options:
 
 ## Probing
 
-By default mcp-lint only reads tool definitions. With `--probe` it also **calls** tools and records what comes back: status, size in estimated tokens, content types, and latency. The probe rules (planned, see [roadmap](#roadmap)) will check these results.
+By default mcp-lint only reads tool definitions. With `--probe` it also **calls** tools and records what comes back: status, size in estimated tokens, content types, and latency. Probe rules (P1, P5; see [Rules](#rules)) check these results.
 
 Only tools listed in a fixtures file are ever called. Generate a starter file, then edit it:
 
@@ -83,7 +83,7 @@ mcp-lint init-fixtures fixtures.json -- npx -y @modelcontextprotocol/server-file
 ```
 
 - Generated probes start with `"skip": true`. Fill in the args and delete `skip` to run them.
-- **Safety:** a tool that isn't annotated `readOnlyHint: true` (or `destructiveHint: false`) is treated as one that may change data, as the MCP spec says. mcp-lint won't call it unless the probe sets `"allow_destructive": true`. Only do that against a sandbox.
+- **Safety:** only tools annotated `readOnlyHint: true` run without opting in. Every other tool needs `"allow_destructive": true` in its probe, so only do that against a sandbox. That includes tools with no annotations, and tools marked `destructiveHint: false`: that hint means "only adds, never deletes" (like `git_commit`), which still changes state.
 - Probes with missing required args, wrong-typed args, or unknown tool names are blocked before any call.
 - `"expect_error": true` marks a probe that's meant to fail, such as bad arguments for testing error messages. Argument checks are skipped for it, but the safety check isn't.
 - `${FIXTURES_DIR}` expands to the fixtures file's folder, and `${NAME}` to an environment variable, so fixtures can point at a local sandbox and keep secrets out of the file.
@@ -104,6 +104,20 @@ Probes
 
 Reading a 20,000-line file through server-filesystem returns about 87k tokens in one response, over three times Claude Code's default 25k cap on tool output.
 
+### Probe results on reference servers
+
+| Server | Probe | Response (est.) | Findings |
+|---|---|---|---|
+| server-filesystem | `read_text_file` on a 20k-line file | ~87,000 tokens | P1 error, P5 warning |
+| server-filesystem | `directory_tree` on a small sandbox | ~5,400 tokens | P1 warning, P5 warning |
+| mcp-server-git | `git_log` with `max_count: 400` | ~15,000 tokens | P1 warning, P5 warning |
+| mcp-server-git | `git_diff_staged` with a 5k-line file | ~7,300 tokens | P1 warning, P5 warning |
+| mcp-server-git | `git_log` default (10 commits) | ~380 tokens | none |
+| mcp-server-fetch | `fetch` default (truncates at 5,000 chars) | ~1,300 tokens | none |
+| mcp-server-fetch | `fetch` with `max_length: 999999` | ~21,000 tokens | P1 warning, P5 warning |
+
+mcp-server-fetch is a good example of the post's advice: it truncates by default and tells the agent how to get the next chunk.
+
 ## Rules
 
 | ID | Severity | Checks |
@@ -115,6 +129,15 @@ Reading a 20,000-line file through server-filesystem returns about 87k tokens in
 | S5 | warning / info | A tool missing the service prefix most tools use; no shared prefix at all; mixed naming styles |
 | S6 | warning / error | All tool definitions together over ~10k / ~25k tokens |
 | S7 | warning | `list_*` / `get_all_*` tool with no limit, paging, or filter parameter |
+
+Probe rules (only with `--probe`; they read what tools actually returned):
+
+| ID | Severity | Checks |
+|---|---|---|
+| P1 | warning / error | A response over ~5k tokens, or over ~25k (Claude Code's default cap on tool output, so the agent sees it cut off) |
+| P5 | info / warning | A tool returned over ~1k / ~5k tokens but has no way to ask for less: no `response_format`, `verbosity`, `fields`-style parameter, or concise/detailed enum |
+
+P5 only fires when a probe showed a big response. A tool that always returns 20 tokens doesn't need a concise mode. Probes measure what the fixtures ask for, so a probe that requests 400 log entries shows what an agent *could* pull in one call.
 
 All rules run offline with no API key. Token counts are **estimates** (4 characters per token of compact JSON) and are labelled as such. Findings with no tool (S5 prefix/style notes, S6) appear under `(server)` in the terminal and in `server_findings` in the JSON report.
 
@@ -131,7 +154,7 @@ S4's thresholds were tuned on 8 official reference servers (105 tools). Similar 
 
 ## Roadmap
 
-- **Probe rules** (on `--probe` results): P1 response size, P2 opaque-ID share, P3 missing pagination, P4 error-message quality, P5 `response_format` support.
+- **More probe rules:** P2 opaque-ID share, P3 missing pagination, P4 error-message quality (with bad-argument probes generated from schemas).
 - **Per-tool score**, weighted by how much each problem costs an agent: tokens spent and context wasted, not a flat count of warnings.
 - **Eval mode:** generate multi-step agent tasks, run them before and after a fixing proxy rewrites the tools, and report the change in success rate and tokens.
 

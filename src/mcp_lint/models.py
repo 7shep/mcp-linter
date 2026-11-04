@@ -40,15 +40,14 @@ class ToolDef:
         )
 
     @property
-    def destructive(self) -> bool:
-        """True if the server says the tool may destroy data.
+    def read_only(self) -> bool:
+        """True only if the server explicitly marks the tool read-only.
 
-        Per the MCP spec, destructiveHint defaults to true unless the tool is
-        marked read-only, so a tool with no hints counts as possibly destructive.
+        This is the probe safety gate. ``destructiveHint: false`` is NOT enough:
+        it means "only adds, never deletes" (e.g. git_commit), which still
+        changes state. A tool with no annotations counts as not read-only.
         """
-        if self.annotations.get("readOnlyHint"):
-            return False
-        return self.annotations.get("destructiveHint", True) is not False
+        return self.annotations.get("readOnlyHint") is True
 
     @property
     def params(self) -> dict[str, dict[str, Any]]:

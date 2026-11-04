@@ -18,6 +18,7 @@ from mcp_lint.fixtures import FixtureError, load_fixtures, template
 from mcp_lint.models import Severity, ToolDef
 from mcp_lint.report import render_probes, render_text, to_json, write_json
 from mcp_lint.rules import run_static
+from mcp_lint.rules.probe import run_probe_rules
 
 FAIL_ON = {"error": Severity.ERROR, "warning": Severity.WARNING, "info": Severity.INFO}
 
@@ -90,7 +91,7 @@ def _init_fixtures(args: argparse.Namespace) -> int:
     else:
         return _err("give a server command after '--' or --from TOOLS_JSON")
     write_json(args.out, template(tools))
-    flagged = sum(1 for t in tools if t.destructive)
+    flagged = sum(1 for t in tools if not t.read_only)
     print(f"Wrote {len(tools)} skipped probes to {args.out}.")
     print(f"{flagged} tools are not marked read-only and need \"allow_destructive\": true to run.")
     print("Fill in args and delete \"skip\" for each probe you want to run.")
@@ -126,6 +127,8 @@ def main(argv: list[str] | None = None) -> int:
         server = {"name": args.file, "version": None}
 
     findings = run_static(tools)
+    if probes is not None:
+        findings += run_probe_rules(tools, probes)
     print(render_text(server, tools, findings, FAIL_ON[args.min_severity]))
     if probes is not None:
         print()

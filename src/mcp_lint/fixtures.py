@@ -128,7 +128,7 @@ def check_probe(probe: Probe, tools: dict[str, ToolDef]) -> list[str]:
     if tool is None:
         return [f"server has no tool named '{probe.tool}'"]
     problems = []
-    if tool.destructive and not probe.allow_destructive:
+    if not tool.read_only and not probe.allow_destructive:
         problems.append(
             "tool is not marked read-only, so it may change data; "
             "add \"allow_destructive\": true to run it (sandbox only)"
@@ -173,7 +173,7 @@ def template(tools: list[ToolDef]) -> dict[str, Any]:
             "args": {r: _placeholder(t.params.get(r, {})) for r in required},
             "skip": True,
         }
-        if t.destructive:
+        if not t.read_only:
             probe["_warning"] = "not marked read-only: may change data"
         probes.append(probe)
     return {

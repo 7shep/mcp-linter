@@ -31,12 +31,19 @@ WRITE = ToolDef(name="write", input_schema={"type": "object", "properties": {"pa
 TOOLS = {"search": SEARCH, "write": WRITE}
 
 
-class DestructiveTests(unittest.TestCase):
-    def test_defaults_follow_spec(self):
-        self.assertTrue(ToolDef("t").destructive)  # no hints: assume it may change data
-        self.assertFalse(ToolDef("t", annotations={"readOnlyHint": True}).destructive)
-        self.assertFalse(ToolDef("t", annotations={"destructiveHint": False}).destructive)
-        self.assertTrue(ToolDef("t", annotations={"readOnlyHint": False}).destructive)
+class ReadOnlyTests(unittest.TestCase):
+    def test_only_explicit_read_only_counts(self):
+        self.assertTrue(ToolDef("t", annotations={"readOnlyHint": True}).read_only)
+        self.assertFalse(ToolDef("t").read_only)  # no hints: assume it may change data
+        self.assertFalse(ToolDef("t", annotations={"readOnlyHint": False}).read_only)
+
+    def test_additive_tools_are_not_read_only(self):
+        # git_commit's real annotations: changes state, but never deletes.
+        commit = ToolDef("git_commit", annotations={"readOnlyHint": False, "destructiveHint": False})
+        self.assertFalse(commit.read_only)
+        self.assertFalse(ToolDef("t", annotations={"destructiveHint": False}).read_only)
+        [msg] = check_probe(Probe("git_commit"), {"git_commit": commit})
+        self.assertIn("allow_destructive", msg)
 
 
 class LoadTests(unittest.TestCase):

@@ -78,6 +78,18 @@ class RunCommandTests(unittest.TestCase):
         self.assertEqual(probes["no_such_tool"]["status"], "blocked")
         self.assertEqual(code, 0)  # probes don't affect exit code yet; only findings do
 
+    def test_probe_rules_on_live_server(self):
+        # `get` echoes its id, so a 120k-char id gives a ~30k-token response.
+        with tempfile.TemporaryDirectory() as tmp:
+            fixtures = os.path.join(tmp, "big.json")
+            with open(fixtures, "w", encoding="utf-8") as fh:
+                json.dump({"probes": [{"tool": "get", "label": "huge", "args": {"id": "x" * 120_000},
+                                       "allow_destructive": True}]}, fh)
+            code, out = run_cli("run", "--probe", fixtures, "--", sys.executable, DEMO_SERVER)
+        self.assertIn("x P1 Probe 'get (huge)' returned ~30,000 tokens", out)
+        self.assertIn("! P5", out)
+        self.assertEqual(code, 1)  # P1 error trips the default --fail-on error
+
     def test_init_fixtures_from_live_server(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = os.path.join(tmp, "fixtures.json")
