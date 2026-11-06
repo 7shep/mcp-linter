@@ -2,6 +2,18 @@
 
 The fixtures and sandbox used for [RESULTS.md](../RESULTS.md), so the numbers can be reproduced.
 
+## Saved tool lists
+
+`tools/` holds the `tools/list` results of the 18 surveyed servers (230 tools): 8 official reference servers and 10 popular third-party ones, captured on 2026-11-04. Most were run at `@latest`, so a server's current tools may differ; `version` and `command` record what was run where they're known. Lint any of them offline:
+
+```bash
+mcp-lint check survey/tools/notion.json
+```
+
+They're also a benign corpus for checking false positives. `tests/test_survey_tools.py` fails if the security rule S8 raises a warning or error on any of them.
+
+## Reproducing the probes
+
 ```bash
 python survey/make_sandbox.py
 ```
