@@ -2,7 +2,7 @@
 
 A linter for [MCP](https://modelcontextprotocol.io) servers. It connects to a server, reads its tool definitions, and flags the things that make tools hard for agents to use, based on Anthropic's [Writing effective tools for agents](https://www.anthropic.com/engineering/writing-tools-for-agents).
 
-> Static rules S1–S7, probe rules P1–P5, a token-weighted score, a fixing proxy and an eval mode are done. See [Eval](#eval) for whether the findings matter.
+> Static rules S1–S8, probe rules P1–P5, a token-weighted score, a fixing proxy and an eval mode are done. See [Eval](#eval) for whether the findings matter.
 
 ![Task success with and without mcp-lint fixes: all tasks 53% to 98%, markitdown-mcp 0% to 100%, server-filesystem 80% to 100%, mcp-server-git 80% to 93%](eval/chart/success.png)
 
@@ -129,6 +129,9 @@ Probes
 | S5 | warning / info | A tool missing the service prefix most tools use; no shared prefix at all; mixed naming styles |
 | S6 | warning / error | All tool definitions together over ~10k / ~25k tokens |
 | S7 | warning | `list_*` / `get_all_*` tool with no limit, paging, or filter parameter |
+| S8 | error / warning / info | Hidden text in tool metadata: invisible Unicode TAG or bidi characters (error), zero-width characters, HTML comments, references to credential files, instructions to hide things from the user, and claims to override other servers' tools |
+
+S8 scans every string in a tool's metadata: the description, parameter names and nested schema fields, enum values, defaults, and annotations. It looks for text the model reads but a user never sees, such as TAG characters that spell out instructions, and for references to `~/.ssh` or `mcp.json`. It is a security check, so it does not add to the score. `instead of` and `you must` are deliberately not flagged, because many legitimate descriptions use them.
 
 Probe rules (only with `--probe`; they read what tools actually returned):
 
