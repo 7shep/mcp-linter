@@ -222,7 +222,9 @@ def _strings(node: object, path: str, param: str | None) -> Iterator[tuple[str, 
             child = f"{path}.{key}"
             # The first name under inputSchema.properties is the parameter's name.
             child_param = key if (path == PROPERTIES_PATH and param is None) else param
-            yield child, child_param, key
+            # The key gets its own location, so a finding on a string value under
+            # it is reported too instead of colliding with the key's.
+            yield f"{child} (key)", child_param, key
             yield from _strings(value, child, child_param)
     elif isinstance(node, list):
         for i, item in enumerate(node):
@@ -242,14 +244,10 @@ def s8_hidden_text(tools: list[ToolDef]) -> list[Finding]:
     findings: list[Finding] = []
     for tool in tools:
         known = all_names | {p.lower() for p in tool.params}
-        seen: set[tuple[str, str]] = set()  # one finding per (location, kind)
+        # _text_findings gives at most one finding per kind for each string, and
+        # every string has its own location, so nothing needs deduplicating.
         for loc, param, text in _metadata_strings(tool):
-            where = _escape(loc)
-            for finding in _text_findings(tool, where, param, text, known):
-                key = (loc, finding.kind or "")
-                if key not in seen:
-                    seen.add(key)
-                    findings.append(finding)
+            findings.extend(_text_findings(tool, _escape(loc), param, text, known))
     return findings
 
 

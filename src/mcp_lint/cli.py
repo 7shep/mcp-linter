@@ -146,7 +146,21 @@ def _proxy(args: argparse.Namespace) -> int:
     return 0
 
 
+def _safe_console() -> None:
+    """Escape characters the console can't encode instead of crashing.
+
+    Findings quote server text (an emoji in a description, say), and a cp1252
+    Windows console can't print everything. A crash there would also skip the
+    JSON report and the exit code.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(errors="backslashreplace")
+
+
 def main(argv: list[str] | None = None) -> int:
+    _safe_console()
     args = _build_parser().parse_args(argv)
     if args.command == "init-fixtures":
         return _init_fixtures(args)
