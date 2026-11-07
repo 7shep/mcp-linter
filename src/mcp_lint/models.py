@@ -10,6 +10,24 @@ from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Any
 
+# Deepest nesting of dicts and lists accepted in one tool definition. Real servers
+# stay far below it (the deepest of the 230 surveyed tools is 12). Rules walk
+# schemas recursively, and whether a deeper one fits Python's recursion limit
+# depends on the platform, so it is rejected up front instead.
+MAX_NESTING = 64
+
+
+def nesting_depth(obj: Any) -> int:
+    """Depth of nested dicts and lists in ``obj``, computed without recursion."""
+    deepest, stack = 0, [(obj, 1)]
+    while stack:
+        node, depth = stack.pop()
+        if isinstance(node, (dict, list)):
+            deepest = max(deepest, depth)
+            children = node.values() if isinstance(node, dict) else node
+            stack.extend((child, depth + 1) for child in children)
+    return deepest
+
 
 class Severity(str, Enum):
     INFO = "info"
@@ -27,16 +45,27 @@ class ToolDef:
     description: str | None = None
     input_schema: dict[str, Any] = field(default_factory=dict)
     annotations: dict[str, Any] = field(default_factory=dict)  # camelCase MCP hints
+    title: str | None = None
+    output_schema: dict[str, Any] = field(default_factory=dict)
+    meta: dict[str, Any] = field(default_factory=dict)  # the tool's _meta, which hosts act on
+    icons: list[Any] = field(default_factory=list)
+    execution: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ToolDef":
         """Build from a tools/list entry (accepts camelCase or snake_case)."""
         schema = data.get("inputSchema", data.get("input_schema")) or {}
+        out_schema = data.get("outputSchema", data.get("output_schema")) or {}
         return cls(
             name=data["name"],
             description=data.get("description"),
             input_schema=schema,
             annotations=data.get("annotations") or {},
+            title=data.get("title"),
+            output_schema=out_schema,
+            meta=data.get("_meta", data.get("meta")) or {},
+            icons=data.get("icons") or [],
+            execution=data.get("execution") or {},
         )
 
     @property
