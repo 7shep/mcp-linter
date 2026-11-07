@@ -158,6 +158,8 @@ P5 only fires when a probe showed a big response. A tool that always returns 20 
 
 All rules run offline with no API key. Token counts are **estimates** (4 characters per token of compact JSON) and are labelled as such. Findings with no tool (S5 prefix/style notes, S6) appear under `(server)` in the terminal and in `server_findings` in the JSON report.
 
+A tool nested more than 64 levels deep (dicts and lists, anywhere in its definition) is rejected with exit 2 before any rule runs, by `run`, `check`, `init-fixtures` and `lock` alike. Real servers stay far below that (the deepest of the 230 surveyed tools is 12 levels). A fixed limit keeps a hostile schema from crashing the rules, the same way on every platform.
+
 S4's thresholds were tuned on 8 official reference servers (105 tools) and checked on 10 third-party ones. Similar text alone flagged unrelated tools with templated descriptions ("Create a new X in a repository"), so a pair must also share parameters. Pairs whose names use different action verbs (`retrieve-a-block` / `delete-a-block`) are skipped. It still flags pairs like `get_pull_request` / `get_pull_request_files`. The post suggests consolidating those, but you may decide they're fine as separate tools.
 
 ## Lockfile

@@ -10,6 +10,24 @@ from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Any
 
+# Deepest nesting of dicts and lists accepted in one tool definition. Real servers
+# stay far below it (the deepest of the 230 surveyed tools is 12). Rules walk
+# schemas recursively, and whether a deeper one fits Python's recursion limit
+# depends on the platform, so it is rejected up front instead.
+MAX_NESTING = 64
+
+
+def nesting_depth(obj: Any) -> int:
+    """Depth of nested dicts and lists in ``obj``, computed without recursion."""
+    deepest, stack = 0, [(obj, 1)]
+    while stack:
+        node, depth = stack.pop()
+        if isinstance(node, (dict, list)):
+            deepest = max(deepest, depth)
+            children = node.values() if isinstance(node, dict) else node
+            stack.extend((child, depth + 1) for child in children)
+    return deepest
+
 
 class Severity(str, Enum):
     INFO = "info"

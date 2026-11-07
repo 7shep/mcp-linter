@@ -19,7 +19,7 @@ import os
 import sys
 
 from mcp_lint.fixtures import FixtureError, load_fixtures, template
-from mcp_lint.models import Severity, ToolDef
+from mcp_lint.models import MAX_NESTING, Severity, ToolDef, nesting_depth
 from mcp_lint.report import render_probes, render_scores, render_text, to_json, write_json
 from mcp_lint.rules import run_static
 from mcp_lint.rules.probe import run_probe_rules
@@ -130,8 +130,22 @@ def _load_tools_and_instructions(path: str) -> tuple[list[ToolDef], str | None]:
                 raise ValueError(f'tool {i} ("{item["name"]}"): "{key}" must be an object')
         if item.get("icons") is not None and not isinstance(item["icons"], list):
             raise ValueError(f'tool {i} ("{item["name"]}"): "icons" must be a list')
+        if nesting_depth(item) > MAX_NESTING:
+            raise ValueError(f'tool {i} ("{item["name"]}"): {TOO_DEEP}')
     instructions = data.get("instructions") if isinstance(data, dict) else None
     return [ToolDef.from_dict(t) for t in items], instructions if isinstance(instructions, str) else None
+
+
+TOO_DEEP = f"schema too deeply nested (over {MAX_NESTING} levels)"
+
+
+def _too_deep(tools: list[ToolDef]) -> str | None:
+    """An error message if a live server sent a tool nested deeper than MAX_NESTING."""
+    for t in tools:
+        if nesting_depth([t.input_schema, t.output_schema, t.annotations, t.meta,
+                          t.icons, t.execution]) > MAX_NESTING:  # the list adds one level, like a tool dict
+            return f"tool '{t.name}': {TOO_DEEP}"
+    return None
 
 
 def _load_tools_file(path: str) -> list[ToolDef]:
@@ -164,6 +178,8 @@ def _init_fixtures(args: argparse.Namespace) -> int:
             tools = asyncio.run(fetch_tools(cmd[0], cmd[1:], args.pass_env)).tools
         except Exception as exc:  # noqa: BLE001
             return _err(f"could not connect to server: {exc!r}")
+        if deep := _too_deep(tools):
+            return _err(deep)
     else:
         return _err("give a server command after '--' or --from TOOLS_JSON")
     write_json(args.out, template(tools))
@@ -224,6 +240,8 @@ def _lock_inner(args: argparse.Namespace) -> int:
         except Exception as exc:  # noqa: BLE001
             return _err(f"could not connect to server: {exc!r}")
         tools = info.tools
+        if deep := _too_deep(tools):
+            return _err(f"{deep}; nothing was written")
         server = {"name": info.name, "version": info.version, "command": cmd,
                   "instructions": info.instructions}
     else:
@@ -332,6 +350,8 @@ def main(argv: list[str] | None = None) -> int:
             return _err(f"could not connect to server: {exc!r}")
         server = {"name": info.name, "version": info.version, "command": cmd}
         tools = info.tools
+        if deep := _too_deep(tools):
+            return _err(deep)
     else:
         try:
             tools = _load_tools_file(args.file)

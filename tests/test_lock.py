@@ -9,7 +9,7 @@ import tempfile
 import time
 import unittest
 
-from mcp_lint.cli import _load_tools_and_instructions, _load_tools_file
+from mcp_lint.cli import _load_tools_and_instructions, _load_tools_file, _too_deep
 from mcp_lint.lock import (
     LockError,
     build_lock,
@@ -20,7 +20,7 @@ from mcp_lint.lock import (
     tool_hash,
     write_lock,
 )
-from mcp_lint.models import Severity, ToolDef
+from mcp_lint.models import MAX_NESTING, Severity, ToolDef, nesting_depth
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
@@ -1330,6 +1330,46 @@ class SafetyCliTests(unittest.TestCase):
         self.assertEqual(self.run_cli("lock", "--from", TIME_JSON, "--lock", lock).returncode, 0)
         deep = self.write("deep.json", '{"tools":[{"name":"deep","inputSchema":' + self.nested(3000) + "}]}")
         self.one_line_error(self.run_cli("lock", "--check", "--from", deep, "--lock", lock))
+
+    def test_nesting_limit_is_the_same_on_every_platform(self):
+        # 40 levels of properties is ~81 nested dicts: loads everywhere, but is over the limit.
+        lock = os.path.join(self.dir, "a.lock")
+        self.assertEqual(self.run_cli("lock", "--from", TIME_JSON, "--lock", lock).returncode, 0)
+        deep = self.write("deep.json", '{"tools":[{"name":"deep","inputSchema":' + self.nested(40) + "}]}")
+        for argv in (("check", deep), ("lock", "--check", "--from", deep, "--lock", lock),
+                     ("lock", "--from", deep, "--lock", lock, "--accept")):
+            with self.subTest(argv=argv[:2]):
+                proc = self.run_cli(*argv)
+                self.one_line_error(proc)
+                self.assertIn("over 64 levels", proc.stderr)
+        read_lock(lock)  # untouched and still valid
+
+    def test_nesting_depth_counts_without_recursion(self):
+        self.assertEqual(nesting_depth("x"), 0)
+        self.assertEqual(nesting_depth({"a": [1, {"b": {}}]}), 4)
+        deep = {}
+        for _ in range(5000):  # far past the recursion limit
+            deep = {"a": deep}
+        self.assertEqual(nesting_depth(deep), 5001)
+
+    def test_live_server_tools_get_the_same_limit(self):
+        def nested(levels):
+            node = {}
+            for _ in range(levels):
+                node = {"a": node}
+            return node
+        # nested(n) is n + 1 dicts deep, and the tool around it adds one more level
+        self.assertIsNone(_too_deep([ToolDef(name="ok", input_schema=nested(MAX_NESTING - 2))]))
+        self.assertIsNotNone(_too_deep([ToolDef(name="edge", input_schema=nested(MAX_NESTING - 1))]))
+        msg = _too_deep([ToolDef(name="deep", input_schema=nested(MAX_NESTING + 5))])
+        self.assertIn("'deep'", msg)
+        self.assertIn("over 64 levels", msg)
+
+    def test_nesting_just_under_the_limit_is_accepted(self):
+        ok = self.write("ok.json", '{"tools":[{"name":"ok","inputSchema":' + self.nested(30) + "}]}")
+        lock = os.path.join(self.dir, "ok.lock")
+        self.assertEqual(self.run_cli("lock", "--from", ok, "--lock", lock).returncode, 0)
+        self.assertEqual(self.run_cli("lock", "--check", "--from", ok, "--lock", lock).returncode, 0)
 
     def test_moderately_deep_schema_never_corrupts_or_tracebacks(self):
         # Deep enough to load but not to serialise or walk, whichever limit it hits first.
