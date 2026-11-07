@@ -6,6 +6,8 @@
     mcp-lint init-fixtures fixtures.json -- <server command>
     mcp-lint proxy [--no-paging] [--descriptions FIXES.json] -- <server command>
     mcp-lint eval --setup | --run | --report
+    mcp-lint lock [--lock PATH] [--accept] [--from TOOLS_JSON] -- <server command>
+    mcp-lint lock --check [--lock PATH] [--fail-on LEVEL] [--json PATH] (--from TOOLS_JSON | -- <server command>)
 """
 
 from __future__ import annotations
@@ -24,6 +26,7 @@ from mcp_lint.rules.probe import run_probe_rules
 from mcp_lint.score import score_server
 
 FAIL_ON = {"error": Severity.ERROR, "warning": Severity.WARNING, "info": Severity.INFO}
+DEFAULT_LOCK = "mcp-lint.lock"
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -39,11 +42,13 @@ def _build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--fail-under", type=int, metavar="SCORE",
                         help="also exit 1 if the server score is below this (0-100)")
 
-    def server_cmd(sp: argparse.ArgumentParser) -> None:
+    def server_cmd(sp: argparse.ArgumentParser, after_positional: bool = False) -> None:
         sp.add_argument("--pass-env", action="append", default=[], metavar="NAME",
                         help="forward this environment variable to the server (repeatable); "
                         "by default servers get only a minimal safe set, never your API keys")
-        sp.add_argument("server", nargs=argparse.REMAINDER,
+        # REMAINDER would swallow options that follow another positional (init-fixtures OUT
+        # --from FILE), so that command takes the server command with '*' after '--'.
+        sp.add_argument("server", nargs="*" if after_positional else argparse.REMAINDER,
                         help="server command after '--', e.g. -- npx -y some-server")
 
     run = sub.add_parser("run", help="start an MCP server over stdio and lint its tools")
@@ -68,7 +73,7 @@ def _build_parser() -> argparse.ArgumentParser:
     init.add_argument("--from", dest="from_file", metavar="TOOLS_JSON",
                       help="build from a saved tools/list file instead of a live server")
     init.add_argument("--force", action="store_true", help="overwrite an existing file")
-    server_cmd(init)
+    server_cmd(init, after_positional=True)
 
     proxy = sub.add_parser("proxy", help="serve a server's tools over stdio with fixes applied")
     proxy.add_argument("--no-paging", action="store_true",
@@ -82,17 +87,56 @@ def _build_parser() -> argparse.ArgumentParser:
     proxy.add_argument("--log", metavar="PATH", help="append one JSON line per proxied call")
     server_cmd(proxy)
 
+    lock = sub.add_parser("lock", help="record a server's tools in a lockfile, or check them against it")
+    lock.add_argument("--lock", default=DEFAULT_LOCK, metavar="PATH",
+                      help=f"lockfile path (default: {DEFAULT_LOCK})")
+    lock.add_argument("--check", action="store_true",
+                      help="compare the server with the lockfile instead of writing it")
+    lock.add_argument("--fail-on", choices=["info", "warning", "error", "never"], default="warning",
+                      help="with --check, exit 1 if any change is at or above this level (default: warning)")
+    lock.add_argument("--json", metavar="PATH", help="with --check, also write the changes as JSON")
+    lock.add_argument("--from", dest="from_file", metavar="TOOLS_JSON",
+                      help="use a saved tools/list file instead of a live server")
+    lock.add_argument("--accept", action="store_true",
+                      help="allow refreshing the lock when the changes include errors "
+                      "(review them first)")
+    server_cmd(lock)
+
     from mcp_lint.eval import add_eval_parser
 
     add_eval_parser(sub)
     return p
 
 
-def _load_tools_file(path: str) -> list[ToolDef]:
+def _load_tools_and_instructions(path: str) -> tuple[list[ToolDef], str | None]:
+    """Read a tools/list result and its server instructions (None if the file has none).
+
+    Raises ValueError with a short reason if the shape is wrong.
+    """
     with open(path, encoding="utf-8") as fh:
         data = json.load(fh)
     items = data.get("tools", data) if isinstance(data, dict) else data
-    return [ToolDef.from_dict(t) for t in items]
+    if not isinstance(items, list):
+        raise ValueError('expected a list of tools, or an object with a "tools" list')
+    for i, item in enumerate(items, 1):
+        if not isinstance(item, dict) or not isinstance(item.get("name"), str):
+            raise ValueError(f'tool {i} needs a string "name"')
+        for key in ("description", "title"):
+            if item.get(key) is not None and not isinstance(item[key], str):
+                raise ValueError(f'tool {i} ("{item["name"]}"): "{key}" must be a string')
+        for key in ("inputSchema", "input_schema", "annotations", "outputSchema", "output_schema",
+                    "_meta", "meta", "execution"):
+            if item.get(key) is not None and not isinstance(item[key], dict):
+                raise ValueError(f'tool {i} ("{item["name"]}"): "{key}" must be an object')
+        if item.get("icons") is not None and not isinstance(item["icons"], list):
+            raise ValueError(f'tool {i} ("{item["name"]}"): "icons" must be a list')
+    instructions = data.get("instructions") if isinstance(data, dict) else None
+    return [ToolDef.from_dict(t) for t in items], instructions if isinstance(instructions, str) else None
+
+
+def _load_tools_file(path: str) -> list[ToolDef]:
+    """Read a tools/list result. Raises ValueError with a short reason if the shape is wrong."""
+    return _load_tools_and_instructions(path)[0]
 
 
 def _server_cmd(raw: list[str]) -> list[str]:
@@ -109,7 +153,10 @@ def _init_fixtures(args: argparse.Namespace) -> int:
         return _err(f"{args.out} already exists (use --force to overwrite)")
     cmd = _server_cmd(args.server)
     if args.from_file:
-        tools = _load_tools_file(args.from_file)
+        try:
+            tools = _load_tools_file(args.from_file)
+        except (OSError, ValueError, KeyError, TypeError, RecursionError) as exc:
+            return _err(f"cannot read tools file {args.from_file}: {exc}")
     elif cmd:
         from mcp_lint.client import fetch_tools
 
@@ -146,6 +193,97 @@ def _proxy(args: argparse.Namespace) -> int:
     return 0
 
 
+def _lock(args: argparse.Namespace) -> int:
+    try:
+        return _lock_inner(args)
+    except RecursionError:
+        # A deeply nested schema from an untrusted server or file: fail cleanly, write nothing.
+        return _err("schema too deeply nested to lock or check; nothing was written")
+
+
+def _lock_inner(args: argparse.Namespace) -> int:
+    from mcp_lint.lock import (
+        LockError, build_lock, command_hash, diff_lock, read_lock, render_changes, write_lock,
+    )
+
+    cmd = _server_cmd(args.server)
+    if args.from_file:
+        try:
+            tools, instructions = _load_tools_and_instructions(args.from_file)
+        except RecursionError:
+            return _err(f"cannot read tools file {args.from_file}: schema too deeply nested")
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            return _err(f"cannot read tools file {args.from_file}: {exc}")
+        server = {"name": os.path.basename(args.from_file), "version": None, "command": None,
+                  "instructions": instructions}
+    elif cmd:
+        from mcp_lint.client import fetch_tools
+
+        try:
+            info = asyncio.run(fetch_tools(cmd[0], cmd[1:], args.pass_env))
+        except Exception as exc:  # noqa: BLE001
+            return _err(f"could not connect to server: {exc!r}")
+        tools = info.tools
+        server = {"name": info.name, "version": info.version, "command": cmd,
+                  "instructions": info.instructions}
+    else:
+        return _err("give a server command after '--' or --from TOOLS_JSON")
+
+    if args.check:
+        try:
+            locked = read_lock(args.lock)
+        except LockError as exc:
+            return _err(str(exc))
+        changes = diff_lock(locked, server, tools)
+        print(render_changes(changes, args.lock, tool_count=len(tools)))
+        if args.json:
+            # The report never carries the launch command: only its hash.
+            summary = {"name": server.get("name"), "version": server.get("version"),
+                       "command_sha256": command_hash(server.get("command")),
+                       "instructions_known": isinstance(server.get("instructions"), str)}
+            try:
+                write_json(args.json, {"lock": args.lock, "server": summary,
+                                       "changes": [f.to_dict() for f in changes]})
+            except OSError as exc:
+                return _err(f"cannot write {args.json}: {exc.strerror or exc}")
+            print(f"\nJSON report written to {args.json}")
+        if args.fail_on != "never":
+            threshold = FAIL_ON[args.fail_on].rank
+            if any(f.severity.rank >= threshold for f in changes):
+                return 1
+        return 0
+
+    # Writing: build first, so a refused lock (duplicate names) prints and writes nothing.
+    try:
+        new_lock = build_lock(server, tools)
+    except LockError as exc:
+        return _err(str(exc))
+    # If a lock already exists, show what is about to be accepted first.
+    if os.path.exists(args.lock):
+        try:
+            previous = read_lock(args.lock)
+        except LockError as exc:
+            return _err(f"{exc}; fix or delete it before refreshing")
+        changes = diff_lock(previous, server, tools)
+        print(render_changes(changes, args.lock, tool_count=len(tools)))
+        # Unknown instructions (a --from file without them) must not wipe the locked ones.
+        if new_lock["server"]["instructions"] is None:
+            new_lock["server"]["instructions"] = previous["server"].get("instructions")
+        errors = sum(1 for f in changes if f.severity is Severity.ERROR)
+        if errors and not args.accept:
+            print(f"Refusing to update {args.lock}: {errors} error-level changes. "
+                  "Re-run with --accept after reviewing them.", file=sys.stderr)
+            return 1
+    try:
+        write_lock(args.lock, new_lock)
+    except OSError as exc:
+        return _err(f"cannot write {args.lock}: {exc.strerror or exc}")
+    except ValueError:  # json.dumps(allow_nan=False); nothing was written
+        return _err("schema contains NaN or Infinity, which isn't valid JSON")
+    print(f"Wrote {args.lock} ({len(tools)} tools).")
+    return 0
+
+
 def _safe_console() -> None:
     """Escape characters the console can't encode instead of crashing.
 
@@ -166,6 +304,8 @@ def main(argv: list[str] | None = None) -> int:
         return _init_fixtures(args)
     if args.command == "proxy":
         return _proxy(args)
+    if args.command == "lock":
+        return _lock(args)
     if args.command == "eval":
         from mcp_lint.eval import eval_main
 
@@ -193,7 +333,12 @@ def main(argv: list[str] | None = None) -> int:
         server = {"name": info.name, "version": info.version, "command": cmd}
         tools = info.tools
     else:
-        tools = _load_tools_file(args.file)
+        try:
+            tools = _load_tools_file(args.file)
+        except RecursionError:
+            return _err(f"cannot read tools file {args.file}: schema too deeply nested")
+        except (OSError, ValueError) as exc:
+            return _err(f"cannot read tools file {args.file}: {exc}")
         server = {"name": args.file, "version": None}
 
     findings = run_static(tools)
