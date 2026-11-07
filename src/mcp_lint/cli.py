@@ -455,7 +455,10 @@ def main(argv: list[str] | None = None) -> int:
             return _err(str(exc))
         except Exception as exc:  # noqa: BLE001 - surface any connection failure plainly
             return _err(f"could not connect to server: {exc!r}")
-        server = {"name": info.name, "version": info.version, "command": cmd}
+        from mcp_lint.lock import command_hash
+
+        # The report never carries the launch command, only its hash: tokens passed as arguments stay out.
+        server = {"name": info.name, "version": info.version, "command_sha256": command_hash(cmd)}
         tools = info.tools
         if deep := _too_deep(tools):
             return _err(deep)
