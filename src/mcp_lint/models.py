@@ -27,16 +27,27 @@ class ToolDef:
     description: str | None = None
     input_schema: dict[str, Any] = field(default_factory=dict)
     annotations: dict[str, Any] = field(default_factory=dict)  # camelCase MCP hints
+    title: str | None = None
+    output_schema: dict[str, Any] = field(default_factory=dict)
+    meta: dict[str, Any] = field(default_factory=dict)  # the tool's _meta, which hosts act on
+    icons: list[Any] = field(default_factory=list)
+    execution: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ToolDef":
         """Build from a tools/list entry (accepts camelCase or snake_case)."""
         schema = data.get("inputSchema", data.get("input_schema")) or {}
+        out_schema = data.get("outputSchema", data.get("output_schema")) or {}
         return cls(
             name=data["name"],
             description=data.get("description"),
             input_schema=schema,
             annotations=data.get("annotations") or {},
+            title=data.get("title"),
+            output_schema=out_schema,
+            meta=data.get("_meta", data.get("meta")) or {},
+            icons=data.get("icons") or [],
+            execution=data.get("execution") or {},
         )
 
     @property

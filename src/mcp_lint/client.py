@@ -23,12 +23,25 @@ class ServerInfo:
     name: str
     version: str
     tools: list[ToolDef]
+    instructions: str = ""  # the initialize result's instructions; "" when the server sends none
 
 
 def _resolve_command(command: str) -> str:
     """Find the executable, including Windows shims like ``npx.cmd``."""
     found = shutil.which(command)
     return found or command
+
+
+def _plain(value):
+    """A pydantic value (or list of them) as plain JSON data; None becomes empty."""
+    if value is None:
+        return None
+    if isinstance(value, list):
+        return [_plain(v) for v in value]
+    dump = getattr(value, "model_dump", None)
+    if dump is not None:
+        return dump(by_alias=True, exclude_none=True, mode="json")
+    return value
 
 
 async def _list_tools(session: ClientSession) -> list[ToolDef]:
@@ -45,6 +58,11 @@ async def _list_tools(session: ClientSession) -> list[ToolDef]:
                     description=t.description,
                     input_schema=dict(t.input_schema or {}),
                     annotations=annotations,
+                    title=t.title,
+                    output_schema=dict(t.output_schema or {}),
+                    meta=dict(_plain(t.meta) or {}),
+                    icons=list(_plain(t.icons) or []),
+                    execution=dict(_plain(t.execution) or {}),
                 )
             )
         cursor = result.next_cursor
@@ -75,7 +93,9 @@ async def connect(command: str, args: list[str],
             init = await session.initialize()
             tools = await _list_tools(session)
             info = init.server_info
-            yield session, ServerInfo(name=info.name, version=info.version, tools=tools)
+            yield session, ServerInfo(
+                name=info.name, version=info.version, tools=tools,
+                instructions=init.instructions or "")
 
 
 async def fetch_tools(command: str, args: list[str], pass_env: list[str] | None = None) -> ServerInfo:
