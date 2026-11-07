@@ -8,6 +8,7 @@
     mcp-lint eval --setup | --run | --report
     mcp-lint lock [--lock PATH] [--accept] [--from TOOLS_JSON] -- <server command>
     mcp-lint lock --check [--lock PATH] [--fail-on LEVEL] [--json PATH] (--from TOOLS_JSON | -- <server command>)
+    mcp-lint check-config PATH [PATH ...] [--json PATH] [--fail-on LEVEL] [--min-severity LEVEL]
 """
 
 from __future__ import annotations
@@ -17,9 +18,10 @@ import asyncio
 import json
 import os
 import sys
+from dataclasses import replace
 
 from mcp_lint.fixtures import FixtureError, load_fixtures, template
-from mcp_lint.models import MAX_NESTING, Severity, ToolDef, nesting_depth
+from mcp_lint.models import MAX_NESTING, Finding, Severity, ToolDef, nesting_depth
 from mcp_lint.report import render_probes, render_scores, render_text, to_json, write_json
 from mcp_lint.rules import run_static
 from mcp_lint.rules.probe import run_probe_rules
@@ -102,6 +104,15 @@ def _build_parser() -> argparse.ArgumentParser:
                       "(review them first)")
     server_cmd(lock)
 
+    cfg = sub.add_parser("check-config", help="check how the servers in MCP client config files are launched")
+    cfg.add_argument("paths", nargs="+", metavar="PATH",
+                     help="client config JSON, e.g. ~/.claude.json or .mcp.json")
+    cfg.add_argument("--json", metavar="PATH", help="also write the findings as JSON here")
+    cfg.add_argument("--min-severity", choices=["info", "warning", "error"], default="info",
+                     help="hide terminal findings below this level (default: info)")
+    cfg.add_argument("--fail-on", choices=["info", "warning", "error", "never"], default="warning",
+                     help="exit 1 if any finding is at or above this level (default: warning)")
+
     from mcp_lint.eval import add_eval_parser
 
     add_eval_parser(sub)
@@ -162,6 +173,88 @@ def _err(msg: str) -> int:
     return 2
 
 
+def _refuse_known_bad(cmd: list[str]) -> bool:
+    """Print to stderr and return True if the launch command runs a known-bad release.
+
+    Called before any connection. Stderr only: the proxy's stdout is the MCP stream.
+    """
+    from mcp_lint.install import lint_command
+
+    bad = [f for f in lint_command(cmd) if f.kind == "known_bad"]
+    for f in bad:
+        print(f"mcp-lint: refusing to launch: {f.message}", file=sys.stderr)
+        if f.hint:
+            print(f"  -> {f.hint}", file=sys.stderr)
+    return bool(bad)
+
+
+def _check_config(args: argparse.Namespace) -> int:
+    from mcp_lint.install import lint_command, load_client_config, remote_origin, unreadable_finding
+    from mcp_lint.report import _section
+    from mcp_lint.rules.security import _escape
+
+    configs = []
+    for path in args.paths:
+        try:
+            configs.append((path, load_client_config(path)))
+        except (OSError, ValueError, RecursionError) as exc:
+            return _err(f"cannot read config {path}: {exc}")
+
+    def printable(f: Finding) -> Finding:
+        # Names and quoted specs come from the config file: escape them for the terminal.
+        return replace(f, message=_escape(f.message), hint=_escape(f.hint) if f.hint else None)
+
+    min_rank = FAIL_ON[args.min_severity].rank
+    lines: list[str] = []
+    entries: list[dict] = []
+    all_findings: list[Finding] = []
+    checked = remote = unusable = 0
+    for _path, servers in configs:
+        for server in servers:
+            name = _escape(server.name)
+            # Only scheme and host of a remote URL are ever printed or written.
+            if server.url is not None:
+                remote += 1
+                origin = _escape(remote_origin(server.url))
+                lines.append(f"{name}: remote ({origin}), not checked")
+                entries.append({"name": server.name, "remote": True, "checked": False, "findings": []})
+            elif server.argv is None:
+                unusable += 1
+                finding = unreadable_finding(server.name, server.reason or "it can't be read")
+                all_findings.append(finding)
+                shown = [printable(finding)] if finding.severity.rank >= min_rank else []
+                lines += _section(name, shown) if shown else [f"{name}: unreadable entry"]
+                entries.append({"name": server.name, "remote": False, "checked": False,
+                                "findings": [finding.to_dict()]})
+            else:
+                checked += 1
+                findings = lint_command(server.argv)
+                all_findings += findings
+                shown = [printable(f) for f in findings if f.severity.rank >= min_rank]
+                lines += _section(name, shown) if shown else [f"{name}: no install findings"]
+                entries.append({"name": server.name, "remote": False, "checked": True,
+                                "findings": [f.to_dict() for f in findings]})
+
+    errors = sum(1 for f in all_findings if f.severity is Severity.ERROR)
+    warnings = sum(1 for f in all_findings if f.severity is Severity.WARNING)
+    infos = sum(1 for f in all_findings if f.severity is Severity.INFO)
+    print("\n".join(lines))
+    print(f"{len(entries)} servers: {checked} checked, {remote} remote, {unusable} not checked; "
+          f"{errors} errors, {warnings} warnings, {infos} info")
+    if args.json:
+        try:
+            write_json(args.json, {"servers": entries})
+        except OSError as exc:
+            return _err(f"cannot write {args.json}: {exc.strerror or exc}")
+        print(f"\nJSON report written to {args.json}")
+    # Exit code counts every finding, including those hidden by --min-severity.
+    if args.fail_on != "never":
+        threshold = FAIL_ON[args.fail_on].rank
+        if any(f.severity.rank >= threshold for f in all_findings):
+            return 1
+    return 0
+
+
 def _init_fixtures(args: argparse.Namespace) -> int:
     if os.path.exists(args.out) and not args.force:
         return _err(f"{args.out} already exists (use --force to overwrite)")
@@ -172,6 +265,8 @@ def _init_fixtures(args: argparse.Namespace) -> int:
         except (OSError, ValueError, KeyError, TypeError, RecursionError) as exc:
             return _err(f"cannot read tools file {args.from_file}: {exc}")
     elif cmd:
+        if _refuse_known_bad(cmd):
+            return 1
         from mcp_lint.client import fetch_tools
 
         try:
@@ -196,6 +291,8 @@ def _proxy(args: argparse.Namespace) -> int:
     cmd = _server_cmd(args.server)
     if not cmd:
         return _err("give the upstream server command after '--'")
+    if _refuse_known_bad(cmd):
+        return 1
     try:
         descriptions = load_descriptions(args.descriptions) if args.descriptions else {}
     except (OSError, ValueError) as exc:
@@ -233,6 +330,8 @@ def _lock_inner(args: argparse.Namespace) -> int:
         server = {"name": os.path.basename(args.from_file), "version": None, "command": None,
                   "instructions": instructions}
     elif cmd:
+        if _refuse_known_bad(cmd):
+            return 1
         from mcp_lint.client import fetch_tools
 
         try:
@@ -324,17 +423,25 @@ def main(argv: list[str] | None = None) -> int:
         return _proxy(args)
     if args.command == "lock":
         return _lock(args)
+    if args.command == "check-config":
+        return _check_config(args)
     if args.command == "eval":
         from mcp_lint.eval import eval_main
 
         return eval_main(args)
 
     probes = None
+    install_findings: list[Finding] = []
     if args.command == "run":
         cmd = _server_cmd(args.server)
         if not cmd:
             return _err("give the server command after '--'")
+        if _refuse_known_bad(cmd):
+            return 1
+        from mcp_lint.install import lint_command
         from mcp_lint.client import fetch_and_probe, fetch_tools  # needs the mcp SDK
+
+        install_findings = lint_command(cmd)
 
         try:
             if args.probe or args.error_probes:
@@ -364,6 +471,7 @@ def main(argv: list[str] | None = None) -> int:
     findings = run_static(tools)
     if probes is not None:
         findings += run_probe_rules(tools, probes)
+    findings += install_findings  # I1 is server-wide and doesn't affect the score
     print(render_text(server, tools, findings, FAIL_ON[args.min_severity]))
     if probes is not None:
         print()
