@@ -44,7 +44,7 @@ mcp-lint check tools.json --json report.json
 Example output:
 
 ```
-mcp-lint 1.0.0  server: demo-server
+mcp-lint 1.1.0  server: demo-server
 2 tools checked, definitions ~165 tokens (estimated)
 
 (server)
@@ -66,7 +66,7 @@ Options:
 
 | Flag | Meaning |
 |---|---|
-| `--json PATH` | Also write a machine-readable report |
+| `--json PATH` | Also write a machine-readable report. The report stores a hash of the launch command, never the command itself, so tokens passed as arguments don't end up in it |
 | `--min-severity info\|warning\|error` | Hide terminal findings below this level |
 | `--fail-on info\|warning\|error\|never` | Exit 1 if any finding is at or above this level (default `error`) |
 | `--fail-under SCORE` | Also exit 1 if the server score (0-100) is below this; see [Score](#score) |

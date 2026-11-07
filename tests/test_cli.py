@@ -145,5 +145,33 @@ class RunCommandTests(unittest.TestCase):
         self.assertEqual(code, 2)
 
 
+class RunJsonSecretTests(unittest.TestCase):
+    """The --json report stores a hash of the launch command, never the command itself."""
+
+    def test_run_json_hashes_command_and_hides_secret(self):
+        from unittest import mock
+
+        from mcp_lint.client import ServerInfo
+        from mcp_lint.lock import command_hash
+
+        cmd = [sys.executable, "server.py", "--token", "tok-SECRET-123"]
+
+        async def fake_fetch_tools(command, args, pass_env=None):
+            return ServerInfo(name="demo", version="1", tools=[])
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "report.json")
+            with mock.patch("mcp_lint.client.fetch_tools", fake_fetch_tools):
+                code, out = run_cli("run", "--json", path, "--", *cmd)
+            with open(path, encoding="utf-8") as fh:
+                text = fh.read()
+        data = json.loads(text)
+        self.assertEqual(code, 0)
+        self.assertNotIn("tok-SECRET-123", text)
+        self.assertNotIn("tok-SECRET-123", out)
+        self.assertEqual(data["server"]["command_sha256"], command_hash(cmd))
+        self.assertNotIn("command", data["server"])
+
+
 if __name__ == "__main__":
     unittest.main()
