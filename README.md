@@ -2,7 +2,7 @@
 
 A linter for [MCP](https://modelcontextprotocol.io) servers. It connects to a server, reads its tool definitions, and flags the things that make tools hard for agents to use, based on Anthropic's [Writing effective tools for agents](https://www.anthropic.com/engineering/writing-tools-for-agents).
 
-> Static rules S1–S8, probe rules P1–P5, a token-weighted score, a fixing proxy and an eval mode are done. See [Eval](#eval) for whether the findings matter.
+> Static rules S1–S8, probe rules P1–P5, a lockfile, install lint (I1), a token-weighted score, a fixing proxy and an eval mode are done. See [Eval](#eval) for whether the findings matter.
 
 ![Task success with and without mcp-lint fixes: all tasks 53% to 98%, markitdown-mcp 0% to 100%, server-filesystem 80% to 100%, mcp-server-git 80% to 93%](eval/chart/success.png)
 
@@ -205,6 +205,43 @@ The lock has limits:
 - Schemas nested under a key the walker doesn't know (`components`, say) are not followed for widenings: a change there that isn't a string surfaces only as a `schema_changed` warning (strings under it are text, so they are errors).
 - A pydantic rewrite of `anyOf: [string, null]` into `type: [string, null]` (or back) is equivalent but shows as an error, because the lock compares schemas, not their meaning.
 - The command hash is unsalted, so a guessable command can be confirmed from it. Keep secrets out of the command anyway and pass them with `--pass-env`.
+
+## Install lint
+
+`npx pkg` and `uvx pkg` fetch the newest matching release every time the server starts. A bad release therefore reaches everyone who launches it unpinned: `postmark-mcp` 1.0.16 BCC'd every email it sent to an attacker, and several `litellm` releases shipped credential stealers. Install lint (rule `I1`) checks how a server is launched, for supply-chain risk.
+
+```bash
+mcp-lint check-config ~/.claude.json                       # Claude Code: includes projects.<path>.mcpServers
+mcp-lint check-config claude_desktop_config.json .mcp.json --fail-on error
+```
+
+`check-config` reads MCP client config files (Claude Desktop, Claude Code, Cursor, VS Code) and prints each local server's findings. Remote servers (with a `url`) print only their scheme and host, and are not checked. Environment values are never kept or printed. `--fail-on` (default `warning`), `--min-severity` and `--json PATH` work as they do for `check`.
+
+`run` lints the launch command too, and shows these findings under `(server)` in the same report. Its I1 warnings count toward `--fail-on warning` and `info`, as other warnings do. `proxy`, `lock` and `init-fixtures` don't report them, but `run`, `proxy`, `lock` and `init-fixtures` all refuse a known-bad version before connecting: the reason goes to stderr and the exit code is 1.
+
+| Kind | Severity | What it means |
+|---|---|---|
+| `unpinned` | warning | A package with no exact version: no version, a tag such as `latest`, or a range such as `^1.0.0`, `1` or `>=1.0`. Each start may run a different release |
+| `unpinned_source` | warning | A git, GitHub or URL source not pinned to a full 40-character commit SHA |
+| `no_digest` | warning | A `docker run` or `podman run` image without `@sha256:<64 hex>`. The tag can point at new content |
+| `no_hashes` | warning | A `pip install` without `--require-hashes` |
+| `known_bad` | error | A version on the known-bad list below, pinned exactly or by a range that would still resolve to it. It replaces any other finding for that package, and `run`, `proxy`, `lock` and `init-fixtures` refuse to launch it |
+| `unreadable_entry` | warning | A config entry whose `command` or `args` has the wrong type, or that has neither a command nor a url. It is not checked |
+| `unparsed` | info | A shell string (`bash -c "..."`) that can't be split, or uses command substitution or a loop, so part of the command wasn't checked |
+
+Known-bad versions:
+
+- npm `postmark-mcp` 1.0.16 (September 2025: a backdoor that BCC'd every email to an attacker)
+- PyPI `litellm` 1.82.7 and 1.82.8 (March 2026) and 1.107.0 (October 2026): credential stealers. Names compare with `-`, `_` and `.` removed and case ignored, so `LiteLLM==1.82.8` matches
+
+A version range is known-bad when it admits a bad version and none of the next patch, minor or major release, so a resolver that takes the newest match would install the bad one: `>=1.82.8,<1.82.9` and `<=1.0.16` are refused, `>=1.82.7` and `^1.0.16` are not. Package file names and URLs such as `litellm-1.82.8-py3-none-any.whl` or `postmark-mcp-1.0.16.tgz` are checked too.
+
+Limits:
+
+- Versions compare after normalisation: a leading `v`, zero padding, a trailing `.0`, a `+local` or `+build` suffix, and a PyPI `0!` epoch are ignored. Names compare with `-`, `_` and `.` removed and case ignored. So `Lite.LLM==1.82.7` matches `litellm`.
+- Known-bad versions are looked for anywhere in the command, not only in the package position, and after unknown prefix commands such as `sudo` or `timeout 10`. Other findings need the parser to understand the launcher. It understands `npx`, `pnpx`, `bunx`, `npm exec`/`x`, `pnpm`/`yarn dlx`, `uvx`, `uv run`, `uv tool run`, `pipx run`, `pip`, `python -m pip`, `docker run`, `podman run`, and the wrappers `sh`/`bash`/`zsh`/`dash`/`ksh`/`fish` (`-c`), `powershell`/`pwsh` (`-Command`), `cmd /c`, and `env`.
+- Shell escaping, variables, command substitution and string concatenation can hide a release. The refusal catches accidental use of a known-bad version; it isn't a sandbox.
+- It doesn't open `requirements.txt` or a `-r` file, and it doesn't run the command. A pin stops a silent upgrade, but it doesn't make the release safe.
 
 ## Score
 
