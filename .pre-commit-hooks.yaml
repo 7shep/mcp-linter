@@ -1,0 +1,7 @@
+- id: mcp-lint-lock
+  name: mcp-lint lock --check
+  description: Fail if an MCP server's tools changed since mcp-lint.lock was written.
+  entry: mcp-lint lock --check
+  language: python
+  pass_filenames: false
+  always_run: true

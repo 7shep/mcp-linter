@@ -4,11 +4,11 @@ A linter for [MCP](https://modelcontextprotocol.io) servers. It connects to a se
 
 > Static rules S1–S8, probe rules P1–P5, a lockfile, install lint (I1), a token-weighted score, a fixing proxy and an eval mode are done. See [Eval](#eval) for whether the findings matter.
 
-![Task success with and without mcp-lint fixes: all tasks 53% to 98%, markitdown-mcp 0% to 100%, server-filesystem 80% to 100%, mcp-server-git 80% to 93%](eval/chart/success.png)
+![Task success with and without mcp-lint fixes: all tasks 53% to 98%, markitdown-mcp 0% to 100%, server-filesystem 80% to 100%, mcp-server-git 80% to 93%](https://raw.githubusercontent.com/7shep/mcp-linter/main/eval/chart/success.png)
 
 ## Findings
 
-From running it on 18 servers, 8 official and 10 popular third-party ones. Full tables are in [RESULTS.md](RESULTS.md), and the setup to reproduce them is in [`survey/`](survey/).
+From running it on 18 servers, 8 official and 10 popular third-party ones. Full tables are in [RESULTS.md](https://github.com/7shep/mcp-linter/blob/main/RESULTS.md), and the setup to reproduce them is in [`survey/`](https://github.com/7shep/mcp-linter/tree/main/survey).
 
 - **Two servers return whole documents with no limit.** Microsoft's markitdown-mcp turned a 20,000-line file into one ~87,000-token response, and the official server-filesystem did the same. That's over three times Claude Code's 25,000-token cap on tool output.
 - **Desktop Commander gets it right:** it reads the same file 1,000 lines at a time (~4,000 tokens) and tells the agent how many lines remain.
@@ -19,6 +19,14 @@ From running it on 18 servers, 8 official and 10 popular third-party ones. Full 
 ## Install
 
 Needs Python 3.10+.
+
+```bash
+pip install mcp-linter
+```
+
+The PyPI name `mcp-lint` belongs to an unrelated project, so install `mcp-linter`. The command it installs is still `mcp-lint`.
+
+From source, for development:
 
 ```bash
 git clone https://github.com/7shep/mcp-linter.git
@@ -75,6 +83,33 @@ Options:
 | `--include-responses` | (`run` only) Keep full probe response text in the `--json` report instead of a 400-character preview |
 | `--probe-timeout SECONDS` | Per-call timeout for probes (default 30) |
 | `--pass-env NAME` | (`run`, `init-fixtures`, `lock`) Forward an environment variable to the server; repeatable. Servers otherwise get only a minimal safe set (PATH, TEMP, home folder...), so your API keys and tokens never reach a server you didn't hand them to |
+| `--url URL` | (`run`, `lock`, `init-fixtures`) Connect to a Streamable HTTP server instead of launching a command; see [Remote servers](#remote-servers) |
+| `--header 'NAME: VALUE'` | (with `--url`) Send a literal header. Only for values that aren't secret |
+| `--header-env NAME=VAR` | (with `--url`) Send header NAME with the value of environment variable VAR. Use this for tokens |
+
+### Remote servers
+
+For a server that runs over Streamable HTTP, pass its URL with `--url` instead of a command. `run`, `lock` and `init-fixtures` all take `--url`.
+
+```bash
+mcp-lint run --url https://example.com/mcp
+```
+
+Use `--header` for a header whose value isn't secret. Use `--header-env` for tokens. It reads the value from an environment variable, so the token stays out of the command line and your shell history. The variable holds the whole header value, scheme included:
+
+```bash
+# MCP_AUTH holds the whole header value, e.g. "Bearer <token>"
+mcp-lint run --url https://example.com/mcp --header-env "Authorization=MCP_AUTH"
+```
+
+- `--header` and `--header-env` need `--url`. Each header name can be given once.
+- `--header-env` is refused over plain `http://` unless the host is local (`localhost`, `127.x.x.x` or `::1`). Use `https://` for anything remote.
+- mcp-lint never prints or stores the URL. Its own output shows only the scheme and host. The `--json` report and the lockfile store a hash (`command_sha256`) of the URL's scheme, host, port and path. User info, the query string and header values are left out of the hash and never stored, so rotating a token doesn't change the lock.
+- The client follows redirects only within the same origin. A redirect to another origin isn't followed, so headers aren't sent there.
+- Plain `http://` ignores `HTTP_PROXY`/`ALL_PROXY`, so a local server's secrets never pass through a proxy in cleartext. `https://` still uses the proxy settings.
+- A server can echo a secret back: `--header-env` values and the URL's query string or user info. `run` and `lock --check` replace such text with `[redacted]`. `lock` and `init-fixtures` refuse to write a file that would contain one (exit 2). `--header` values and a URL without a query aren't treated as secret.
+- `--pass-env` doesn't apply to `--url`. Install lint (I1) and the known-bad refusal check launched commands only.
+- `run --json` sets `server.transport` to `"stdio"` or `"streamable-http"`.
 
 Record a server's tools, then check later runs against them (see [Lockfile](#lockfile)):
 
@@ -206,6 +241,72 @@ The lock has limits:
 - A pydantic rewrite of `anyOf: [string, null]` into `type: [string, null]` (or back) is equivalent but shows as an error, because the lock compares schemas, not their meaning.
 - The command hash is unsalted, so a guessable command can be confirmed from it. Keep secrets out of the command anyway and pass them with `--pass-env`.
 
+## CI
+
+### GitHub Action
+
+The repo root has a composite Action, `7shep/mcp-linter`, that runs `mcp-lint lock --check`. It fails the job when a tool changed since the lockfile was written, and it writes the report to the job summary. Commit `mcp-lint.lock` first (see [Lockfile](#lockfile)).
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+
+  - name: Check tools against the lock
+    uses: 7shep/mcp-linter@v1.2
+    with:
+      command: npx -y some-server@1.2.3
+      lock: mcp-lint.lock
+```
+
+A remote server takes `url` and `header-env` instead of `command`. The job sets the secret as an environment variable. Store the secret with the scheme included, such as `Bearer <token>`, because the header value is sent as-is:
+
+```yaml
+jobs:
+  lock-check:
+    runs-on: ubuntu-latest
+    env:
+      MCP_AUTH: ${{ secrets.MCP_AUTH }}   # the whole header value, e.g. "Bearer <token>"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check remote tools against the lock
+        uses: 7shep/mcp-linter@v1.2
+        with:
+          url: https://example.com/mcp
+          header-env: |
+            Authorization=MCP_AUTH
+```
+
+| Input | Default | Meaning |
+|---|---|---|
+| `command` | | Launch command for a stdio server, with shell-style quoting (e.g. `npx -y "@scope/pkg@1.2.3"`). Set this or `url`, not both |
+| `url` | | Streamable HTTP endpoint. Set this or `command`, not both |
+| `header-env` | | For `url` only: one `Name=VAR` per line. The header gets the value of job environment variable VAR |
+| `pass-env` | | For `command` only: variable names to pass to the server, separated by spaces, commas or newlines. The server gets no other variables |
+| `lock` | `mcp-lint.lock` | Lockfile path, relative to `working-directory` |
+| `fail-on` | `warning` | Lowest severity that fails the job: `info`, `warning`, `error` or `never` |
+| `json` | | Optional path to write the changes as JSON, relative to `working-directory` |
+| `working-directory` | `.` | Directory to run in: where the lockfile lives and the server command starts |
+| `python-version` | `3.13` | Python to install mcp-lint with when `setup-python` is `true` |
+| `setup-python` | `true` | Set to `false` if Python is already set up on the runner |
+
+The step fails when a change is at or above `fail-on`. A usage or connection error also fails it. The step summary gets the report and the exit code.
+
+### pre-commit
+
+The repo has a [pre-commit](https://pre-commit.com) hook, `mcp-lint-lock`, that runs `mcp-lint lock --check`. Add it to `.pre-commit-config.yaml`:
+
+```yaml
+repos:
+  - repo: https://github.com/7shep/mcp-linter
+    rev: v1.2
+    hooks:
+      - id: mcp-lint-lock
+        args: [--, npx, -y, some-server@1.2.3]
+```
+
+The hook runs on every commit, even when no file is staged. `args` is the server command after `--`.
+
 ## Install lint
 
 `npx pkg` and `uvx pkg` fetch the newest matching release every time the server starts. A bad release therefore reaches everyone who launches it unpinned: `postmark-mcp` 1.0.16 BCC'd every email it sent to an attacker, and several `litellm` releases shipped credential stealers. Install lint (rule `I1`) checks how a server is launched, for supply-chain risk.
@@ -279,11 +380,11 @@ Each finding becomes an estimate of tokens wasted per session:
 
 A **tool's score** halves for every 5,000 wasted tokens. The **server's waste** adds up all definition overhead, since that's paid every session whichever tools are used. To that it adds the average per-tool usage waste, times 3 tools used per session. The server score halves for every 10,000.
 
-The constants are rough guesses, kept in one place ([`score.py`](src/mcp_lint/score.py)) so they can be argued with. Treat the ordering as the result, not the exact numbers. Without `--probe` the score covers only static checks, and the report says so. `--fail-under SCORE` exits 1 when the server scores below a threshold.
+The constants are rough guesses, kept in one place ([`score.py`](https://github.com/7shep/mcp-linter/blob/main/src/mcp_lint/score.py)) so they can be argued with. Treat the ordering as the result, not the exact numbers. Without `--probe` the score covers only static checks, and the report says so. `--fail-under SCORE` exits 1 when the server scores below a threshold.
 
 ## Eval
 
-Do mcp-lint's findings matter to a real agent? [`eval/REPORT.md`](eval/REPORT.md) has the before/after experiment: Claude Code (headless, `--model haiku`) answers checkable questions with one MCP server connected, once with the server as it ships and once behind `mcp-lint proxy`, which fixes what mcp-lint flags.
+Do mcp-lint's findings matter to a real agent? [`eval/REPORT.md`](https://github.com/7shep/mcp-linter/blob/main/eval/REPORT.md) has the before/after experiment: Claude Code (headless, `--model haiku`) answers checkable questions with one MCP server connected, once with the server as it ships and once behind `mcp-lint proxy`, which fixes what mcp-lint flags.
 
 **Result:** on 15 held-out tasks across server-filesystem, markitdown-mcp and mcp-server-git (90 runs), success rose from 53% to 98%. Nearly all of that came from paging long responses, and the worst-scored server (markitdown, 0/100) gained the most. Tokens per task did **not** go down: paging turns quick give-ups into long successes. See the report for the full numbers and caveats. The chart at the top of this README shows the per-server results.
 
@@ -297,7 +398,7 @@ mcp-lint eval --report                                  # tables from eval/resul
 The proxy's fixes are each switchable (`--no-paging`, `--no-errors`, `--descriptions FILE`):
 
 - **Paging:** responses over ~2,000 tokens are cut to a page, every tool gains `offset`/`limit` (in lines), and a note says `[showing lines 1-112 of 8000; pass offset=112 for more]`.
-- **Descriptions:** S1-flagged descriptions are replaced from a hand-written file in [`eval/fixes/`](eval/fixes/).
+- **Descriptions:** S1-flagged descriptions are replaced from a hand-written file in [`eval/fixes/`](https://github.com/7shep/mcp-linter/tree/main/eval/fixes).
 - **Errors:** error text returned as a success gets `isError` set.
 
 ## Development
@@ -305,6 +406,13 @@ The proxy's fixes are each switchable (`--no-paging`, `--no-errors`, `--descript
 ```bash
 python -m unittest discover -s tests
 ```
+
+### Releasing
+
+1. Bump `version` in `pyproject.toml` and `__version__` in `src/mcp_lint/__init__.py` to the same number.
+2. Publish a GitHub release tagged `vX.Y` or `vX.Y.Z`. A tag with two parts matches a version with a zero patch number, so `v1.2` is version 1.2.0.
+
+`.github/workflows/release.yml` checks that the tag matches the version, builds the sdist and wheel, runs `twine check`, and publishes to PyPI with Trusted Publishing (no API token). A manual run (workflow_dispatch) publishes to TestPyPI instead.
 
 ## License
 

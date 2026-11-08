@@ -1,0 +1,85 @@
+name: Lock action
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lock-check:
+    name: Lock action (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install package (the demo server needs the MCP SDK)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+
+      - name: Clean lock passes
+        id: clean
+        uses: ./
+        with:
+          command: python tests/fixtures/demo_server.py
+          lock: tests/fixtures/demo.lock
+          setup-python: "false"
+
+      - name: Tampered lock fails
+        id: tampered
+        continue-on-error: true
+        uses: ./
+        with:
+          command: python tests/fixtures/demo_server.py
+          lock: tests/fixtures/demo_tampered.lock
+          setup-python: "false"
+
+      - name: Require that the tampered check failed
+        env:
+          TAMPERED_OUTCOME: ${{ steps.tampered.outcome }}
+        shell: bash
+        run: |
+          if [ "$TAMPERED_OUTCOME" != "failure" ]; then
+            echo "::error::expected the tampered lock check to fail, got outcome: $TAMPERED_OUTCOME"
+            exit 1
+          fi
+          echo "Tampered lock check failed as expected."
+
+      - name: Start HTTP demo server
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          # Detach the server from this step's stdout, or the step can wait on it.
+          nohup python tests/fixtures/demo_server.py --http 8765 > "$RUNNER_TEMP/demo-http.log" 2>&1 &
+          for i in $(seq 1 30); do
+            if timeout 1 bash -c 'exec 3<>/dev/tcp/127.0.0.1/8765' 2>/dev/null; then
+              echo "HTTP demo server is up."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::HTTP demo server did not open port 8765 within 30 seconds"
+          exit 1
+
+      - name: HTTP lock check
+        if: runner.os == 'Linux'
+        uses: ./
+        with:
+          url: http://127.0.0.1:8765/mcp
+          lock: tests/fixtures/demo.lock
+          fail-on: error
+          setup-python: "false"
