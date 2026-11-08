@@ -1,0 +1,88 @@
+name: mcp-lint lock check
+description: "Fail the job if an MCP server's tool definitions changed since mcp-lint.lock was written (rug-pull check)."
+branding:
+  icon: lock
+  color: blue
+
+inputs:
+  command:
+    description: "Server launch command for a stdio server, with shell-style quoting (for example: npx -y \"@scope/pkg@1.2.3\"). Set this or url, not both."
+    required: false
+    default: ""
+  url:
+    description: "Streamable HTTP endpoint of the server (for example: https://example.com/mcp). Set this or command, not both."
+    required: false
+    default: ""
+  header-env:
+    description: "For url servers: one Name=VAR per line. The header Name is sent with the value of the job environment variable VAR (for example, a secret)."
+    required: false
+    default: ""
+  pass-env:
+    description: "For command servers: environment variable names to pass to the server, separated by spaces, commas or newlines. The server gets no other variables."
+    required: false
+    default: ""
+  lock:
+    description: "Path to the lockfile, relative to working-directory."
+    required: false
+    default: "mcp-lint.lock"
+  fail-on:
+    description: "Lowest severity that fails the job: info, warning, error, or never."
+    required: false
+    default: "warning"
+  json:
+    description: "Optional path to write the changes as JSON, relative to working-directory."
+    required: false
+    default: ""
+  working-directory:
+    description: "Directory to run in (where the lockfile lives and the server command starts)."
+    required: false
+    default: "."
+  python-version:
+    description: "Python version to install mcp-lint with when setup-python is true."
+    required: false
+    default: "3.13"
+  setup-python:
+    description: "Set to 'false' if Python is already set up on the runner."
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      if: inputs.setup-python == 'true'
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install mcp-lint
+      id: install
+      shell: bash
+      run: |
+        set -euo pipefail
+        VENV="$RUNNER_TEMP/mcp-lint-venv"
+        python -m venv "$VENV"
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          VENV_BIN="$VENV/Scripts"
+          EXE="mcp-lint.exe"
+        else
+          VENV_BIN="$VENV/bin"
+          EXE="mcp-lint"
+        fi
+        "$VENV_BIN/python" -m pip install --quiet "$GITHUB_ACTION_PATH"
+        echo "mcp-lint=$VENV_BIN/$EXE" >> "$GITHUB_OUTPUT"
+
+    - name: Check lock
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        MCP_LINT: ${{ steps.install.outputs.mcp-lint }}
+        INPUT_COMMAND: ${{ inputs.command }}
+        INPUT_URL: ${{ inputs.url }}
+        INPUT_HEADER_ENV: ${{ inputs.header-env }}
+        INPUT_PASS_ENV: ${{ inputs.pass-env }}
+        INPUT_LOCK: ${{ inputs.lock }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_JSON: ${{ inputs.json }}
+      run: |
+        python "$GITHUB_ACTION_PATH/scripts/action_lock_check.py"

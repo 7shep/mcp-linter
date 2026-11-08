@@ -2,6 +2,7 @@
 
     mcp-lint run -- npx -y @modelcontextprotocol/server-everything
     mcp-lint run --probe fixtures.json -- <server command>
+    mcp-lint run --url URL [--header "Name: value"] [--header-env Name=VAR]
     mcp-lint check tools.json
     mcp-lint init-fixtures fixtures.json -- <server command>
     mcp-lint proxy [--no-paging] [--descriptions FIXES.json] -- <server command>
@@ -18,7 +19,7 @@ import asyncio
 import json
 import os
 import sys
-from dataclasses import replace
+from dataclasses import asdict, replace
 
 from mcp_lint.fixtures import FixtureError, load_fixtures, template
 from mcp_lint.models import MAX_NESTING, Finding, Severity, ToolDef, nesting_depth
@@ -44,16 +45,25 @@ def _build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--fail-under", type=int, metavar="SCORE",
                         help="also exit 1 if the server score is below this (0-100)")
 
-    def server_cmd(sp: argparse.ArgumentParser, after_positional: bool = False) -> None:
+    def server_cmd(sp: argparse.ArgumentParser, after_positional: bool = False,
+                   http: bool = True) -> None:
         sp.add_argument("--pass-env", action="append", default=[], metavar="NAME",
                         help="forward this environment variable to the server (repeatable); "
                         "by default servers get only a minimal safe set, never your API keys")
+        if http:
+            sp.add_argument("--url", metavar="URL",
+                            help="connect to a Streamable HTTP server instead of launching a command")
+            sp.add_argument("--header", action="append", default=[], metavar="'NAME: VALUE'",
+                            help="with --url, send this literal (non-secret) header (repeatable)")
+            sp.add_argument("--header-env", action="append", default=[], metavar="NAME=VAR",
+                            help="with --url, send header NAME with the value of environment "
+                            "variable VAR, so secrets stay out of the command line (repeatable)")
         # REMAINDER would swallow options that follow another positional (init-fixtures OUT
         # --from FILE), so that command takes the server command with '*' after '--'.
         sp.add_argument("server", nargs="*" if after_positional else argparse.REMAINDER,
                         help="server command after '--', e.g. -- npx -y some-server")
 
-    run = sub.add_parser("run", help="start an MCP server over stdio and lint its tools")
+    run = sub.add_parser("run", help="start an MCP server over stdio (or connect with --url) and lint its tools")
     common(run)
     run.add_argument("--probe", metavar="FIXTURES",
                      help="also call the tools listed in this fixtures file")
@@ -87,7 +97,7 @@ def _build_parser() -> argparse.ArgumentParser:
     proxy.add_argument("--no-errors", action="store_true",
                        help="don't set isError on error text returned as a success")
     proxy.add_argument("--log", metavar="PATH", help="append one JSON line per proxied call")
-    server_cmd(proxy)
+    server_cmd(proxy, http=False)
 
     lock = sub.add_parser("lock", help="record a server's tools in a lockfile, or check them against it")
     lock.add_argument("--lock", default=DEFAULT_LOCK, metavar="PATH",
@@ -171,6 +181,106 @@ def _server_cmd(raw: list[str]) -> list[str]:
 def _err(msg: str) -> int:
     print(f"mcp-lint: {msg}", file=sys.stderr)
     return 2
+
+
+def _http_target(args: argparse.Namespace, cmd: list[str]):
+    """The HttpTarget for --url, None for stdio, or an int exit code on a usage error.
+
+    Every check runs before any connection, and no message holds a URL or header value.
+    """
+    from mcp_lint.client import HttpConfigError, HttpTarget, parse_headers
+
+    url = getattr(args, "url", None)
+    if url is None:
+        if getattr(args, "header", None) or getattr(args, "header_env", None):
+            return _err("--header and --header-env need --url")
+        return None
+    if cmd:
+        return _err("give either --url or a server command after '--', not both")
+    if args.pass_env:
+        return _err("--pass-env only applies to launched servers, not --url")
+    if getattr(args, "from_file", None):
+        return _err("--url and --from can't be used together")
+    try:
+        headers = parse_headers(url, args.header, args.header_env)
+    except HttpConfigError as exc:
+        return _err(str(exc))
+    # Only --header-env values are secret; --header is documented as non-secret.
+    secret = frozenset(item.partition("=")[0].strip(" ").lower() for item in args.header_env or [])
+    return HttpTarget(url, headers, secret_headers=secret)
+
+
+ECHOED = ("the server echoed a secret header or URL value into its tool definitions; "
+          "nothing was written")
+
+
+def _scrubber(target):
+    """text -> text with every secret of an HTTP target removed (identity for stdio).
+
+    A server can echo a header value into errors, descriptions or its name, so all text
+    derived from a response is passed through this before it is printed or written.
+    """
+    if target is None:
+        return lambda text: text
+    from mcp_lint.client import redact_secrets, secret_strings
+
+    secrets = secret_strings(target.url, target.secret_values())
+    return lambda text: redact_secrets(text, secrets)
+
+
+def _scrub_deep(value, scrub):
+    """value with scrub applied to every string inside it (dataclasses, lists, dict keys too)."""
+    import dataclasses
+
+    if isinstance(value, str):
+        return scrub(value)
+    if isinstance(value, (list, tuple)):
+        return [_scrub_deep(v, scrub) for v in value]
+    if isinstance(value, dict):
+        return {_scrub_deep(k, scrub): _scrub_deep(v, scrub) for k, v in value.items()}
+    if dataclasses.is_dataclass(value) and not isinstance(value, type):
+        return dataclasses.replace(value, **{f.name: _scrub_deep(getattr(value, f.name), scrub)
+                                             for f in dataclasses.fields(value) if f.init})
+    return value
+
+
+def _echoed(target, data) -> bool:
+    """True if an HTTP target's secret appears in data once serialised as JSON."""
+    if target is None:
+        return False
+    from mcp_lint.client import contains_secret, secret_strings
+
+    return contains_secret(json.dumps(data), secret_strings(target.url, target.secret_values()))
+
+
+def _write_json_scrubbed(path: str, data, scrub) -> None:
+    """write_json, with secrets removed from the serialised text first."""
+    text = scrub(json.dumps(data, indent=2)) + "\n"
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(text)
+
+
+def _http_identity(target) -> list[str]:
+    """What the lock and reports hash for a URL: scheme, host, port and path only.
+
+    User info and the query string are left out, so a token in the URL can't be
+    guessed from a committed lock and rotating it isn't a change. Headers are never hashed.
+    """
+    from urllib.parse import urlsplit, urlunsplit
+
+    parts = urlsplit(target.url)
+    netloc = parts.hostname or ""
+    if ":" in netloc:
+        netloc = f"[{netloc}]"
+    if parts.port is not None:
+        netloc += f":{parts.port}"
+    return ["--url", urlunsplit((parts.scheme, netloc, parts.path, "", ""))]
+
+
+def _http_hash(target) -> str | None:
+    from mcp_lint.lock import command_hash
+
+    return command_hash(_http_identity(target))
 
 
 def _refuse_known_bad(cmd: list[str]) -> bool:
@@ -259,7 +369,22 @@ def _init_fixtures(args: argparse.Namespace) -> int:
     if os.path.exists(args.out) and not args.force:
         return _err(f"{args.out} already exists (use --force to overwrite)")
     cmd = _server_cmd(args.server)
-    if args.from_file:
+    target = _http_target(args, cmd)
+    if isinstance(target, int):
+        return target
+    if target is not None:
+        from mcp_lint.client import describe_http_error, fetch_tools_http
+
+        try:
+            tools = asyncio.run(fetch_tools_http(target)).tools
+        except Exception as exc:  # noqa: BLE001
+            return _err(describe_http_error(exc, target))
+        if deep := _too_deep(tools):
+            return _err(_scrubber(target)(deep))
+        # Fixtures hold only names and parameters, but refuse on any echo in the definitions too.
+        if _echoed(target, [template(tools), [asdict(t) for t in tools]]):
+            return _err(ECHOED)
+    elif args.from_file:
         try:
             tools = _load_tools_file(args.from_file)
         except (OSError, ValueError, KeyError, TypeError, RecursionError) as exc:
@@ -276,7 +401,7 @@ def _init_fixtures(args: argparse.Namespace) -> int:
         if deep := _too_deep(tools):
             return _err(deep)
     else:
-        return _err("give a server command after '--' or --from TOOLS_JSON")
+        return _err("give a server command after '--', --url or --from TOOLS_JSON")
     write_json(args.out, template(tools))
     flagged = sum(1 for t in tools if not t.read_only)
     print(f"Wrote {len(tools)} skipped probes to {args.out}.")
@@ -320,7 +445,24 @@ def _lock_inner(args: argparse.Namespace) -> int:
     )
 
     cmd = _server_cmd(args.server)
-    if args.from_file:
+    target = _http_target(args, cmd)
+    if isinstance(target, int):
+        return target
+    scrub = _scrubber(target)
+    if target is not None:
+        from mcp_lint.client import describe_http_error, fetch_tools_http
+
+        try:
+            info = asyncio.run(fetch_tools_http(target))
+        except Exception as exc:  # noqa: BLE001
+            return _err(describe_http_error(exc, target))
+        tools = info.tools
+        if deep := _too_deep(tools):
+            return _err(scrub(f"{deep}; nothing was written"))
+        # build_lock/diff_lock hash "command"; the lock keeps only that hash, never the URL.
+        server = {"name": info.name, "version": info.version, "command": _http_identity(target),
+                  "instructions": info.instructions}
+    elif args.from_file:
         try:
             tools, instructions = _load_tools_and_instructions(args.from_file)
         except RecursionError:
@@ -344,7 +486,7 @@ def _lock_inner(args: argparse.Namespace) -> int:
         server = {"name": info.name, "version": info.version, "command": cmd,
                   "instructions": info.instructions}
     else:
-        return _err("give a server command after '--' or --from TOOLS_JSON")
+        return _err("give a server command after '--', --url or --from TOOLS_JSON")
 
     if args.check:
         try:
@@ -352,15 +494,15 @@ def _lock_inner(args: argparse.Namespace) -> int:
         except LockError as exc:
             return _err(str(exc))
         changes = diff_lock(locked, server, tools)
-        print(render_changes(changes, args.lock, tool_count=len(tools)))
+        print(scrub(render_changes(changes, args.lock, tool_count=len(tools))))
         if args.json:
             # The report never carries the launch command: only its hash.
             summary = {"name": server.get("name"), "version": server.get("version"),
                        "command_sha256": command_hash(server.get("command")),
                        "instructions_known": isinstance(server.get("instructions"), str)}
             try:
-                write_json(args.json, {"lock": args.lock, "server": summary,
-                                       "changes": [f.to_dict() for f in changes]})
+                _write_json_scrubbed(args.json, {"lock": args.lock, "server": summary,
+                                                 "changes": [f.to_dict() for f in changes]}, scrub)
             except OSError as exc:
                 return _err(f"cannot write {args.json}: {exc.strerror or exc}")
             print(f"\nJSON report written to {args.json}")
@@ -374,7 +516,9 @@ def _lock_inner(args: argparse.Namespace) -> int:
     try:
         new_lock = build_lock(server, tools)
     except LockError as exc:
-        return _err(str(exc))
+        return _err(scrub(str(exc)))
+    if _echoed(target, new_lock):
+        return _err(ECHOED)  # no redaction here: it would change the tool hashes
     # If a lock already exists, show what is about to be accepted first.
     if os.path.exists(args.lock):
         try:
@@ -382,7 +526,7 @@ def _lock_inner(args: argparse.Namespace) -> int:
         except LockError as exc:
             return _err(f"{exc}; fix or delete it before refreshing")
         changes = diff_lock(previous, server, tools)
-        print(render_changes(changes, args.lock, tool_count=len(tools)))
+        print(scrub(render_changes(changes, args.lock, tool_count=len(tools))))
         # Unknown instructions (a --from file without them) must not wipe the locked ones.
         if new_lock["server"]["instructions"] is None:
             new_lock["server"]["instructions"] = previous["server"].get("instructions")
@@ -434,35 +578,64 @@ def main(argv: list[str] | None = None) -> int:
     install_findings: list[Finding] = []
     if args.command == "run":
         cmd = _server_cmd(args.server)
-        if not cmd:
-            return _err("give the server command after '--'")
-        if _refuse_known_bad(cmd):
-            return 1
-        from mcp_lint.install import lint_command
-        from mcp_lint.client import fetch_and_probe, fetch_tools  # needs the mcp SDK
+        target = _http_target(args, cmd)
+        if isinstance(target, int):
+            return target
+        scrub = _scrubber(target)
+        if target is None:
+            if not cmd:
+                return _err("give the server command after '--' (or --url)")
+            if _refuse_known_bad(cmd):
+                return 1
+            from mcp_lint.install import lint_command
 
-        install_findings = lint_command(cmd)
+            install_findings = lint_command(cmd)
+        from mcp_lint.client import (
+            describe_http_error, fetch_and_probe, fetch_and_probe_http, fetch_tools, fetch_tools_http,
+        )  # needs the mcp SDK
 
         try:
+            fixtures = load_fixtures(args.probe) if args.probe else []
+        except (FixtureError, OSError) as exc:
+            return _err(str(exc))
+        try:
             if args.probe or args.error_probes:
-                fixtures = load_fixtures(args.probe) if args.probe else []
-                info, probes = asyncio.run(fetch_and_probe(
-                    cmd[0], cmd[1:], fixtures, args.probe_timeout, auto_errors=args.error_probes,
-                    pass_env=args.pass_env))
+                if target is not None:
+                    info, probes = asyncio.run(fetch_and_probe_http(
+                        target, fixtures, args.probe_timeout, auto_errors=args.error_probes))
+                else:
+                    info, probes = asyncio.run(fetch_and_probe(
+                        cmd[0], cmd[1:], fixtures, args.probe_timeout, auto_errors=args.error_probes,
+                        pass_env=args.pass_env))
+            elif target is not None:
+                info = asyncio.run(fetch_tools_http(target))
             else:
                 info = asyncio.run(fetch_tools(cmd[0], cmd[1:], args.pass_env))
         except (FixtureError, OSError) as exc:
+            if target is not None:
+                return _err(describe_http_error(exc, target))
             return _err(str(exc))
         except Exception as exc:  # noqa: BLE001 - surface any connection failure plainly
+            if target is not None:
+                return _err(describe_http_error(exc, target))
             return _err(f"could not connect to server: {exc!r}")
+        if target is not None:
+            # Scrub at the source too: rules cut and reflow server text, and a secret
+            # split by a cut would slip past the final scrub of the rendered report.
+            info = _scrub_deep(info, scrub)
+            probes = _scrub_deep(probes, scrub)
         from mcp_lint.lock import command_hash
 
-        # The report never carries the launch command, only its hash: tokens passed as arguments stay out.
-        server = {"name": info.name, "version": info.version, "command_sha256": command_hash(cmd)}
+        # The report never carries the launch command or URL, only a hash: tokens stay out.
+        server = {"name": info.name, "version": info.version,
+                  "transport": "stdio" if target is None else "streamable-http",
+                  "command_sha256": command_hash(cmd) if target is None else _http_hash(target)}
         tools = info.tools
         if deep := _too_deep(tools):
-            return _err(deep)
+            return _err(scrub(deep))
     else:
+        target = None
+        scrub = _scrubber(None)
         try:
             tools = _load_tools_file(args.file)
         except RecursionError:
@@ -475,17 +648,20 @@ def main(argv: list[str] | None = None) -> int:
     if probes is not None:
         findings += run_probe_rules(tools, probes)
     findings += install_findings  # I1 is server-wide and doesn't affect the score
-    print(render_text(server, tools, findings, FAIL_ON[args.min_severity]))
+    print(scrub(render_text(server, tools, findings, FAIL_ON[args.min_severity])))
     if probes is not None:
         print()
-        print(render_probes(probes))
+        print(scrub(render_probes(probes)))
     score = score_server(tools, findings, probes)
     print()
-    print(render_scores(score))
+    print(scrub(render_scores(score)))
     if args.json:
-        write_json(args.json, to_json(server, tools, findings, probes,
-                                      include_responses=getattr(args, "include_responses", False),
-                                      score=score))
+        report = to_json(server, tools, findings, probes,
+                         include_responses=getattr(args, "include_responses", False), score=score)
+        if target is not None:
+            _write_json_scrubbed(args.json, report, scrub)
+        else:
+            write_json(args.json, report)
         print(f"\nJSON report written to {args.json}")
 
     if args.fail_under is not None and score.score < args.fail_under:

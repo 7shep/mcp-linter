@@ -18,6 +18,8 @@ python -m unittest tests.test_cli -k fails_on_error         # by name substring
 python -m build                                              # sdist + wheel into dist/
 mcp-lint check tests/fixtures/sample_tools.json              # lint a saved tools/list offline
 mcp-lint run -- python tests/fixtures/demo_server.py         # lint a live stdio server
+python tests/fixtures/demo_server.py --http 8000             # serve the demo over Streamable HTTP at 127.0.0.1:8000/mcp (run in another terminal)
+mcp-lint run --url http://127.0.0.1:8000/mcp                 # lint that HTTP server
 ```
 
 - Tests use stdlib `unittest`, not pytest. `tests/` has no `__init__.py`, so don't pass `-t .` to discover.
@@ -25,7 +27,7 @@ mcp-lint run -- python tests/fixtures/demo_server.py         # lint a live stdio
 - `mcp-lint check`/`run` exit 1 whenever a finding is at or above `--fail-on` (default `error`), so exit 1 on a sample file is normal. Exit 2 is a usage or connection error.
 - Some tests start `tests/fixtures/demo_server.py` as a real MCP server through `sys.executable`. The server's tracebacks in test output (e.g. `UnexpectedToolError: Error executing tool search_contacts`) are expected, not failures.
 - No linter or formatter is configured.
-- CI (`.github/workflows/ci.yml`) runs the suite on Ubuntu with Python 3.10–3.13 and Windows with 3.13, and builds and installs the wheel.
+- CI (`.github/workflows/ci.yml`) runs the suite on Ubuntu with Python 3.10–3.13 and Windows with 3.13, and builds and installs the wheel. `lock-action.yml` tests the Action on Ubuntu and Windows, and `release.yml` builds on every run and publishes on a GitHub release.
 
 ## Architecture
 
@@ -37,7 +39,7 @@ Pipeline for `run`/`check` (`cli.py:main`): get `ToolDef`s → `rules.run_static
   - `rules/security.py`: `SECURITY_RULES` (S8 hidden text). S8 is not scored.
   - `rules/probe.py`: `PROBE_RULES` (P1–P5), each taking `(tools_by_name, probe_results)`.
   - A new rule needs adding to its list, and to `score.FIXED_COSTS` (or `score.MEASURED`) if it should affect the score. The README's rule tables document every rule ID and threshold; keep them in sync.
-- **`client.py`**: stdio connection via the MCP SDK, paginated `tools/list`, probe calls on one session. Servers get only the SDK's minimal default environment plus names passed with `--pass-env`. Never forward the full environment: keeping API keys away from linted servers is a stated guarantee. `safe_exec.py` applies the same minimal environment when the eval launches servers directly.
+- **`client.py`**: stdio and Streamable HTTP (`--url`) connections via the MCP SDK, paginated `tools/list`, probe calls on one session. HTTP uses `HttpTarget` (URL plus headers), `parse_headers` (name and value checks, no duplicates, and `--header-env` refused over plain `http://` unless the host is loopback) and `redact`. The URL and header values never reach output, reports or the lock; only `command_sha256` of `["--url", scheme://host:port/path]` is stored (`cli._http_identity`). `--header-env` values and URL user info/query are secret: `run` and `lock --check` scrub them from server text at the source and in the rendered output, and `lock`/`init-fixtures` refuse to write them. Plain `http://` clients ignore proxy env vars (`build_http_client`). Stdio servers get only the SDK's minimal default environment plus names passed with `--pass-env` (`--pass-env` doesn't apply to `--url`). Never forward the full environment: keeping API keys away from linted servers is a stated guarantee. `safe_exec.py` applies the same minimal environment when the eval launches servers directly.
 - **`fixtures.py` / `probe.py`**: the fixtures file format, argument and safety checks before any call (non-read-only tools need `"allow_destructive": true`), generated bad-argument probes for P4 (read-only tools only), and `ProbeResult` capture.
 - **`score.py`**: turns findings into estimated wasted tokens per session; scores halve every `HALF_LIFE` tokens. All cost constants live here.
 - **`text.py`**: token estimation (4 chars per token of compact JSON; always labelled as an estimate), name splitting and naming-style detection.
@@ -45,6 +47,9 @@ Pipeline for `run`/`check` (`cli.py:main`): get `ToolDef`s → `rules.run_static
 - **`proxy.py`** (`mcp-lint proxy`): an MCP server that wraps an upstream one and applies the fixes (paging with `offset`/`limit`, description replacement from `eval/fixes/*.json`, `isError` on error-as-success). Its pure functions (`rewrite_tool`, `page_text`, `fix_result`) are unit-tested without a server.
 - **`lock.py`** (`mcp-lint lock`, `lock --check`): the rug-pull lockfile. `canonical()` normalises a `ToolDef` (every MCP `Tool` field) so equal schemas hash equal; `diff_lock()` classifies changes as `Finding(rule="LOCK", kind=...)`. The rule it enforces: any change to text the model or user reads, or that makes a schema accept or ask for more, is an error; anything else that changes the hash is at least a warning (fail closed). New change classes need a row in the README's Lockfile table. The lock never stores the raw launch command, only its hash.
 - **`eval.py` / `evaltasks.py`** (`mcp-lint eval`): before/after experiment that runs headless `claude -p` against each server directly (`baseline`) and behind the proxy (`fixed`, plus single-fix ablations). Results append to `eval/results/results.jsonl` and the runner is resumable. `--run` makes real Claude Code calls; don't start it unless asked.
+- **`action.yml` + `scripts/action_lock_check.py`**: composite GitHub Action for `lock --check`. Inputs reach the script only through environment variables, and the script runs mcp-lint from an argv list without a shell. Never put `${{ inputs.* }}` into a `run:` script.
+- **`.pre-commit-hooks.yaml`**: pre-commit hook `mcp-lint-lock` (`lock --check`, always runs).
+- **`.github/workflows/release.yml` + `scripts/check_release_version.py`**: a published GitHub release checks that the tag matches the version in both `pyproject.toml` and `__init__.py`, builds, and publishes to PyPI with Trusted Publishing (no token). A manual run publishes to TestPyPI. The PyPI name is `mcp-linter`.
 
 ## Data directories
 

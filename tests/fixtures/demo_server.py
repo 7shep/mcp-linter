@@ -32,5 +32,41 @@ def get(id: str) -> str:
     return id
 
 
+def _serve_http(port: int, require_header: str | None) -> None:
+    """Streamable HTTP on 127.0.0.1:PORT at /mcp; optionally 401 without NAME=VALUE."""
+    import uvicorn
+    from starlette.responses import PlainTextResponse
+
+    app = server.streamable_http_app()
+    if require_header:
+        name, _, value = require_header.partition("=")
+        wanted = name.lower().encode("latin-1")
+        wanted_value = value.encode("latin-1")
+
+        class RequireHeader:
+            def __init__(self, inner):
+                self.inner = inner
+
+            async def __call__(self, scope, receive, send):
+                if scope["type"] == "http":
+                    got = dict(scope["headers"]).get(wanted)
+                    if got != wanted_value:
+                        await PlainTextResponse("unauthorized", status_code=401)(scope, receive, send)
+                        return
+                await self.inner(scope, receive, send)
+
+        app = RequireHeader(app)
+    uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning")
+
+
 if __name__ == "__main__":
-    server.run("stdio")
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--http", type=int, metavar="PORT")
+    ap.add_argument("--require-header", metavar="NAME=VALUE")
+    opts, _unknown = ap.parse_known_args()  # unknown args are ignored (tests pass fake secrets)
+    if opts.http is not None:
+        _serve_http(opts.http, opts.require_header)
+    else:
+        server.run("stdio")
