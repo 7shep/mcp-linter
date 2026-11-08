@@ -1,0 +1,37 @@
+{
+  "apparent_false_positives": [
+    {"server": "everything", "tool": "get-annotated-message", "tag": "UNTRUSTED_READ", "reason": "Demo tool returning fixed text. Tagged only for the noun 'message'."},
+    {"server": "everything", "tool": "trigger-resource-update", "tag": "UNTRUSTED_READ", "reason": "The URI names a resource for a notification. No content comes back."},
+    {"server": "everything", "tool": "trigger-resource-update", "tag": "EXTERNAL_WRITE", "reason": "The URI names a resource for a notification. Nothing is sent to that address."},
+    {"server": "github", "tool": "search_users", "tag": "PRIVATE_READ", "reason": "Returns public GitHub profiles."},
+    {"server": "notion", "tool": "API-post-search", "tag": "UNTRUSTED_READ", "reason": "Searches page titles inside the connected workspace, with no outside corpus."},
+    {"server": "notion", "tool": "API-create-a-comment", "tag": "EXTERNAL_WRITE", "reason": "A comment is visible only to people with access to the page, so it leaves the boundary only on a publicly shared page. This one call decides Notion's whole trifecta."},
+    {"server": "aws-docs", "tool": "read_documentation", "tag": "UNTRUSTED_READ", "reason": "Description limits URLs to docs.aws.amazon.com, so the content is AWS-authored."},
+    {"server": "aws-docs", "tool": "read_documentation", "tag": "EXTERNAL_WRITE", "reason": "Description limits URLs to docs.aws.amazon.com, so an attacker host cannot receive a request."},
+    {"server": "aws-docs", "tool": "read_sections", "tag": "UNTRUSTED_READ", "reason": "AWS documentation pages only, as for read_documentation."},
+    {"server": "aws-docs", "tool": "read_sections", "tag": "EXTERNAL_WRITE", "reason": "AWS documentation pages only, as for read_documentation."},
+    {"server": "aws-docs", "tool": "search_table", "tag": "PRIVATE_READ", "reason": "'table' here is a table in a public documentation page."},
+    {"server": "aws-docs", "tool": "search_table", "tag": "UNTRUSTED_READ", "reason": "Description limits URLs to docs.aws.amazon.com."},
+    {"server": "aws-docs", "tool": "search_table", "tag": "EXTERNAL_WRITE", "reason": "Description limits URLs to docs.aws.amazon.com."},
+    {"server": "aws-docs", "tool": "recommend", "tag": "UNTRUSTED_READ", "reason": "Takes an AWS documentation page URL and returns related AWS pages."},
+    {"server": "aws-docs", "tool": "recommend", "tag": "EXTERNAL_WRITE", "reason": "Takes an AWS documentation page URL and returns related AWS pages."},
+    {"server": "firecrawl", "tool": "firecrawl_scrape", "tag": "PRIVATE_READ", "reason": "The nested 'script' is a page action in Firecrawl's own browser, which has no access to the user's local data."},
+    {"server": "firecrawl", "tool": "firecrawl_search", "tag": "PRIVATE_READ", "reason": "The nested 'script' is a page action in Firecrawl's own browser, which has no access to the user's local data."},
+    {"server": "firecrawl", "tool": "firecrawl_crawl", "tag": "PRIVATE_READ", "reason": "The nested 'script' is a page action in Firecrawl's own browser, which has no access to the user's local data."},
+    {"server": "firecrawl", "tool": "firecrawl_interact", "tag": "PRIVATE_READ", "reason": "The code runs in Firecrawl's own browser session, which has no access to the user's local data."},
+    {"server": "firecrawl", "tool": "firecrawl_monitor_delete", "tag": "EXTERNAL_WRITE", "reason": "Takes only a monitor id. openWorldHint is true, but no chosen data can leave."},
+    {"server": "firecrawl", "tool": "firecrawl_monitor_run", "tag": "EXTERNAL_WRITE", "reason": "Takes only a monitor id. openWorldHint is true, but no chosen data can leave."},
+    {"server": "playwright", "tool": "browser_close", "tag": "UNTRUSTED_READ", "reason": "Closes the page. Tagged only for the 'browser' prefix."},
+    {"server": "playwright", "tool": "browser_resize", "tag": "UNTRUSTED_READ", "reason": "Resizes the window. Tagged only for the 'browser' prefix."},
+    {"server": "playwright", "tool": "browser_emulate_media", "tag": "UNTRUSTED_READ", "reason": "Sets CSS media features. Tagged only for the 'browser' prefix."}
+  ],
+  "apparent_false_negatives": [
+    {"server": "markitdown", "tool": "convert_to_markdown", "tag": "PRIVATE_READ", "reason": "Accepts file: URIs, so it reads local files. The rules treat a URI parameter as web only."},
+    {"server": "firecrawl", "tool": "firecrawl_parse", "tag": "PRIVATE_READ", "reason": "Reads a local file through 'filePath'. The camelCase name misses PATH_PARAMS."},
+    {"server": "tavily", "tool": "tavily_research", "tag": "UNTRUSTED_READ", "reason": "Returns web research. Its 'input' parameter is not in QUERY_PARAMS."},
+    {"server": "chrome-devtools", "tool": "get_network_request", "tag": "UNTRUSTED_READ", "reason": "Returns response bodies from visited sites. 'network' is not a browser noun."},
+    {"server": "chrome-devtools", "tool": "fill_form", "tag": "EXTERNAL_WRITE", "reason": "Form fields are sent to whatever page is open."},
+    {"server": "playwright", "tool": "browser_file_upload", "tag": "EXTERNAL_WRITE", "reason": "Sends a local file to the open page. The verb is third in the name, past the two-word verb window."},
+    {"server": "playwright", "tool": "browser_fill_form", "tag": "EXTERNAL_WRITE", "reason": "Form fields are sent to whatever page is open."}
+  ]
+}
