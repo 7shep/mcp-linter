@@ -20,6 +20,11 @@ from mcp_lint.client import (
     validate_url,
 )
 
+try:
+    _ExceptionGroup = ExceptionGroup
+except NameError:  # Python 3.10: anyio depends on the backport there
+    from exceptiongroup import ExceptionGroup as _ExceptionGroup
+
 HERE = os.path.dirname(__file__)
 DEMO_SERVER = os.path.join(HERE, "fixtures", "demo_server.py")
 
@@ -331,7 +336,7 @@ class HelperTests(unittest.TestCase):
 
     def test_describe_unwraps_exception_group(self):
         target = HttpTarget("https://h.example/mcp?token=TOKENX", {"A": "HVALUE"})
-        group = ExceptionGroup("g", [ValueError("bad TOKENX and HVALUE"), KeyError("x")])
+        group = _ExceptionGroup("g", [ValueError("bad TOKENX and HVALUE"), KeyError("x")])
         msg = describe_http_error(group, target)
         self.assertTrue(msg.startswith("could not connect to https://h.example: ValueError: "))
         self.assertNotIn("TOKENX", msg)

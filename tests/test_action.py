@@ -7,6 +7,7 @@ import os
 import shlex
 import subprocess
 import sys
+import sysconfig
 import tempfile
 import unittest
 from pathlib import Path
@@ -29,8 +30,13 @@ def env(**values: str) -> dict[str, str]:
 
 
 def mcp_lint_exe() -> Path:
-    """The venv's mcp-lint, a sibling of sys.executable (Scripts/ on Windows, bin/ elsewhere)."""
-    return Path(sys.executable).parent / ("mcp-lint.exe" if os.name == "nt" else "mcp-lint")
+    """The installed mcp-lint in this interpreter's scripts dir (Scripts/ on Windows, bin/ elsewhere).
+
+    sysconfig rather than sys.executable's folder: outside a venv on Windows, python.exe
+    sits one level above Scripts/.
+    """
+    name = "mcp-lint.exe" if os.name == "nt" else "mcp-lint"
+    return Path(sysconfig.get_path("scripts")) / name
 
 
 class BuildArgvTests(unittest.TestCase):
