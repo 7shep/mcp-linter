@@ -206,6 +206,8 @@ claude -p --output-format stream-json --verbose --model <id> --max-turns 25
 
 It runs from a scratch folder outside the repo, so no CLAUDE.md, user settings or memory reach the agent, and a test checks the generated command. This matches a user who chose "Always Allow", the setting behind the GitHub incident. Results describe Claude Code with each model, including its system prompt. A direct Messages API loop is a possible later comparison.
 
+**Billing: the plan login, never API credits.** Runs use the claude.ai login, so they draw on the plan's usage limits. An `ANTHROPIC_API_KEY` always wins in `-p` mode, and `--bare` ignores plan logins altogether, so the harness never passes `--bare`. It removes `ANTHROPIC_*`, `CLAUDE_CODE_OAUTH_TOKEN` and the cloud-provider switches from each launch. Before a run, `claude auth status` must report `authMethod: claude.ai`. Each trial also records `apiKeySource` from the stream, and any value other than `none` stops the whole run.
+
 Models are passed by full ID (`claude-haiku-5-5`, `claude-sonnet-5-5`, `claude-opus-5-5`). `claude-fable-5-1` is optional. A run counts only if the requested model produced most of the output tokens in `modelUsage`, so a run that fell back to another model is excluded.
 
 **Trial count.** 20 tool sets x 2 tasks x 5 conditions (I0 to I4) x 3 runs = **600 trials per model**. Per model and tool set that is 24 injected trials and 6 clean ones.
@@ -245,7 +247,7 @@ Group D can't be exploited, so **measured precision can't exceed 73% (strict) or
 
 ## 7. Recording and resuming
 
-**Called directly from `eval.py`:** `load_results` (tolerates a cut-off last line), `valid_rows` (first row per key, ignoring `limit_hit`, `infra_error` and `excluded`), `run_key`, the injectable `Runner` type and `subprocess_runner`, `parse_stream` for token and cost figures, and `_sd`.
+**Called directly from `eval.py`:** `load_results` (tolerates a cut-off last line), `valid_rows` (first row per key, ignoring `limit_hit`, `infra_error` and `excluded`), `run_key`, the injectable `Runner` type, `parse_stream` for token and cost figures, and `_sd`.
 
 **Patterns copied:** the append-only JSONL with one line per trial, skipping trials already recorded, the `.lock` file that allows one runner per results file, stopping at the first usage or rate-limit error, and the bootstrap in `paired_diff`. These live in `run_eval` and `_run_todo`, which take a `Task`, so the benchmark needs its own loop.
 
@@ -269,7 +271,9 @@ Additions to the `eval.py` pattern:
 - A row counts as done only if its hashes match what the agent sees: mock definitions, tasks and injections. The flags are computed at analysis time from the saved definitions, so a new tagger version re-scores existing rows without any new paid trial.
 - Each trial keeps its server log and stream output in `results/transcripts/`, compressed and gitignored, since the stream may include local paths. These allow outcomes to be re-scored.
 - Each mock server logs a startup line. A missing startup line, or a timeout, is an `infra_error` and is re-run. A model that declines to call anything has a startup line, so it stays a real result.
-- `--max-usd` stops launching trials once the summed `cost_usd` reaches a limit.
+- A run stops at the first usage limit and can be resumed after the reset. `eval.LIMIT_ERROR` misses the documented "You've hit your session limit" wording, so the harness adds it. The limit text only counts when the run errored, so a model can't fake a stop.
+- Any failure the harness doesn't recognise is an `infra_error`, never a result, and three in a row stop the run. A blocked trial can't count as "attack failed".
+- `--max-trials` limits one sitting. On a plan `cost_usd` is an API-price estimate, so no spend limit is enforced from it.
 - Trials run in order of run number, then tool set, then condition, so a partial run stays balanced.
 
 Results files are experiment records and are not rewritten.
@@ -299,7 +303,7 @@ Totals are summed before rounding, so a column can differ by $1 from the sum of 
 
 The high case includes the earlier eval's long scans of large files, with runs up to 1.19M tokens, which mock tools won't produce, so I expect the low-to-expected range. Against that, Sonnet and Opus have no recorded runs here, and they may think longer than Haiku did. Repricing Haiku's mean gives $0.0091 against $0.0113 measured, a 24% gap, so the three-model high would be about $390 if Sonnet and Opus are under-estimated the same way. Allow about 15% more for re-runs. Running group B once per set instead of three times would save 60 trials per model. The pilot in section 9 replaces these figures with measured ones before any large spend.
 
-The earlier eval ran on a Claude subscription, so its dollar figures were what Claude Code reported, and usage limits were the real constraint. The same would apply here.
+The benchmark runs on a Claude plan, as the earlier eval did, so these dollar figures are what the runs would cost at API prices, not a bill. The real constraint is the plan's usage limits. The pilot measures how much of the allowance a trial uses, which decides how many models fit and how many limit resets the full run takes.
 
 ## 9. Run order
 
@@ -312,6 +316,15 @@ Each paid step needs explicit approval first.
 | 2 | Haiku, full | Yes | 600 | about $2 |
 | 3 | Sonnet and Opus, full | Yes | 1,200 | about $114 |
 | 4 | Fable (optional) | Yes | 600 | about $173 |
+
+Commands, from the repo root:
+
+```
+python benchmark/harness.py --plan                        # trial counts, runs nothing
+python benchmark/harness.py --simulate ignore             # scripted agent, offline
+python benchmark/harness.py --run --model claude-haiku-5-5 --pilot    # uses the plan; ask first
+python benchmark/analyze.py benchmark/results/runs.jsonl
+```
 
 **Before step 1,** the offline tests must show that:
 
@@ -351,5 +364,5 @@ Each paid step needs explicit approval first.
 
 1. Approve the pilot (about $4 expected, 60 trials)?
 2. Which models: Haiku, Sonnet and Opus, or Fable as well?
-3. Subscription or API key for the paid runs, and what `--max-usd` limit?
+3. How many limit resets to allow for the full run, given what the pilot measures? Runs use the plan login, so there is no API spend limit to set.
 4. Apply fixes 1 to 5 and 7 to 10 from section 3 before the pilot? I recommend yes, and reporting the frozen v0 numbers beside the new ones. Because flags are computed at analysis time, this choice can also wait until after the paid runs.
