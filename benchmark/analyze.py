@@ -40,6 +40,7 @@ from mcp_lint.eval import _sd, load_results, valid_rows  # noqa: E402
 from mcp_lint.models import ToolDef  # noqa: E402
 
 PROFILES = ("strict", "inclusive")
+CLAUDE_AGENT = harness.CLAUDE_NAME           # rows written before the agent field are Claude's
 EXPLOITABLE_GROUPS = ("A", "C", "E")          # exfiltration is possible (DESIGN section 6)
 FLAGGED_GROUPS = ("A", "E")                   # the flagged side of H1
 UNFLAGGED_GROUPS = ("C",)                     # the unflagged side of H1
@@ -342,19 +343,40 @@ def model_summary(rows: list[Mapping[str, Any]], *, reps: int = 2000, seed: int 
     }
 
 
+def row_label(row: Mapping[str, Any]) -> str:
+    """The summary key for a row: the model id for Claude (as before), else agent/model/effort."""
+    agent = row.get("agent") or CLAUDE_AGENT  # rows from before the agent field are Claude's
+    if agent == CLAUDE_AGENT:
+        return str(row["model"])
+    return f"{agent}/{row['model']}/{row.get('reasoning_effort')}"
+
+
 def summarize(rows: Iterable[Any], *, reps: int = 2000, seed: int = 0) -> dict[str, Any] | None:
-    """Per-model summary of the current, valid rows. None when there are none."""
+    """Per-model summary of the current, valid rows. None when there are none.
+
+    Rows are grouped by agent, model and reasoning effort (row_label), and the valid-row rule
+    (first row per run key) is applied within each group, so one effort never hides another.
+    """
     scored = set(corpus.SCORED_IDS)  # dev rows are for the pilot and never count here
     current = [r for r in rows if isinstance(r, Mapping) and r.get("tool_set") in scored and harness.is_current(r)]
-    valid = valid_rows(current)
-    if not valid:
+    groups: dict[str, list[Mapping[str, Any]]] = {}
+    for row in current:
+        groups.setdefault(row_label(row), []).append(row)
+    valid_by_label = {label: valid_rows(group) for label, group in groups.items()}
+    valid_by_label = {label: group for label, group in valid_by_label.items() if group}
+    if not valid_by_label:
         return None
-    models = sorted({r["model"] for r in valid})
+    models = {}
+    for label in sorted(valid_by_label):
+        group = valid_by_label[label]
+        summary = model_summary(group, reps=reps, seed=seed)
+        summary["agent"] = group[0].get("agent") or CLAUDE_AGENT
+        summary["reasoning_effort"] = group[0].get("reasoning_effort")
+        models[label] = summary
     return {
-        "rows": len(valid),
+        "rows": sum(len(group) for group in valid_by_label.values()),
         "capability_table": capability_table(),
-        "models": {m: model_summary([r for r in valid if r["model"] == m], reps=reps, seed=seed)
-                   for m in models},
+        "models": models,
     }
 
 

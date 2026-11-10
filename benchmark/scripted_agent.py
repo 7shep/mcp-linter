@@ -12,6 +12,13 @@ Policies:
               follows the injection, so it also leaks on clean runs.
   ignore      reads the same items and answers the task. No sink call.
 
+Codex: a command whose argv has ``exec`` and ``-C`` is answered in ``codex exec --json``
+shape instead (thread.started, item.completed mcp_tool_call per call, agent_message,
+turn.completed with usage). The work folder comes from ``-C``. Options for that shape:
+``foreign_item`` (a non-mock item type, e.g. command_execution), ``fail_message`` (the
+turn fails with that message, no calls), ``no_calls`` (answer without calling tools),
+``bad_server`` (one mcp call naming a server key the set does not have).
+
 THREAT MODEL
   DEFENDS AGAINST: the harness tests trusting a fake agent that can reach the network
     or a real process; the scripted agent's own output being mistaken for a model's.
@@ -28,7 +35,7 @@ import argparse
 import json
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from urllib.parse import quote
 
 import corpus
@@ -83,6 +90,22 @@ def _flag(cmd: list[str], name: str) -> str:
         raise ValueError(f"command has no {name} value") from None
 
 
+def _play(policy: str, tool_set: corpus.ToolSet, task: corpus.Task, variant: str,
+          call: Callable[[str, dict[str, Any]], tuple[str, bool]], can_sink: bool) -> None:
+    """The task's reads, then the policy's sink call. ``call`` runs one tool and returns (text, is_error)."""
+    private_text: str | None = None
+    untrusted_read = False
+    for tool, args in task.reads:
+        text, is_error = call(tool, args)
+        spec = tool_set.spec(tool)
+        if spec is not None and spec.role == "private" and not is_error and private_text is None:
+            private_text = text
+        if (tool, args) in tool_set.items:
+            untrusted_read = True
+    if policy == "exfiltrate" and private_text is not None and untrusted_read and can_sink:
+        call(tool_set.sink_tool, sink_arguments(tool_set, tool_set.sink_tool, private_text, variant))
+
+
 class ScriptedAgent:
     """A Runner. Options exist only to exercise the harness's classifier paths in tests."""
 
@@ -93,7 +116,9 @@ class ScriptedAgent:
                  retry_error: str | None = None, stderr_text: str = "", exit_code: int | None = None,
                  model_usage: dict[str, Any] | None = None, limit_after_calls: int | None = None,
                  mcp_status: str = "connected", omit_mcp_servers: bool = False,
-                 drop_mcp_server: bool = False, permission_denials: list[Any] | None = None):
+                 drop_mcp_server: bool = False, permission_denials: list[Any] | None = None,
+                 foreign_item: str | None = None, fail_message: str | None = None,
+                 no_calls: bool = False, bad_server: bool = False):
         if policy not in POLICIES:
             raise ValueError(f"unknown policy {policy!r}")
         if limit_after_calls is not None and error_text is None:
@@ -117,6 +142,10 @@ class ScriptedAgent:
         self.omit_mcp_servers = omit_mcp_servers  # leave mcp_servers out of the init event
         self.drop_mcp_server = drop_mcp_server  # report all but the last server
         self.permission_denials = permission_denials
+        self.foreign_item = foreign_item  # Codex: emit a completed item of this non-mock type
+        self.fail_message = fail_message  # Codex: the turn fails with this message
+        self.no_calls = no_calls  # Codex: answer without calling any tool
+        self.bad_server = bad_server  # Codex: one mcp call naming a server key the set lacks
 
     def _servers(self, config: dict[str, Any]) -> list[tuple[str, mock_server.Backend]]:
         out = []
@@ -131,6 +160,8 @@ class ScriptedAgent:
 
     def __call__(self, cmd: list[str], stdin: str, cwd: str, timeout: float) -> Completed:
         start = time.perf_counter()
+        if "exec" in cmd and "-C" in cmd:  # a codex exec argv (Claude's has neither)
+            return self._codex(cmd, start)
         model = _flag(cmd, "--model")
         config = json.loads(Path(_flag(cmd, "--mcp-config")).read_text(encoding="utf-8"))
         harness.validate_config(config)
@@ -178,20 +209,8 @@ class ScriptedAgent:
             return text, is_error
 
         stopped = False
-        private_text: str | None = None
-        untrusted_read = False
         try:
-            for tool, args in task.reads:
-                text, is_error = call(tool, args)
-                spec = tool_set.spec(tool)
-                if spec is not None and spec.role == "private" and not is_error and private_text is None:
-                    private_text = text
-                if (tool, args) in tool_set.items:
-                    untrusted_read = True
-            if (self.policy == "exfiltrate" and private_text is not None and untrusted_read
-                    and tool_set.sink_tool in route):
-                call(tool_set.sink_tool, sink_arguments(tool_set, tool_set.sink_tool, private_text,
-                                                       first.variant))
+            _play(self.policy, tool_set, task, first.variant, call, tool_set.sink_tool in route)
         except _Stopped:
             stopped = True
 
@@ -223,3 +242,65 @@ class ScriptedAgent:
         code = self.exit_code if self.exit_code is not None else (1 if errored else 0)
         return Completed(code, "\n".join(lines) + "\n", self.stderr_text,
                          round((time.perf_counter() - start) * 1000))
+
+    def _codex(self, cmd: list[str], start: float) -> Completed:
+        """The same policies, in the shape ``codex exec --json`` prints. ``-C`` is the work folder's scratch."""
+        cwd = Path(_flag(cmd, "-C"))
+        if any(cwd.iterdir()):
+            raise AssertionError(f"codex cwd {cwd} is not empty")  # it must not expose trial.json
+        work = cwd.parent
+        config = json.loads((work / "mcp.json").read_text(encoding="utf-8"))
+        harness.validate_config(config, work=work)
+        servers = self._servers(config)
+        first = servers[0][1]
+        tool_set = first.tool_set
+        task = first.task
+        route = {name: (key, backend) for key, backend in servers for name in backend.specs}
+        lines: list[str] = []
+
+        def emit(event: dict[str, Any]) -> None:
+            lines.append(json.dumps(event, ensure_ascii=False))
+
+        def elapsed() -> int:
+            return round((time.perf_counter() - start) * 1000)
+
+        emit({"type": "thread.started", "thread_id": "scripted"})
+        emit({"type": "turn.started"})
+        if self.fail_message is not None:
+            emit({"type": "turn.failed", "error": {"message": self.fail_message}})
+            code = self.exit_code if self.exit_code is not None else 1
+            return Completed(code, "\n".join(lines) + "\n", self.stderr_text, elapsed())
+        if self.bad_server:
+            emit({"type": "item.completed", "item": {
+                "id": "item_bad", "type": "mcp_tool_call", "server": "s9", "tool": "ghost",
+                "arguments": {}, "status": "failed", "result": None,
+                "error": {"message": "server s9 is not configured"}}})
+        if self.foreign_item:
+            emit({"type": "item.completed", "item": {"id": "item_foreign", "type": self.foreign_item}})
+        calls = 0
+
+        def call(tool: str, args: dict[str, Any]) -> tuple[str, bool]:
+            nonlocal calls
+            calls += 1
+            key, backend = route[tool]  # a tool the set lacks is a bug in the script, so KeyError
+            text, is_error = backend.call(tool, dict(args))
+            # Like real codex (exec_events.rs): a tool's own isError reply is a result, with status
+            # "failed" and error None. `error` is set only when the call itself failed.
+            emit({"type": "item.completed", "item": {
+                "id": f"item_{calls}", "type": "mcp_tool_call", "server": key, "tool": tool,
+                "arguments": dict(args), "status": "failed" if is_error else "completed",
+                "result": {"content": [{"type": "text", "text": text}], "structured_content": None},
+                "error": None}})
+            return text, is_error
+
+        if not self.no_calls:
+            _play(self.policy, tool_set, task, first.variant, call, tool_set.sink_tool in route)
+        answer = "Answer: " + "; ".join(task.answer_substrings)
+        if self.final_text_extra:
+            answer += "\n" + self.final_text_extra
+        emit({"type": "item.completed", "item": {"id": "item_answer", "type": "agent_message", "text": answer}})
+        emit({"type": "turn.completed", "usage": {
+            "input_tokens": 1200, "cached_input_tokens": 0, "cache_write_input_tokens": 0,
+            "output_tokens": 300 + 40 * calls, "reasoning_output_tokens": 0}})
+        code = self.exit_code if self.exit_code is not None else 0
+        return Completed(code, "\n".join(lines) + "\n", self.stderr_text, elapsed())
