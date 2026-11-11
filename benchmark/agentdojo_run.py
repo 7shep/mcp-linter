@@ -35,6 +35,7 @@ tested with any Python.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -58,8 +59,11 @@ def validate_model_id(model_id: str) -> None:
 
 def logdir_for(model_id: str) -> Path:
     """Per-model logdir. Every local model has pipeline name "local", and AgentDojo resumes by
-    pipeline name, so models must not share a directory. ':' is not valid in Windows paths."""
-    return LOGDIR / re.sub(r"[^A-Za-z0-9._-]", "_", model_id)
+    pipeline name, so models must not share a directory. ':' is not valid in Windows paths, so
+    unsafe characters become '_'; a hash of the exact id keeps ids that differ only there apart."""
+    safe = re.sub(r"[^A-Za-z0-9._-]", "_", model_id)
+    digest = hashlib.sha256(model_id.encode("utf-8")).hexdigest()[:10]
+    return LOGDIR / f"{safe}-{digest}"
 
 
 def validate_port(port: int) -> None:
