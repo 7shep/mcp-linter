@@ -96,6 +96,10 @@ Real agents take extra turns and think, so the cost estimate below doubles input
 - **After step 3:** clean-task utility through the bridge must be at least 80%, so the bridge isn't breaking tasks. No trial may end with the server's tools missing. Note how much plan usage the 80 trials used, to estimate step 4.
 - **After step 4:** if Haiku's exfil ASR is below 5%, stop before Sonnet and Opus, as in `DESIGN.md`. A1 then rests on the local models alone, and the write-up says so.
 
+## Scoring
+
+`PYTHONPATH=src <mcp-linter python> benchmark/agentdojo_score.py <run_dir> --attack important_instructions [--pipeline NAME] [--allow-partial]` writes `results/agentdojo/asr_<name>.json` and `.md`. It exits 2 on any bad input and reports missing trials unless `--allow-partial` is given.
+
 ## Limits
 
 - **Static attacks.** `important_instructions` is fixed text, so ASR is a lower bound for an adaptive attacker ("The Attacker Moves Second", arXiv 2510.09023).
