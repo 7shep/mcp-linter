@@ -1,0 +1,312 @@
+{
+ "servers": {
+  "aws-docs": {
+   "changed_tools": [],
+   "split": "holdout",
+   "tools": 5,
+   "trifecta": {
+    "inclusive": {
+     "v1": true,
+     "v2": true
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "chrome-devtools": {
+   "changed_tools": [],
+   "split": "holdout",
+   "tools": 32,
+   "trifecta": {
+    "inclusive": {
+     "v1": true,
+     "v2": true
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "context7": {
+   "changed_tools": [],
+   "split": "holdout",
+   "tools": 2,
+   "trifecta": {
+    "inclusive": {
+     "v1": false,
+     "v2": false
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "desktop-commander": {
+   "changed_tools": [],
+   "split": "dev",
+   "tools": 25,
+   "trifecta": {
+    "inclusive": {
+     "v1": true,
+     "v2": true
+    },
+    "strict": {
+     "v1": true,
+     "v2": true
+    }
+   }
+  },
+  "duckduckgo": {
+   "changed_tools": [],
+   "split": "holdout",
+   "tools": 3,
+   "trifecta": {
+    "inclusive": {
+     "v1": false,
+     "v2": false
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "everything": {
+   "changed_tools": [
+    {
+     "new_rules": [
+      "P-MESSAGE"
+     ],
+     "profile": "inclusive",
+     "tool": "get-annotated-message",
+     "v1_tags": [
+      "UNTRUSTED_READ"
+     ],
+     "v2_tags": [
+      "PRIVATE_READ",
+      "UNTRUSTED_READ"
+     ]
+    }
+   ],
+   "split": "dev",
+   "tools": 16,
+   "trifecta": {
+    "inclusive": {
+     "v1": true,
+     "v2": true
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "exa": {
+   "changed_tools": [],
+   "split": "holdout",
+   "tools": 2,
+   "trifecta": {
+    "inclusive": {
+     "v1": false,
+     "v2": false
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "fetch": {
+   "changed_tools": [],
+   "split": "dev",
+   "tools": 1,
+   "trifecta": {
+    "inclusive": {
+     "v1": false,
+     "v2": false
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "filesystem": {
+   "changed_tools": [],
+   "split": "dev",
+   "tools": 14,
+   "trifecta": {
+    "inclusive": {
+     "v1": false,
+     "v2": false
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "firecrawl": {
+   "changed_tools": [],
+   "split": "holdout",
+   "tools": 26,
+   "trifecta": {
+    "inclusive": {
+     "v1": true,
+     "v2": true
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "git": {
+   "changed_tools": [],
+   "split": "dev",
+   "tools": 12,
+   "trifecta": {
+    "inclusive": {
+     "v1": false,
+     "v2": false
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "github": {
+   "changed_tools": [],
+   "split": "dev",
+   "tools": 26,
+   "trifecta": {
+    "inclusive": {
+     "v1": true,
+     "v2": true
+    },
+    "strict": {
+     "v1": true,
+     "v2": true
+    }
+   }
+  },
+  "markitdown": {
+   "changed_tools": [],
+   "split": "holdout",
+   "tools": 1,
+   "trifecta": {
+    "inclusive": {
+     "v1": false,
+     "v2": false
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "memory": {
+   "changed_tools": [],
+   "split": "dev",
+   "tools": 9,
+   "trifecta": {
+    "inclusive": {
+     "v1": false,
+     "v2": false
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "notion": {
+   "changed_tools": [],
+   "split": "dev",
+   "tools": 24,
+   "trifecta": {
+    "inclusive": {
+     "v1": true,
+     "v2": true
+    },
+    "strict": {
+     "v1": true,
+     "v2": true
+    }
+   }
+  },
+  "playwright": {
+   "changed_tools": [],
+   "split": "holdout",
+   "tools": 25,
+   "trifecta": {
+    "inclusive": {
+     "v1": true,
+     "v2": true
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "tavily": {
+   "changed_tools": [],
+   "split": "holdout",
+   "tools": 5,
+   "trifecta": {
+    "inclusive": {
+     "v1": false,
+     "v2": false
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  },
+  "time": {
+   "changed_tools": [],
+   "split": "dev",
+   "tools": 2,
+   "trifecta": {
+    "inclusive": {
+     "v1": false,
+     "v2": false
+    },
+    "strict": {
+     "v1": false,
+     "v2": false
+    }
+   }
+  }
+ },
+ "tagger": "v2-draft",
+ "totals": {
+  "profiles": {
+   "inclusive": {
+    "servers_trifecta_changed": [],
+    "servers_trifecta_v1": 8,
+    "servers_trifecta_v2": 8,
+    "tag_gains": 1,
+    "tag_losses": 0,
+    "tools_changed": 1
+   },
+   "strict": {
+    "servers_trifecta_changed": [],
+    "servers_trifecta_v1": 3,
+    "servers_trifecta_v2": 3,
+    "tag_gains": 0,
+    "tag_losses": 0,
+    "tools_changed": 0
+   }
+  },
+  "servers": 18,
+  "tools": 230
+ }
+}

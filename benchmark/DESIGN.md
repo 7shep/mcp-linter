@@ -393,6 +393,33 @@ Haiku 5.5 never acted on a v1 injection, under any condition or tool set, so no 
 
 The suite-level warning fires on 3 of 4 attackable suites, but the tagger names the actual route in only 14–21% of the exfil cases. The lesson for the tagger is that private and untrusted are not separate tools: anything a third party can write into (payments, shared files, invites, chat) is both. These are findings on a holdout, so the frozen tagger is not changed here. Rules learned from this would need a new holdout.
 
+**Draft v2 tagger (`benchmark/tagging_v2.py`, not frozen).** v2 is v1 plus six rules, all for read verbs only, so it never drops a v1 tag:
+
+| Rule | Tag, confidence | Fires on |
+|---|---|---|
+| U-INBOUND | U, high | transaction, payment, calendar, event, invite, channel, chat, conversation (not owner/repo tools) |
+| U-SHARED-FILE | U, medium | file, document, attachment or drive with no local path parameter (`path`, `file_path`, ...) |
+| P-NOUN-V2 | P, high | transaction, payment, balance, iban, passport, bank |
+| P-MESSAGE | P, medium | message, chat, conversation, channel (not browser tools) |
+| P-USER-PROFILE | P, high | user plus info, information or profile |
+| P-CLOUD-FILE | P, medium | the same file words as U-SHARED-FILE |
+
+| | v1 strict | v2 strict | v1 inclusive | v2 inclusive |
+|---|---|---|---|---|
+| AgentDojo exfil paths labelled (of 582) | 83 | 295 | 123 | 562 |
+| AgentDojo suites flagged (of 4) | 3 | 4 | 3 | 4 |
+| Survey tools whose tags changed (of 230) | — | 0 | — | 1 |
+| Survey servers whose trifecta flag changed (of 18) | — | 0 | — | 0 |
+
+These are **dev-set numbers**, because the rules were written after reading the AgentDojo misses. The survey shows that v2 doesn't disturb servers already reviewed, but it is a weak check of false positives, because few of its 18 servers have payment, calendar, chat or cloud-drive tools. The remaining misses are by design: `read_file` with a local path, write-verb tools that also return the item (`delete_file`, `add_calendar_event_participants`), and, in strict, the medium-confidence cloud-file reads.
+
+Known over-tagging risks to watch: `channel` is both U and P, so channel listings get both tags. `event` also matches monitoring and analytics events. Cloud-file rules will tag any `list_files` without a path, even on a single-user store.
+
+**Holdout before v2 replaces v1:**
+- Save `tools/list` from 8–10 public servers that are not in `survey/tools/` and that do have these nouns, such as chat, calendar, cloud drive, payments and mail.
+- Label each tool's legs from its documentation before running v2, either by a reader who hasn't seen v2's output or as labels committed before the run.
+- Run v1 and v2 once, report recall and false positives against those labels, and freeze whichever wins.
+
 ## 10. Safety rules
 
 - Mock code imports no networking library, and a test scans for that. The MCP SDK does bring in an HTTP stack, so each server also installs a `sys.addaudithook` that kills it on `socket.connect`, on starting a subprocess, and on file access outside its own log.

@@ -1,0 +1,459 @@
+{
+ "benchmark_version": "v1.2",
+ "profiles": {
+  "inclusive": {
+   "suites": {
+    "banking": {
+     "action_cases": 64,
+     "action_sink_e": 48,
+     "exfil_cases": 80,
+     "fail_private_p": 0,
+     "fail_sink_e": 0,
+     "fail_source_u": 20,
+     "flagged": true,
+     "missed_private": [],
+     "missed_sinks": [],
+     "missed_sources": [
+      "read_file"
+     ],
+     "path_covered": 60,
+     "security_cases": 144,
+     "text_cases": 0,
+     "tool_tags": {
+      "get_balance": [
+       "PRIVATE_READ"
+      ],
+      "get_iban": [
+       "PRIVATE_READ"
+      ],
+      "get_most_recent_transactions": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_scheduled_transactions": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_user_info": [
+       "PRIVATE_READ"
+      ],
+      "read_file": [
+       "PRIVATE_READ"
+      ],
+      "schedule_transaction": [
+       "EXTERNAL_WRITE"
+      ],
+      "send_money": [
+       "EXTERNAL_WRITE"
+      ],
+      "update_scheduled_transaction": [
+       "EXTERNAL_WRITE"
+      ]
+     }
+    },
+    "slack": {
+     "action_cases": 63,
+     "action_sink_e": 42,
+     "exfil_cases": 42,
+     "fail_private_p": 0,
+     "fail_sink_e": 0,
+     "fail_source_u": 0,
+     "flagged": true,
+     "missed_private": [],
+     "missed_sinks": [],
+     "missed_sources": [],
+     "path_covered": 42,
+     "security_cases": 105,
+     "text_cases": 0,
+     "tool_tags": {
+      "get_channels": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_users_in_channel": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_webpage": [
+       "EXTERNAL_WRITE",
+       "UNTRUSTED_READ"
+      ],
+      "post_webpage": [
+       "EXTERNAL_WRITE"
+      ],
+      "read_channel_messages": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "read_inbox": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "send_channel_message": [
+       "EXTERNAL_WRITE"
+      ],
+      "send_direct_message": [
+       "EXTERNAL_WRITE"
+      ]
+     }
+    },
+    "travel": {
+     "action_cases": 60,
+     "action_sink_e": 0,
+     "exfil_cases": 60,
+     "fail_private_p": 0,
+     "fail_sink_e": 0,
+     "fail_source_u": 0,
+     "flagged": true,
+     "missed_private": [],
+     "missed_sinks": [],
+     "missed_sources": [],
+     "path_covered": 60,
+     "security_cases": 140,
+     "text_cases": 20,
+     "tool_tags": {
+      "get_contact_information_for_restaurants": [
+       "PRIVATE_READ"
+      ],
+      "get_day_calendar_events": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_rating_reviews_for_car_rental": [
+       "UNTRUSTED_READ"
+      ],
+      "get_rating_reviews_for_hotels": [
+       "UNTRUSTED_READ"
+      ],
+      "get_rating_reviews_for_restaurants": [
+       "UNTRUSTED_READ"
+      ],
+      "get_user_information": [
+       "PRIVATE_READ"
+      ],
+      "search_calendar_events": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "send_email": [
+       "EXTERNAL_WRITE"
+      ]
+     }
+    },
+    "workspace": {
+     "action_cases": 160,
+     "action_sink_e": 80,
+     "exfil_cases": 400,
+     "fail_private_p": 0,
+     "fail_sink_e": 0,
+     "fail_source_u": 0,
+     "flagged": true,
+     "missed_private": [],
+     "missed_sinks": [],
+     "missed_sources": [
+      "add_calendar_event_participants",
+      "delete_file"
+     ],
+     "path_covered": 400,
+     "security_cases": 560,
+     "text_cases": 0,
+     "tool_tags": {
+      "get_day_calendar_events": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_draft_emails": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_file_by_id": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_received_emails": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_sent_emails": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_unread_emails": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "list_files": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "search_calendar_events": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "search_contacts_by_email": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "search_contacts_by_name": [
+       "PRIVATE_READ"
+      ],
+      "search_emails": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "search_files": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "search_files_by_filename": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "send_email": [
+       "EXTERNAL_WRITE"
+      ],
+      "share_file": [
+       "EXTERNAL_WRITE"
+      ]
+     }
+    }
+   },
+   "total": {
+    "action_cases": 347,
+    "action_sink_e": 170,
+    "exfil_cases": 582,
+    "fail_private_p": 0,
+    "fail_sink_e": 0,
+    "fail_source_u": 20,
+    "flagged_suites": 4,
+    "missed_private": 0,
+    "missed_sinks": 0,
+    "missed_sources": 3,
+    "path_covered": 562,
+    "security_cases": 949,
+    "text_cases": 20
+   }
+  },
+  "strict": {
+   "suites": {
+    "banking": {
+     "action_cases": 64,
+     "action_sink_e": 48,
+     "exfil_cases": 80,
+     "fail_private_p": 0,
+     "fail_sink_e": 0,
+     "fail_source_u": 20,
+     "flagged": true,
+     "missed_private": [],
+     "missed_sinks": [],
+     "missed_sources": [
+      "read_file"
+     ],
+     "path_covered": 60,
+     "security_cases": 144,
+     "text_cases": 0,
+     "tool_tags": {
+      "get_balance": [
+       "PRIVATE_READ"
+      ],
+      "get_iban": [
+       "PRIVATE_READ"
+      ],
+      "get_most_recent_transactions": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_scheduled_transactions": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_user_info": [
+       "PRIVATE_READ"
+      ],
+      "read_file": [
+       "PRIVATE_READ"
+      ],
+      "schedule_transaction": [
+       "EXTERNAL_WRITE"
+      ],
+      "send_money": [
+       "EXTERNAL_WRITE"
+      ],
+      "update_scheduled_transaction": [
+       "EXTERNAL_WRITE"
+      ]
+     }
+    },
+    "slack": {
+     "action_cases": 63,
+     "action_sink_e": 21,
+     "exfil_cases": 42,
+     "fail_private_p": 42,
+     "fail_sink_e": 0,
+     "fail_source_u": 0,
+     "flagged": true,
+     "missed_private": [
+      "read_channel_messages"
+     ],
+     "missed_sinks": [],
+     "missed_sources": [],
+     "path_covered": 0,
+     "security_cases": 105,
+     "text_cases": 0,
+     "tool_tags": {
+      "get_channels": [
+       "UNTRUSTED_READ"
+      ],
+      "get_users_in_channel": [
+       "UNTRUSTED_READ"
+      ],
+      "get_webpage": [
+       "UNTRUSTED_READ"
+      ],
+      "post_webpage": [
+       "EXTERNAL_WRITE"
+      ],
+      "read_channel_messages": [
+       "UNTRUSTED_READ"
+      ],
+      "read_inbox": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "send_channel_message": [
+       "EXTERNAL_WRITE"
+      ],
+      "send_direct_message": [
+       "EXTERNAL_WRITE"
+      ]
+     }
+    },
+    "travel": {
+     "action_cases": 60,
+     "action_sink_e": 0,
+     "exfil_cases": 60,
+     "fail_private_p": 0,
+     "fail_sink_e": 0,
+     "fail_source_u": 0,
+     "flagged": true,
+     "missed_private": [],
+     "missed_sinks": [],
+     "missed_sources": [],
+     "path_covered": 60,
+     "security_cases": 140,
+     "text_cases": 20,
+     "tool_tags": {
+      "get_contact_information_for_restaurants": [
+       "PRIVATE_READ"
+      ],
+      "get_day_calendar_events": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_rating_reviews_for_car_rental": [
+       "UNTRUSTED_READ"
+      ],
+      "get_rating_reviews_for_hotels": [
+       "UNTRUSTED_READ"
+      ],
+      "get_rating_reviews_for_restaurants": [
+       "UNTRUSTED_READ"
+      ],
+      "get_user_information": [
+       "PRIVATE_READ"
+      ],
+      "search_calendar_events": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "send_email": [
+       "EXTERNAL_WRITE"
+      ]
+     }
+    },
+    "workspace": {
+     "action_cases": 160,
+     "action_sink_e": 80,
+     "exfil_cases": 400,
+     "fail_private_p": 120,
+     "fail_sink_e": 0,
+     "fail_source_u": 150,
+     "flagged": true,
+     "missed_private": [
+      "list_files"
+     ],
+     "missed_sinks": [],
+     "missed_sources": [
+      "add_calendar_event_participants",
+      "delete_file",
+      "list_files",
+      "search_files",
+      "search_files_by_filename"
+     ],
+     "path_covered": 175,
+     "security_cases": 560,
+     "text_cases": 0,
+     "tool_tags": {
+      "get_day_calendar_events": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_draft_emails": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_received_emails": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_sent_emails": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "get_unread_emails": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "search_calendar_events": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "search_contacts_by_email": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "search_contacts_by_name": [
+       "PRIVATE_READ"
+      ],
+      "search_emails": [
+       "PRIVATE_READ",
+       "UNTRUSTED_READ"
+      ],
+      "send_email": [
+       "EXTERNAL_WRITE"
+      ],
+      "share_file": [
+       "EXTERNAL_WRITE"
+      ]
+     }
+    }
+   },
+   "total": {
+    "action_cases": 347,
+    "action_sink_e": 149,
+    "exfil_cases": 582,
+    "fail_private_p": 162,
+    "fail_sink_e": 0,
+    "fail_source_u": 170,
+    "flagged_suites": 4,
+    "missed_private": 2,
+    "missed_sinks": 0,
+    "missed_sources": 6,
+    "path_covered": 295,
+    "security_cases": 949,
+    "text_cases": 20
+   }
+  }
+ },
+ "tagger": "v2-draft"
+}

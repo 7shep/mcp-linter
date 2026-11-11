@@ -4,11 +4,14 @@ Usage (from the repo root):
 
     python benchmark/agentdojo_crosscheck.py           write results/agentdojo/crosscheck.json and .md
     python benchmark/agentdojo_crosscheck.py --check   exit 1 if either committed file is stale
+    python benchmark/agentdojo_crosscheck.py --tagger v2           write crosscheck_v2.json and .md
+    python benchmark/agentdojo_crosscheck.py --check --tagger v2   check the v2 files
 
 The tagger in tagging.py is frozen. It reads tool names, input schema structure
-and annotations only, never descriptions. The inputs hold tool names, task ids
-and hand labels only; no AgentDojo prompt or goal text is read or written, and
-agentdojo is not imported.
+and annotations only, never descriptions. The v2 draft (tagging_v2.py) adds
+rules on top of it and is tuned on this same export, so its numbers are dev-set
+numbers. The inputs hold tool names, task ids and hand labels only; no AgentDojo
+prompt or goal text is read or written, and agentdojo is not imported.
 """
 
 from __future__ import annotations
@@ -23,6 +26,7 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
 from mcp_lint.models import ToolDef  # noqa: E402
+import tagging_v2  # noqa: E402
 from tagging import ALL_TAGS, Tag, tag_tool, tags_for  # noqa: E402
 
 AGENTDOJO_DIR = os.path.join(HERE, "results", "agentdojo")
@@ -31,6 +35,14 @@ CASES_PATH = os.path.join(AGENTDOJO_DIR, "cases.json")
 KINDS_PATH = os.path.join(AGENTDOJO_DIR, "attack_kinds.json")
 JSON_PATH = os.path.join(AGENTDOJO_DIR, "crosscheck.json")
 MD_PATH = os.path.join(AGENTDOJO_DIR, "crosscheck.md")
+JSON_V2_PATH = os.path.join(AGENTDOJO_DIR, "crosscheck_v2.json")
+MD_V2_PATH = os.path.join(AGENTDOJO_DIR, "crosscheck_v2.md")
+TAGGERS = {"v1": tag_tool, "v2": tagging_v2.tag_tool}
+OUTPUTS = {"v1": (JSON_PATH, MD_PATH), "v2": (JSON_V2_PATH, MD_V2_PATH)}
+V2_HEADER = (
+    "Draft v2 tagger (`benchmark/tagging_v2.py`), tuned on AgentDojo, so these are "
+    "dev-set numbers, not a holdout."
+)
 
 PROFILE_ORDER = ("strict", "inclusive")
 PRIVATE = Tag.PRIVATE_READ.value
@@ -47,11 +59,11 @@ MISSED_KEYS = ("missed_sources", "missed_private", "missed_sinks")
 
 # ---------------------------------------------------------------- logic
 
-def tags_by_tool(tools: list[ToolDef], profile: str) -> dict[str, frozenset[str]]:
+def tags_by_tool(tools: list[ToolDef], profile: str, tag_fn=tag_tool) -> dict[str, frozenset[str]]:
     """Tool name -> tag values under ``profile``, for tools with at least one tag."""
     out: dict[str, frozenset[str]] = {}
     for tool in tools:
-        tags = frozenset(t.value for t in tags_for(tag_tool(tool), profile))
+        tags = frozenset(t.value for t in tags_for(tag_fn(tool), profile))
         if tags:
             out[tool.name] = tags
     return out
@@ -116,8 +128,8 @@ def summarize_suite(user_tasks: dict, injection_tasks: dict, kinds: dict,
 
 
 def suite_block(tools: list[ToolDef], user_tasks: dict, injection_tasks: dict,
-                kinds: dict, profile: str) -> dict:
-    tags = tags_by_tool(tools, profile)
+                kinds: dict, profile: str, tag_fn=tag_tool) -> dict:
+    tags = tags_by_tool(tools, profile, tag_fn)
     union = frozenset().union(*tags.values()) if tags else frozenset()
     return {
         "flagged": ALL_TAG_VALUES <= union,
@@ -152,7 +164,10 @@ def load_tools(tools_dir: str, suite: str) -> list[ToolDef]:
 
 
 def build_report(tools_dir: str = TOOLS_DIR, cases_path: str = CASES_PATH,
-                 kinds_path: str = KINDS_PATH) -> dict:
+                 kinds_path: str = KINDS_PATH, tagger: str = "v1") -> dict:
+    if tagger not in TAGGERS:
+        raise ValueError(f"unknown tagger {tagger!r}")
+    tag_fn = TAGGERS[tagger]
     cases = _load_json(cases_path)
     kinds_doc = _load_json(kinds_path)
     case_suites = cases["suites"]
@@ -165,11 +180,14 @@ def build_report(tools_dir: str = TOOLS_DIR, cases_path: str = CASES_PATH,
     for profile in PROFILE_ORDER:
         suites = {
             s: suite_block(tools[s], case_suites[s]["user_tasks"],
-                           case_suites[s]["injection_tasks"], kind_suites[s], profile)
+                           case_suites[s]["injection_tasks"], kind_suites[s], profile, tag_fn)
             for s in sorted(case_suites)
         }
         profiles[profile] = {"suites": suites, "total": total_block(suites)}
-    return {"benchmark_version": cases["benchmark_version"], "profiles": profiles}
+    report = {"benchmark_version": cases["benchmark_version"], "profiles": profiles}
+    if tagger == "v2":
+        report["tagger"] = tagging_v2.VERSION
+    return report
 
 
 # ---------------------------------------------------------------- markdown
@@ -204,6 +222,8 @@ def render_markdown(report: dict) -> str:
         "but do not count toward exfil numbers.",
         "",
     ]
+    if "tagger" in report:
+        out += [V2_HEADER, ""]
     for profile in PROFILE_ORDER:
         block = report["profiles"][profile]
         suites = block["suites"]
@@ -260,9 +280,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Cross-check the tagger against AgentDojo paths.")
     parser.add_argument("--check", action="store_true",
                         help="recompute and exit 1 if a committed output file differs")
+    parser.add_argument("--tagger", choices=sorted(TAGGERS), default="v1",
+                        help="tagger to cross-check (default v1; v2 writes crosscheck_v2.*)")
     args = parser.parse_args(argv)
+    json_path, md_path = OUTPUTS[args.tagger]
     try:
-        report = build_report()
+        report = build_report(tagger=args.tagger)
     except ValueError as exc:
         print(f"input error: {exc}", file=sys.stderr)
         return 2
@@ -270,20 +293,21 @@ def main(argv: list[str] | None = None) -> int:
     json_text = json.dumps(report, indent=1, sort_keys=True) + "\n"
     md_text = render_markdown(report)
 
+    names = (os.path.basename(json_path), os.path.basename(md_path))
     if args.check:
-        stale = [p for p, text in ((JSON_PATH, json_text), (MD_PATH, md_text))
+        stale = [p for p, text in ((json_path, json_text), (md_path, md_text))
                  if _read_exact(p) != text]
         for p in stale:
             print(f"stale or missing: {p}")
         if stale:
             return 1
-        print("crosscheck.json and crosscheck.md are up to date")
+        print(f"{names[0]} and {names[1]} are up to date")
         return 0
 
-    _write(JSON_PATH, json_text)
-    _write(MD_PATH, md_text)
-    print(f"wrote {JSON_PATH}")
-    print(f"wrote {MD_PATH}")
+    _write(json_path, json_text)
+    _write(md_path, md_text)
+    print(f"wrote {json_path}")
+    print(f"wrote {md_path}")
     return 0
 
 
