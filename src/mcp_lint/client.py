@@ -18,7 +18,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamable_http_client
 from mcp.shared._httpx_utils import MCP_DEFAULT_SSE_READ_TIMEOUT, MCP_DEFAULT_TIMEOUT
-from mcp.types import PaginatedRequestParams
+from mcp.types import PaginatedRequestParams, Tool
 
 from mcp_lint.fixtures import Probe, error_probes
 from mcp_lint.models import ToolDef
@@ -51,27 +51,29 @@ def _plain(value):
     return value
 
 
+def tool_def(t: Tool) -> ToolDef:
+    """One MCP tool as a ToolDef (every field the lock and the rules look at)."""
+    annotations = t.annotations.model_dump(by_alias=True, exclude_none=True) if t.annotations else {}
+    return ToolDef(
+        name=t.name,
+        description=t.description,
+        input_schema=dict(t.input_schema or {}),
+        annotations=annotations,
+        title=t.title,
+        output_schema=dict(t.output_schema or {}),
+        meta=dict(_plain(t.meta) or {}),
+        icons=list(_plain(t.icons) or []),
+        execution=dict(_plain(t.execution) or {}),
+    )
+
+
 async def _list_tools(session: ClientSession) -> list[ToolDef]:
     tools: list[ToolDef] = []
     cursor: str | None = None
     while True:
         req = PaginatedRequestParams(cursor=cursor) if cursor else None
         result = await session.list_tools(params=req)
-        for t in result.tools:
-            annotations = t.annotations.model_dump(by_alias=True, exclude_none=True) if t.annotations else {}
-            tools.append(
-                ToolDef(
-                    name=t.name,
-                    description=t.description,
-                    input_schema=dict(t.input_schema or {}),
-                    annotations=annotations,
-                    title=t.title,
-                    output_schema=dict(t.output_schema or {}),
-                    meta=dict(_plain(t.meta) or {}),
-                    icons=list(_plain(t.icons) or []),
-                    execution=dict(_plain(t.execution) or {}),
-                )
-            )
+        tools.extend(tool_def(t) for t in result.tools)
         cursor = result.next_cursor
         if not cursor:
             return tools

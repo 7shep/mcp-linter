@@ -392,5 +392,14 @@ class DesignToolSetTests(unittest.TestCase):
                 self.assertEqual(self._flagged(tools, "inclusive"), inclusive)
 
 
+class ShimIdentityTests(unittest.TestCase):
+    def test_benchmark_tagging_is_the_package_module(self):
+        import mcp_lint.trifecta
+
+        import tagging
+        self.assertIs(tagging.Tag, mcp_lint.trifecta.Tag)
+        self.assertIs(tagging.tag_tool, mcp_lint.trifecta.tag_tool)
+
+
 if __name__ == "__main__":
     unittest.main()

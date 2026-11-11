@@ -2,7 +2,7 @@
 
 A linter for [MCP](https://modelcontextprotocol.io) servers. It connects to a server, reads its tool definitions, and flags the things that make tools hard for agents to use, based on Anthropic's [Writing effective tools for agents](https://www.anthropic.com/engineering/writing-tools-for-agents).
 
-> Static rules S1–S8, probe rules P1–P5, a lockfile, install lint (I1), a token-weighted score, a fixing proxy and an eval mode are done. See [Eval](#eval) for whether the findings matter.
+> Static rules S1–S8, probe rules P1–P5, a lockfile, install lint (I1), a token-weighted score, a fixing proxy with an optional trifecta guard, and an eval mode are done. See [Eval](#eval) for whether the findings matter.
 
 ![Task success with and without mcp-lint fixes: all tasks 53% to 98%, markitdown-mcp 0% to 100%, server-filesystem 80% to 100%, mcp-server-git 80% to 93%](https://raw.githubusercontent.com/7shep/mcp-linter/main/eval/chart/success.png)
 
@@ -400,6 +400,49 @@ The proxy's fixes are each switchable (`--no-paging`, `--no-errors`, `--descript
 - **Paging:** responses over ~2,000 tokens are cut to a page, every tool gains `offset`/`limit` (in lines), and a note says `[showing lines 1-112 of 8000; pass offset=112 for more]`.
 - **Descriptions:** S1-flagged descriptions are replaced from a hand-written file in [`eval/fixes/`](https://github.com/7shep/mcp-linter/tree/main/eval/fixes).
 - **Errors:** error text returned as a success gets `isError` set.
+
+### Trifecta guard
+
+`mcp-lint proxy --guard` stops one exfiltration pattern at runtime: a tool returns text a third party wrote (an issue, a ticket, a web page), an instruction hidden in it tells the agent to send data somewhere, and the agent calls a tool on the same server that can send it. The guard is off unless you pass the flag.
+
+```bash
+mcp-lint proxy --guard block -- python my_server.py
+```
+
+| `--guard` | Behaviour |
+|---|---|
+| `off` | Default. No checks. The proxy behaves as it did before, with no extra content and no extra log fields |
+| `warn` | Forwards the call. If `block` would have refused it, the result gets a `[mcp-lint guard: warning]` text block prepended |
+| `block` | Refuses the call with an `isError: true` result. The result says why and what to do. The call never reaches the upstream |
+
+The guard works per proxy session. It tags each tool by its role:
+
+- **Untrusted read:** a tool that returns content someone else may control, such as a web page or an issue body.
+- **Sink:** a tool that sends data out, such as posting, emailing or uploading.
+- **Private read:** a tool that returns private data.
+
+Once a call to an untrusted-read tool has been forwarded, the session is tainted. This holds whatever the outcome: success, error or exception. After that, a call to a sink is refused in `block` mode, or warned about in `warn` mode.
+
+Untrusted content alone taints the session. A private read is not required. Private data may already be in the model's context from the user's prompt or from another server, and the tagger's private-read tag is its weakest leg. Private-read calls are still recorded, and the block message names the ones seen so far.
+
+- **Taint lasts for the proxy process.** One proxy is one client session, so taint lasts until that session ends. Restarting the client resets it. Re-tagging doesn't clear it.
+- **Tags come from the tagger.** It reads tool names, parameter schemas and annotations, never descriptions. The guard uses the tagger's `inclusive` profile, which counts all of its evidence.
+- **The sink check fails closed.** A tool with no sink tag still counts as a sink when it takes data, its verb isn't a read verb, and its name or a top-level parameter name suggests sending data out (for example `sync`, `upload`, `email` or `webhook`). A wrong guess blocks a harmless call. A missed sink lets data out.
+- **Unknown tools count as all three tags.** So do tools with malformed schemas. A call to a tool the proxy doesn't know gets one re-list first. If a re-list fails, every tool counts as unknown until one succeeds.
+- **Duplicate names take the union of their tags**, so a harmless twin listed under a sink's name doesn't hide it.
+- **Arguments are checked against the schema.** Some servers don't enforce their own schema, so a call that sends undeclared keys, text where the schema says number or boolean, or a value outside an `enum` is tagged as if the schema had declared those keys as open strings. `send_email(n: integer)` called with `to` and `body` counts as a sink.
+- **List changes re-tag without clearing taint.** If the server sends `notifications/tools/list_changed`, the guard re-lists and re-tags before the next call. A sink renamed or added under a new name is still blocked, as long as the tagger tags its new definition.
+- **Taint is set when a call is forwarded**, not when it returns, so a sink called while an untrusted call is still running is blocked too.
+- **A tool that is both untrusted and a sink works once.** `fetch` is an example. The first call is allowed if the session is clean, and it taints the session. Later calls to it count as sink calls, so `block` refuses them. This is the cost of the rule.
+- **Logging.** With `--log`, each row gets a `guard` field set to `allow`, `warn` or `block`. The field appears only when the guard is on.
+
+The guard has these limits:
+
+- One proxy sees one upstream. A flow across two separately proxied servers, one that reads untrusted content and one that sends data, isn't caught.
+- The guard doesn't do content-level taint. It doesn't check whether private values appear in a sink's arguments.
+- Local writes aren't tracked. A file written by one tool and sent out later by another isn't caught.
+- The tagger has misses. It reads names, schemas and annotations, so a tool whose name doesn't say what it does can go untagged.
+- There's no approval prompt. The guard refuses or warns, and doesn't ask the user. Asking the user through MCP elicitation is a follow-up.
 
 ## Development
 
