@@ -196,7 +196,7 @@ def render_markdown(report: dict) -> str:
 def _read_exact(path: str):
     if not os.path.exists(path):
         return None
-    with open(path, encoding="utf-8", newline="") as f:
+    with open(path, encoding="utf-8") as f:  # universal newlines: a CRLF checkout is not stale
         return f.read()
 
 
