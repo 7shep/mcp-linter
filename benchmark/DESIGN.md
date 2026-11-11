@@ -420,6 +420,30 @@ Known over-tagging risks to watch: `channel` is both U and P, so channel listing
 - Label each tool's legs from its documentation before running v2, either by a reader who hasn't seen v2's output or as labels committed before the run.
 - Run v1 and v2 once, report recall and false positives against those labels, and freeze whichever wins.
 
+**Holdout result (2026-11-10, `benchmark/holdout/`, `results/holdout_score.md`).** Tool lists from six servers that are in neither the survey nor AgentDojo were saved once each, at pinned versions, with placeholder credentials and no tool calls (`holdout_capture.py`): PayPal 28 tools, Square 3, Atlassian 96, Google Calendar 13, Microsoft 365 375, Discord 22. Gmail was dropped because it won't start without an OAuth key file. Three labellers who could not see either tagger labelled all 537 tools, and the labels were committed (16a6da9) before v1 or v2 ran on them.
+
+| Per-tool recall (precision) | v1 strict | v2 strict | v1 inclusive | v2 inclusive |
+|---|---|---|---|---|
+| P, 263 labelled | 18% (100%) | 19% (100%) | 27% (93%) | **37% (94%)** |
+| U, 106 labelled | 34% (78%) | **51% (71%)** | 75% (39%) | 77% (39%) |
+| E, 82 labelled | 48% (72%) | 48% (72%) | 71% (28%) | 71% (28%) |
+| Servers flagged, all 6 labelled trifecta | 2 | 3 | 2 | 4 |
+
+- **v2 beats v1 on the holdout, by less than on its dev set.**
+  - Strict U recall rises 17 points for 7 points of precision.
+  - Inclusive P recall rises 10 points with precision unchanged.
+  - PayPal (strict and inclusive) and Discord (inclusive) are now flagged.
+  - v2 adds no E rules, so E is unchanged.
+- **v2 replaces v1 as the candidate tagger**, on these numbers. It stays a draft, because the holdout has three weaknesses:
+  - Microsoft 365 is 70% of its tools.
+  - All six servers are labelled trifecta, so server-level false positives can't be measured.
+  - One labeller marked write tools P when they return a private record, which lowers every tagger's P recall.
+- **The misses point at v3** (recorded here, not fixed):
+  - Calendar events read without the word `calendar` in the name get U but not P.
+  - `attendees` is not a recipient parameter, so event invites get no E.
+  - Generic API passthroughs such as Square's `make_api_request(service, method, request)` get no tags at all.
+  - Inclusive E and U precision is under 40%, mostly from URL and open-world rules on Microsoft 365's Graph tools.
+
 ## 10. Safety rules
 
 - Mock code imports no networking library, and a test scans for that. The MCP SDK does bring in an HTTP stack, so each server also installs a `sys.addaudithook` that kills it on `socket.connect`, on starting a subprocess, and on file access outside its own log.

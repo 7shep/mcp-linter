@@ -1,0 +1,2136 @@
+{
+ "results": {
+  "v1/inclusive": {
+   "legs": {
+    "E": {
+     "macro_recall": 0.4507,
+     "per_server": {
+      "atlassian": {
+       "fn": 12,
+       "fp": 0,
+       "precision": {
+        "k": 11,
+        "n": 11,
+        "rate": 1.0,
+        "wilson": [
+         0.7412,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 11,
+        "n": 23,
+        "rate": 0.4783,
+        "wilson": [
+         0.2924,
+         0.6704
+        ]
+       },
+       "tn": 73,
+       "tp": 11
+      },
+      "discord": {
+       "fn": 0,
+       "fp": 0,
+       "precision": {
+        "k": 4,
+        "n": 4,
+        "rate": 1.0,
+        "wilson": [
+         0.5101,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 4,
+        "n": 4,
+        "rate": 1.0,
+        "wilson": [
+         0.5101,
+         1.0
+        ]
+       },
+       "tn": 18,
+       "tp": 4
+      },
+      "google-calendar": {
+       "fn": 4,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 4,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.4899
+        ]
+       },
+       "tn": 9,
+       "tp": 0
+      },
+      "ms-365": {
+       "fn": 1,
+       "fp": 149,
+       "precision": {
+        "k": 41,
+        "n": 190,
+        "rate": 0.2158,
+        "wilson": [
+         0.1632,
+         0.2796
+        ]
+       },
+       "recall": {
+        "k": 41,
+        "n": 42,
+        "rate": 0.9762,
+        "wilson": [
+         0.8768,
+         0.9958
+        ]
+       },
+       "tn": 184,
+       "tp": 41
+      },
+      "paypal": {
+       "fn": 6,
+       "fp": 0,
+       "precision": {
+        "k": 2,
+        "n": 2,
+        "rate": 1.0,
+        "wilson": [
+         0.3424,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 2,
+        "n": 8,
+        "rate": 0.25,
+        "wilson": [
+         0.0715,
+         0.5907
+        ]
+       },
+       "tn": 20,
+       "tp": 2
+      },
+      "square": {
+       "fn": 1,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "tn": 2,
+       "tp": 0
+      }
+     },
+     "pooled": {
+      "fn": 24,
+      "fp": 149,
+      "precision": {
+       "k": 58,
+       "n": 207,
+       "rate": 0.2802,
+       "wilson": [
+        0.2234,
+        0.3449
+       ]
+      },
+      "recall": {
+       "k": 58,
+       "n": 82,
+       "rate": 0.7073,
+       "wilson": [
+        0.6013,
+        0.7947
+       ]
+      },
+      "tn": 306,
+      "tp": 58
+     }
+    },
+    "P": {
+     "macro_recall": 0.1156,
+     "per_server": {
+      "atlassian": {
+       "fn": 36,
+       "fp": 2,
+       "precision": {
+        "k": 12,
+        "n": 14,
+        "rate": 0.8571,
+        "wilson": [
+         0.6006,
+         0.9599
+        ]
+       },
+       "recall": {
+        "k": 12,
+        "n": 48,
+        "rate": 0.25,
+        "wilson": [
+         0.1492,
+         0.3878
+        ]
+       },
+       "tn": 46,
+       "tp": 12
+      },
+      "discord": {
+       "fn": 3,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 3,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.5615
+        ]
+       },
+       "tn": 19,
+       "tp": 0
+      },
+      "google-calendar": {
+       "fn": 7,
+       "fp": 0,
+       "precision": {
+        "k": 1,
+        "n": 1,
+        "rate": 1.0,
+        "wilson": [
+         0.2065,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 1,
+        "n": 8,
+        "rate": 0.125,
+        "wilson": [
+         0.0224,
+         0.4709
+        ]
+       },
+       "tn": 5,
+       "tp": 1
+      },
+      "ms-365": {
+       "fn": 124,
+       "fp": 3,
+       "precision": {
+        "k": 58,
+        "n": 61,
+        "rate": 0.9508,
+        "wilson": [
+         0.8651,
+         0.9831
+        ]
+       },
+       "recall": {
+        "k": 58,
+        "n": 182,
+        "rate": 0.3187,
+        "wilson": [
+         0.2553,
+         0.3895
+        ]
+       },
+       "tn": 190,
+       "tp": 58
+      },
+      "paypal": {
+       "fn": 21,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 21,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.1546
+        ]
+       },
+       "tn": 7,
+       "tp": 0
+      },
+      "square": {
+       "fn": 1,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "tn": 2,
+       "tp": 0
+      }
+     },
+     "pooled": {
+      "fn": 192,
+      "fp": 5,
+      "precision": {
+       "k": 71,
+       "n": 76,
+       "rate": 0.9342,
+       "wilson": [
+        0.8551,
+        0.9716
+       ]
+      },
+      "recall": {
+       "k": 71,
+       "n": 263,
+       "rate": 0.27,
+       "wilson": [
+        0.2199,
+        0.3266
+       ]
+      },
+      "tn": 269,
+      "tp": 71
+     }
+    },
+    "U": {
+     "macro_recall": 0.4344,
+     "per_server": {
+      "atlassian": {
+       "fn": 16,
+       "fp": 5,
+       "precision": {
+        "k": 12,
+        "n": 17,
+        "rate": 0.7059,
+        "wilson": [
+         0.4687,
+         0.8672
+        ]
+       },
+       "recall": {
+        "k": 12,
+        "n": 28,
+        "rate": 0.4286,
+        "wilson": [
+         0.2651,
+         0.6093
+        ]
+       },
+       "tn": 63,
+       "tp": 12
+      },
+      "discord": {
+       "fn": 0,
+       "fp": 0,
+       "precision": {
+        "k": 2,
+        "n": 2,
+        "rate": 1.0,
+        "wilson": [
+         0.3424,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 2,
+        "n": 2,
+        "rate": 1.0,
+        "wilson": [
+         0.3424,
+         1.0
+        ]
+       },
+       "tn": 20,
+       "tp": 2
+      },
+      "google-calendar": {
+       "fn": 3,
+       "fp": 0,
+       "precision": {
+        "k": 1,
+        "n": 1,
+        "rate": 1.0,
+        "wilson": [
+         0.2065,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 1,
+        "n": 4,
+        "rate": 0.25,
+        "wilson": [
+         0.0456,
+         0.6994
+        ]
+       },
+       "tn": 9,
+       "tp": 1
+      },
+      "ms-365": {
+       "fn": 5,
+       "fp": 119,
+       "precision": {
+        "k": 64,
+        "n": 183,
+        "rate": 0.3497,
+        "wilson": [
+         0.2844,
+         0.4213
+        ]
+       },
+       "recall": {
+        "k": 64,
+        "n": 69,
+        "rate": 0.9275,
+        "wilson": [
+         0.8413,
+         0.9687
+        ]
+       },
+       "tn": 187,
+       "tp": 64
+      },
+      "paypal": {
+       "fn": 2,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 2,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.6576
+        ]
+       },
+       "tn": 26,
+       "tp": 0
+      },
+      "square": {
+       "fn": 1,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "tn": 2,
+       "tp": 0
+      }
+     },
+     "pooled": {
+      "fn": 27,
+      "fp": 124,
+      "precision": {
+       "k": 79,
+       "n": 203,
+       "rate": 0.3892,
+       "wilson": [
+        0.3247,
+        0.4577
+       ]
+      },
+      "recall": {
+       "k": 79,
+       "n": 106,
+       "rate": 0.7453,
+       "wilson": [
+        0.6548,
+        0.8186
+       ]
+      },
+      "tn": 307,
+      "tp": 79
+     }
+    }
+   },
+   "server_flags": {
+    "atlassian": {
+     "flagged": true,
+     "labelled_trifecta": true
+    },
+    "discord": {
+     "flagged": false,
+     "labelled_trifecta": true
+    },
+    "google-calendar": {
+     "flagged": false,
+     "labelled_trifecta": true
+    },
+    "ms-365": {
+     "flagged": true,
+     "labelled_trifecta": true
+    },
+    "paypal": {
+     "flagged": false,
+     "labelled_trifecta": true
+    },
+    "square": {
+     "flagged": false,
+     "labelled_trifecta": true
+    }
+   }
+  },
+  "v1/strict": {
+   "legs": {
+    "E": {
+     "macro_recall": 0.3754,
+     "per_server": {
+      "atlassian": {
+       "fn": 12,
+       "fp": 0,
+       "precision": {
+        "k": 11,
+        "n": 11,
+        "rate": 1.0,
+        "wilson": [
+         0.7412,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 11,
+        "n": 23,
+        "rate": 0.4783,
+        "wilson": [
+         0.2924,
+         0.6704
+        ]
+       },
+       "tn": 73,
+       "tp": 11
+      },
+      "discord": {
+       "fn": 0,
+       "fp": 0,
+       "precision": {
+        "k": 4,
+        "n": 4,
+        "rate": 1.0,
+        "wilson": [
+         0.5101,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 4,
+        "n": 4,
+        "rate": 1.0,
+        "wilson": [
+         0.5101,
+         1.0
+        ]
+       },
+       "tn": 18,
+       "tp": 4
+      },
+      "google-calendar": {
+       "fn": 4,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 4,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.4899
+        ]
+       },
+       "tn": 9,
+       "tp": 0
+      },
+      "ms-365": {
+       "fn": 20,
+       "fp": 15,
+       "precision": {
+        "k": 22,
+        "n": 37,
+        "rate": 0.5946,
+        "wilson": [
+         0.4349,
+         0.7365
+        ]
+       },
+       "recall": {
+        "k": 22,
+        "n": 42,
+        "rate": 0.5238,
+        "wilson": [
+         0.3772,
+         0.6664
+        ]
+       },
+       "tn": 318,
+       "tp": 22
+      },
+      "paypal": {
+       "fn": 6,
+       "fp": 0,
+       "precision": {
+        "k": 2,
+        "n": 2,
+        "rate": 1.0,
+        "wilson": [
+         0.3424,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 2,
+        "n": 8,
+        "rate": 0.25,
+        "wilson": [
+         0.0715,
+         0.5907
+        ]
+       },
+       "tn": 20,
+       "tp": 2
+      },
+      "square": {
+       "fn": 1,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "tn": 2,
+       "tp": 0
+      }
+     },
+     "pooled": {
+      "fn": 43,
+      "fp": 15,
+      "precision": {
+       "k": 39,
+       "n": 54,
+       "rate": 0.7222,
+       "wilson": [
+        0.5911,
+        0.8238
+       ]
+      },
+      "recall": {
+       "k": 39,
+       "n": 82,
+       "rate": 0.4756,
+       "wilson": [
+        0.371,
+        0.5824
+       ]
+      },
+      "tn": 440,
+      "tp": 39
+     }
+    },
+    "P": {
+     "macro_recall": 0.0664,
+     "per_server": {
+      "atlassian": {
+       "fn": 47,
+       "fp": 0,
+       "precision": {
+        "k": 1,
+        "n": 1,
+        "rate": 1.0,
+        "wilson": [
+         0.2065,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 1,
+        "n": 48,
+        "rate": 0.0208,
+        "wilson": [
+         0.0037,
+         0.109
+        ]
+       },
+       "tn": 48,
+       "tp": 1
+      },
+      "discord": {
+       "fn": 3,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 3,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.5615
+        ]
+       },
+       "tn": 19,
+       "tp": 0
+      },
+      "google-calendar": {
+       "fn": 7,
+       "fp": 0,
+       "precision": {
+        "k": 1,
+        "n": 1,
+        "rate": 1.0,
+        "wilson": [
+         0.2065,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 1,
+        "n": 8,
+        "rate": 0.125,
+        "wilson": [
+         0.0224,
+         0.4709
+        ]
+       },
+       "tn": 5,
+       "tp": 1
+      },
+      "ms-365": {
+       "fn": 136,
+       "fp": 0,
+       "precision": {
+        "k": 46,
+        "n": 46,
+        "rate": 1.0,
+        "wilson": [
+         0.9229,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 46,
+        "n": 182,
+        "rate": 0.2527,
+        "wilson": [
+         0.1952,
+         0.3205
+        ]
+       },
+       "tn": 193,
+       "tp": 46
+      },
+      "paypal": {
+       "fn": 21,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 21,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.1546
+        ]
+       },
+       "tn": 7,
+       "tp": 0
+      },
+      "square": {
+       "fn": 1,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "tn": 2,
+       "tp": 0
+      }
+     },
+     "pooled": {
+      "fn": 215,
+      "fp": 0,
+      "precision": {
+       "k": 48,
+       "n": 48,
+       "rate": 1.0,
+       "wilson": [
+        0.9259,
+        1.0
+       ]
+      },
+      "recall": {
+       "k": 48,
+       "n": 263,
+       "rate": 0.1825,
+       "wilson": [
+        0.1405,
+        0.2337
+       ]
+      },
+      "tn": 274,
+      "tp": 48
+     }
+    },
+    "U": {
+     "macro_recall": 0.2877,
+     "per_server": {
+      "atlassian": {
+       "fn": 17,
+       "fp": 4,
+       "precision": {
+        "k": 11,
+        "n": 15,
+        "rate": 0.7333,
+        "wilson": [
+         0.4805,
+         0.891
+        ]
+       },
+       "recall": {
+        "k": 11,
+        "n": 28,
+        "rate": 0.3929,
+        "wilson": [
+         0.2357,
+         0.5759
+        ]
+       },
+       "tn": 64,
+       "tp": 11
+      },
+      "discord": {
+       "fn": 0,
+       "fp": 0,
+       "precision": {
+        "k": 2,
+        "n": 2,
+        "rate": 1.0,
+        "wilson": [
+         0.3424,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 2,
+        "n": 2,
+        "rate": 1.0,
+        "wilson": [
+         0.3424,
+         1.0
+        ]
+       },
+       "tn": 20,
+       "tp": 2
+      },
+      "google-calendar": {
+       "fn": 4,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 4,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.4899
+        ]
+       },
+       "tn": 9,
+       "tp": 0
+      },
+      "ms-365": {
+       "fn": 46,
+       "fp": 6,
+       "precision": {
+        "k": 23,
+        "n": 29,
+        "rate": 0.7931,
+        "wilson": [
+         0.6161,
+         0.9015
+        ]
+       },
+       "recall": {
+        "k": 23,
+        "n": 69,
+        "rate": 0.3333,
+        "wilson": [
+         0.2335,
+         0.4507
+        ]
+       },
+       "tn": 300,
+       "tp": 23
+      },
+      "paypal": {
+       "fn": 2,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 2,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.6576
+        ]
+       },
+       "tn": 26,
+       "tp": 0
+      },
+      "square": {
+       "fn": 1,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "tn": 2,
+       "tp": 0
+      }
+     },
+     "pooled": {
+      "fn": 70,
+      "fp": 10,
+      "precision": {
+       "k": 36,
+       "n": 46,
+       "rate": 0.7826,
+       "wilson": [
+        0.6443,
+        0.8774
+       ]
+      },
+      "recall": {
+       "k": 36,
+       "n": 106,
+       "rate": 0.3396,
+       "wilson": [
+        0.2565,
+        0.434
+       ]
+      },
+      "tn": 421,
+      "tp": 36
+     }
+    }
+   },
+   "server_flags": {
+    "atlassian": {
+     "flagged": true,
+     "labelled_trifecta": true
+    },
+    "discord": {
+     "flagged": false,
+     "labelled_trifecta": true
+    },
+    "google-calendar": {
+     "flagged": false,
+     "labelled_trifecta": true
+    },
+    "ms-365": {
+     "flagged": true,
+     "labelled_trifecta": true
+    },
+    "paypal": {
+     "flagged": false,
+     "labelled_trifecta": true
+    },
+    "square": {
+     "flagged": false,
+     "labelled_trifecta": true
+    }
+   }
+  },
+  "v2/inclusive": {
+   "legs": {
+    "E": {
+     "macro_recall": 0.4507,
+     "per_server": {
+      "atlassian": {
+       "fn": 12,
+       "fp": 0,
+       "precision": {
+        "k": 11,
+        "n": 11,
+        "rate": 1.0,
+        "wilson": [
+         0.7412,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 11,
+        "n": 23,
+        "rate": 0.4783,
+        "wilson": [
+         0.2924,
+         0.6704
+        ]
+       },
+       "tn": 73,
+       "tp": 11
+      },
+      "discord": {
+       "fn": 0,
+       "fp": 0,
+       "precision": {
+        "k": 4,
+        "n": 4,
+        "rate": 1.0,
+        "wilson": [
+         0.5101,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 4,
+        "n": 4,
+        "rate": 1.0,
+        "wilson": [
+         0.5101,
+         1.0
+        ]
+       },
+       "tn": 18,
+       "tp": 4
+      },
+      "google-calendar": {
+       "fn": 4,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 4,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.4899
+        ]
+       },
+       "tn": 9,
+       "tp": 0
+      },
+      "ms-365": {
+       "fn": 1,
+       "fp": 149,
+       "precision": {
+        "k": 41,
+        "n": 190,
+        "rate": 0.2158,
+        "wilson": [
+         0.1632,
+         0.2796
+        ]
+       },
+       "recall": {
+        "k": 41,
+        "n": 42,
+        "rate": 0.9762,
+        "wilson": [
+         0.8768,
+         0.9958
+        ]
+       },
+       "tn": 184,
+       "tp": 41
+      },
+      "paypal": {
+       "fn": 6,
+       "fp": 0,
+       "precision": {
+        "k": 2,
+        "n": 2,
+        "rate": 1.0,
+        "wilson": [
+         0.3424,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 2,
+        "n": 8,
+        "rate": 0.25,
+        "wilson": [
+         0.0715,
+         0.5907
+        ]
+       },
+       "tn": 20,
+       "tp": 2
+      },
+      "square": {
+       "fn": 1,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "tn": 2,
+       "tp": 0
+      }
+     },
+     "pooled": {
+      "fn": 24,
+      "fp": 149,
+      "precision": {
+       "k": 58,
+       "n": 207,
+       "rate": 0.2802,
+       "wilson": [
+        0.2234,
+        0.3449
+       ]
+      },
+      "recall": {
+       "k": 58,
+       "n": 82,
+       "rate": 0.7073,
+       "wilson": [
+        0.6013,
+        0.7947
+       ]
+      },
+      "tn": 306,
+      "tp": 58
+     }
+    },
+    "P": {
+     "macro_recall": 0.202,
+     "per_server": {
+      "atlassian": {
+       "fn": 36,
+       "fp": 2,
+       "precision": {
+        "k": 12,
+        "n": 14,
+        "rate": 0.8571,
+        "wilson": [
+         0.6006,
+         0.9599
+        ]
+       },
+       "recall": {
+        "k": 12,
+        "n": 48,
+        "rate": 0.25,
+        "wilson": [
+         0.1492,
+         0.3878
+        ]
+       },
+       "tn": 46,
+       "tp": 12
+      },
+      "discord": {
+       "fn": 2,
+       "fp": 1,
+       "precision": {
+        "k": 1,
+        "n": 2,
+        "rate": 0.5,
+        "wilson": [
+         0.0945,
+         0.9055
+        ]
+       },
+       "recall": {
+        "k": 1,
+        "n": 3,
+        "rate": 0.3333,
+        "wilson": [
+         0.0615,
+         0.7923
+        ]
+       },
+       "tn": 18,
+       "tp": 1
+      },
+      "google-calendar": {
+       "fn": 7,
+       "fp": 0,
+       "precision": {
+        "k": 1,
+        "n": 1,
+        "rate": 1.0,
+        "wilson": [
+         0.2065,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 1,
+        "n": 8,
+        "rate": 0.125,
+        "wilson": [
+         0.0224,
+         0.4709
+        ]
+       },
+       "tn": 5,
+       "tp": 1
+      },
+      "ms-365": {
+       "fn": 99,
+       "fp": 3,
+       "precision": {
+        "k": 83,
+        "n": 86,
+        "rate": 0.9651,
+        "wilson": [
+         0.9024,
+         0.9881
+        ]
+       },
+       "recall": {
+        "k": 83,
+        "n": 182,
+        "rate": 0.456,
+        "wilson": [
+         0.3853,
+         0.5286
+        ]
+       },
+       "tn": 190,
+       "tp": 83
+      },
+      "paypal": {
+       "fn": 20,
+       "fp": 0,
+       "precision": {
+        "k": 1,
+        "n": 1,
+        "rate": 1.0,
+        "wilson": [
+         0.2065,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 1,
+        "n": 21,
+        "rate": 0.0476,
+        "wilson": [
+         0.0085,
+         0.2267
+        ]
+       },
+       "tn": 7,
+       "tp": 1
+      },
+      "square": {
+       "fn": 1,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "tn": 2,
+       "tp": 0
+      }
+     },
+     "pooled": {
+      "fn": 165,
+      "fp": 6,
+      "precision": {
+       "k": 98,
+       "n": 104,
+       "rate": 0.9423,
+       "wilson": [
+        0.8798,
+        0.9733
+       ]
+      },
+      "recall": {
+       "k": 98,
+       "n": 263,
+       "rate": 0.3726,
+       "wilson": [
+        0.3164,
+        0.4325
+       ]
+      },
+      "tn": 268,
+      "tp": 98
+     }
+    },
+    "U": {
+     "macro_recall": 0.5236,
+     "per_server": {
+      "atlassian": {
+       "fn": 15,
+       "fp": 5,
+       "precision": {
+        "k": 13,
+        "n": 18,
+        "rate": 0.7222,
+        "wilson": [
+         0.4913,
+         0.875
+        ]
+       },
+       "recall": {
+        "k": 13,
+        "n": 28,
+        "rate": 0.4643,
+        "wilson": [
+         0.2953,
+         0.6419
+        ]
+       },
+       "tn": 63,
+       "tp": 13
+      },
+      "discord": {
+       "fn": 0,
+       "fp": 1,
+       "precision": {
+        "k": 2,
+        "n": 3,
+        "rate": 0.6667,
+        "wilson": [
+         0.2077,
+         0.9385
+        ]
+       },
+       "recall": {
+        "k": 2,
+        "n": 2,
+        "rate": 1.0,
+        "wilson": [
+         0.3424,
+         1.0
+        ]
+       },
+       "tn": 19,
+       "tp": 2
+      },
+      "google-calendar": {
+       "fn": 1,
+       "fp": 1,
+       "precision": {
+        "k": 3,
+        "n": 4,
+        "rate": 0.75,
+        "wilson": [
+         0.3006,
+         0.9544
+        ]
+       },
+       "recall": {
+        "k": 3,
+        "n": 4,
+        "rate": 0.75,
+        "wilson": [
+         0.3006,
+         0.9544
+        ]
+       },
+       "tn": 8,
+       "tp": 3
+      },
+      "ms-365": {
+       "fn": 5,
+       "fp": 120,
+       "precision": {
+        "k": 64,
+        "n": 184,
+        "rate": 0.3478,
+        "wilson": [
+         0.2828,
+         0.4191
+        ]
+       },
+       "recall": {
+        "k": 64,
+        "n": 69,
+        "rate": 0.9275,
+        "wilson": [
+         0.8413,
+         0.9687
+        ]
+       },
+       "tn": 186,
+       "tp": 64
+      },
+      "paypal": {
+       "fn": 2,
+       "fp": 1,
+       "precision": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "recall": {
+        "k": 0,
+        "n": 2,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.6576
+        ]
+       },
+       "tn": 25,
+       "tp": 0
+      },
+      "square": {
+       "fn": 1,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "tn": 2,
+       "tp": 0
+      }
+     },
+     "pooled": {
+      "fn": 24,
+      "fp": 128,
+      "precision": {
+       "k": 82,
+       "n": 210,
+       "rate": 0.3905,
+       "wilson": [
+        0.327,
+        0.4579
+       ]
+      },
+      "recall": {
+       "k": 82,
+       "n": 106,
+       "rate": 0.7736,
+       "wilson": [
+        0.6852,
+        0.8429
+       ]
+      },
+      "tn": 303,
+      "tp": 82
+     }
+    }
+   },
+   "server_flags": {
+    "atlassian": {
+     "flagged": true,
+     "labelled_trifecta": true
+    },
+    "discord": {
+     "flagged": true,
+     "labelled_trifecta": true
+    },
+    "google-calendar": {
+     "flagged": false,
+     "labelled_trifecta": true
+    },
+    "ms-365": {
+     "flagged": true,
+     "labelled_trifecta": true
+    },
+    "paypal": {
+     "flagged": true,
+     "labelled_trifecta": true
+    },
+    "square": {
+     "flagged": false,
+     "labelled_trifecta": true
+    }
+   }
+  },
+  "v2/strict": {
+   "legs": {
+    "E": {
+     "macro_recall": 0.3754,
+     "per_server": {
+      "atlassian": {
+       "fn": 12,
+       "fp": 0,
+       "precision": {
+        "k": 11,
+        "n": 11,
+        "rate": 1.0,
+        "wilson": [
+         0.7412,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 11,
+        "n": 23,
+        "rate": 0.4783,
+        "wilson": [
+         0.2924,
+         0.6704
+        ]
+       },
+       "tn": 73,
+       "tp": 11
+      },
+      "discord": {
+       "fn": 0,
+       "fp": 0,
+       "precision": {
+        "k": 4,
+        "n": 4,
+        "rate": 1.0,
+        "wilson": [
+         0.5101,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 4,
+        "n": 4,
+        "rate": 1.0,
+        "wilson": [
+         0.5101,
+         1.0
+        ]
+       },
+       "tn": 18,
+       "tp": 4
+      },
+      "google-calendar": {
+       "fn": 4,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 4,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.4899
+        ]
+       },
+       "tn": 9,
+       "tp": 0
+      },
+      "ms-365": {
+       "fn": 20,
+       "fp": 15,
+       "precision": {
+        "k": 22,
+        "n": 37,
+        "rate": 0.5946,
+        "wilson": [
+         0.4349,
+         0.7365
+        ]
+       },
+       "recall": {
+        "k": 22,
+        "n": 42,
+        "rate": 0.5238,
+        "wilson": [
+         0.3772,
+         0.6664
+        ]
+       },
+       "tn": 318,
+       "tp": 22
+      },
+      "paypal": {
+       "fn": 6,
+       "fp": 0,
+       "precision": {
+        "k": 2,
+        "n": 2,
+        "rate": 1.0,
+        "wilson": [
+         0.3424,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 2,
+        "n": 8,
+        "rate": 0.25,
+        "wilson": [
+         0.0715,
+         0.5907
+        ]
+       },
+       "tn": 20,
+       "tp": 2
+      },
+      "square": {
+       "fn": 1,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "tn": 2,
+       "tp": 0
+      }
+     },
+     "pooled": {
+      "fn": 43,
+      "fp": 15,
+      "precision": {
+       "k": 39,
+       "n": 54,
+       "rate": 0.7222,
+       "wilson": [
+        0.5911,
+        0.8238
+       ]
+      },
+      "recall": {
+       "k": 39,
+       "n": 82,
+       "rate": 0.4756,
+       "wilson": [
+        0.371,
+        0.5824
+       ]
+      },
+      "tn": 440,
+      "tp": 39
+     }
+    },
+    "P": {
+     "macro_recall": 0.0778,
+     "per_server": {
+      "atlassian": {
+       "fn": 46,
+       "fp": 0,
+       "precision": {
+        "k": 2,
+        "n": 2,
+        "rate": 1.0,
+        "wilson": [
+         0.3424,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 2,
+        "n": 48,
+        "rate": 0.0417,
+        "wilson": [
+         0.0115,
+         0.1398
+        ]
+       },
+       "tn": 48,
+       "tp": 2
+      },
+      "discord": {
+       "fn": 3,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 3,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.5615
+        ]
+       },
+       "tn": 19,
+       "tp": 0
+      },
+      "google-calendar": {
+       "fn": 7,
+       "fp": 0,
+       "precision": {
+        "k": 1,
+        "n": 1,
+        "rate": 1.0,
+        "wilson": [
+         0.2065,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 1,
+        "n": 8,
+        "rate": 0.125,
+        "wilson": [
+         0.0224,
+         0.4709
+        ]
+       },
+       "tn": 5,
+       "tp": 1
+      },
+      "ms-365": {
+       "fn": 136,
+       "fp": 0,
+       "precision": {
+        "k": 46,
+        "n": 46,
+        "rate": 1.0,
+        "wilson": [
+         0.9229,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 46,
+        "n": 182,
+        "rate": 0.2527,
+        "wilson": [
+         0.1952,
+         0.3205
+        ]
+       },
+       "tn": 193,
+       "tp": 46
+      },
+      "paypal": {
+       "fn": 20,
+       "fp": 0,
+       "precision": {
+        "k": 1,
+        "n": 1,
+        "rate": 1.0,
+        "wilson": [
+         0.2065,
+         1.0
+        ]
+       },
+       "recall": {
+        "k": 1,
+        "n": 21,
+        "rate": 0.0476,
+        "wilson": [
+         0.0085,
+         0.2267
+        ]
+       },
+       "tn": 7,
+       "tp": 1
+      },
+      "square": {
+       "fn": 1,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "tn": 2,
+       "tp": 0
+      }
+     },
+     "pooled": {
+      "fn": 213,
+      "fp": 0,
+      "precision": {
+       "k": 50,
+       "n": 50,
+       "rate": 1.0,
+       "wilson": [
+        0.9287,
+        1.0
+       ]
+      },
+      "recall": {
+       "k": 50,
+       "n": 263,
+       "rate": 0.1901,
+       "wilson": [
+        0.1473,
+        0.2419
+       ]
+      },
+      "tn": 274,
+      "tp": 50
+     }
+    },
+    "U": {
+     "macro_recall": 0.4489,
+     "per_server": {
+      "atlassian": {
+       "fn": 17,
+       "fp": 4,
+       "precision": {
+        "k": 11,
+        "n": 15,
+        "rate": 0.7333,
+        "wilson": [
+         0.4805,
+         0.891
+        ]
+       },
+       "recall": {
+        "k": 11,
+        "n": 28,
+        "rate": 0.3929,
+        "wilson": [
+         0.2357,
+         0.5759
+        ]
+       },
+       "tn": 64,
+       "tp": 11
+      },
+      "discord": {
+       "fn": 0,
+       "fp": 1,
+       "precision": {
+        "k": 2,
+        "n": 3,
+        "rate": 0.6667,
+        "wilson": [
+         0.2077,
+         0.9385
+        ]
+       },
+       "recall": {
+        "k": 2,
+        "n": 2,
+        "rate": 1.0,
+        "wilson": [
+         0.3424,
+         1.0
+        ]
+       },
+       "tn": 19,
+       "tp": 2
+      },
+      "google-calendar": {
+       "fn": 1,
+       "fp": 1,
+       "precision": {
+        "k": 3,
+        "n": 4,
+        "rate": 0.75,
+        "wilson": [
+         0.3006,
+         0.9544
+        ]
+       },
+       "recall": {
+        "k": 3,
+        "n": 4,
+        "rate": 0.75,
+        "wilson": [
+         0.3006,
+         0.9544
+        ]
+       },
+       "tn": 8,
+       "tp": 3
+      },
+      "ms-365": {
+       "fn": 31,
+       "fp": 15,
+       "precision": {
+        "k": 38,
+        "n": 53,
+        "rate": 0.717,
+        "wilson": [
+         0.5843,
+         0.8203
+        ]
+       },
+       "recall": {
+        "k": 38,
+        "n": 69,
+        "rate": 0.5507,
+        "wilson": [
+         0.4338,
+         0.6623
+        ]
+       },
+       "tn": 291,
+       "tp": 38
+      },
+      "paypal": {
+       "fn": 2,
+       "fp": 1,
+       "precision": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "recall": {
+        "k": 0,
+        "n": 2,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.6576
+        ]
+       },
+       "tn": 25,
+       "tp": 0
+      },
+      "square": {
+       "fn": 1,
+       "fp": 0,
+       "precision": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "wilson": null
+       },
+       "recall": {
+        "k": 0,
+        "n": 1,
+        "rate": 0.0,
+        "wilson": [
+         0.0,
+         0.7935
+        ]
+       },
+       "tn": 2,
+       "tp": 0
+      }
+     },
+     "pooled": {
+      "fn": 52,
+      "fp": 22,
+      "precision": {
+       "k": 54,
+       "n": 76,
+       "rate": 0.7105,
+       "wilson": [
+        0.6004,
+        0.8004
+       ]
+      },
+      "recall": {
+       "k": 54,
+       "n": 106,
+       "rate": 0.5094,
+       "wilson": [
+        0.4156,
+        0.6026
+       ]
+      },
+      "tn": 409,
+      "tp": 54
+     }
+    }
+   },
+   "server_flags": {
+    "atlassian": {
+     "flagged": true,
+     "labelled_trifecta": true
+    },
+    "discord": {
+     "flagged": false,
+     "labelled_trifecta": true
+    },
+    "google-calendar": {
+     "flagged": false,
+     "labelled_trifecta": true
+    },
+    "ms-365": {
+     "flagged": true,
+     "labelled_trifecta": true
+    },
+    "paypal": {
+     "flagged": true,
+     "labelled_trifecta": true
+    },
+    "square": {
+     "flagged": false,
+     "labelled_trifecta": true
+    }
+   }
+  }
+ },
+ "servers": {
+  "atlassian": 96,
+  "discord": 22,
+  "google-calendar": 13,
+  "ms-365": 375,
+  "paypal": 28,
+  "square": 3
+ }
+}
