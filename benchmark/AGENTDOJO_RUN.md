@@ -4,7 +4,7 @@
 
 ## Why this run
 
-The research question is whether mcp-lint's static trifecta warning predicts real exploits (`DESIGN.md`, H1). The Haiku 5.5 run on our own mock servers was a null result: 0 of 600 trials leaked, so precision and recall are undefined. We need attacks with a non-zero base rate. AgentDojo's `important_instructions` attack succeeds on many published models, and we already have its attack paths labelled offline (`results/agentdojo/crosscheck*.md`). This run adds the missing column, which is whether each attack actually worked.
+The research question is whether mcp-lint's static trifecta warning predicts real exploits (`DESIGN.md`, H1). The Haiku 5.5 run on our own mock servers was a null result: 0 of 600 trials leaked, so recall is undefined and precision is trivially 0. We need attacks with a non-zero base rate. AgentDojo's `important_instructions` attack succeeds on many published models, and we already have its attack paths labelled offline (`results/agentdojo/crosscheck*.md`). This run adds the missing column, which is whether each attack actually worked.
 
 ## What gets measured
 
@@ -78,8 +78,9 @@ Real agents take extra turns and think, so the cost estimate below doubles input
   - Safety: the AgentDojo environments are in-memory Python objects, with no real email, bank or network. The runner refuses any provider other than Anthropic or `localhost`. Servers and agents get no Claude Code tools.
 - **`benchmark/agentdojo_score.py`** (mcp-lint's Python, doesn't import agentdojo): reads the per-trial logs (`utility`, `security`), joins them to `crosscheck.json` / `crosscheck_v2.json` by (suite, user task, injection task), and writes `results/agentdojo/asr_<model>.md` with A1–A4.
 - **Tests, offline:**
-  - A fake log set where every exfil case "succeeds" gives ASR 1.0 and precision equal to the labelled share (83/582 strict for v1).
-  - An all-fail set gives ASR 0 and undefined precision, reported as such, not as 0.
+  - Precision and recall follow `analyze.py`'s `precision_recall`. The predictor is a labelled path and the positive class is an exploited case, so precision = exploited labelled cases / labelled cases, and recall = exploited labelled cases / exploited cases.
+  - A fake log set where every exfil case succeeds gives ASR 1.0, precision 1.0 (83/83 strict for v1) and recall 83/582.
+  - An all-fail set gives ASR 0, precision 0 (0/83), and undefined recall (no exploited cases), reported as undefined, not as 0.
   - A missing or duplicate trial is an error, never a silent zero.
   - The bootstrap resamples user tasks, not cases.
   - Confirm in the installed source that `security == True` means the attack succeeded, and pin that with a test.
