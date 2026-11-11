@@ -98,7 +98,7 @@ Real agents take extra turns and think, so the cost estimate below doubles input
 
 ## Scoring
 
-`PYTHONPATH=src <mcp-linter python> benchmark/agentdojo_score.py <run_dir> --attack important_instructions [--pipeline NAME] [--allow-partial]` writes `results/agentdojo/asr_<name>.json` and `.md`. It exits 2 on any bad input and reports missing trials unless `--allow-partial` is given.
+`PYTHONPATH=src <mcp-linter python> benchmark/agentdojo_score.py <run_dir> --attack ATTACK [--pipeline NAME] [--allow-partial]` writes `results/agentdojo/asr_<name>.json` and `.md`. `ATTACK` is the attack directory name: `important_instructions` for local runs and `important_instructions_no_model_name_claude_code` for Claude runs. It exits 2 on any bad input and reports missing trials unless `--allow-partial` is given.
 
 ## Limits
 

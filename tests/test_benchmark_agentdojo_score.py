@@ -19,6 +19,7 @@ import contextlib
 import io
 import json
 import os
+import random
 import re
 import sys
 import tempfile
@@ -46,13 +47,15 @@ CASES_SUITE = next(iter(CASES["suites"]))
 CASES_USER = next(iter(CASES["suites"][CASES_SUITE]["user_tasks"]))
 
 
-def _doc(suite, uid, iid, attack, utility, security, error):
+def _doc(suite, uid, iid, attack, utility, security, error, pipeline="fake-model"):
     """A trial log shaped like AgentDojo's, with the attack text in messages and injections."""
     return {
         "suite_name": suite,
         "user_task_id": uid,
         "injection_task_id": iid,
         "attack_type": attack,
+        "benchmark_version": CASES["benchmark_version"],
+        "pipeline_name": pipeline,
         "utility": utility,
         "security": security,
         "error": error,
@@ -76,11 +79,11 @@ def write_run(root, pipeline="fake-model", attack=ATTACK, *, attacked=None, clea
             continue
         util, sec, err = attacked((suite, uid, iid)) if attacked else (True, False, None)
         _write_doc(os.path.join(pdir, suite, uid, attack, iid + ".json"),
-                   _doc(suite, uid, iid, attack, util, sec, err))
+                   _doc(suite, uid, iid, attack, util, sec, err, pipeline))
     if clean:
         for suite, uid in USER_TASKS:
             _write_doc(os.path.join(pdir, suite, uid, "none", "none.json"),
-                       _doc(suite, uid, None, None, clean_utility, False, None))
+                       _doc(suite, uid, None, None, clean_utility, False, None, pipeline))
     return pdir
 
 
@@ -95,6 +98,15 @@ def run_cli(run_dir, out_dir, *extra, attack=ATTACK):
 def load_out(out_dir, name="fake-model"):
     with open(os.path.join(out_dir, f"asr_{name}.json"), encoding="utf-8") as f:
         return json.load(f)
+
+
+def _case_level_ci(outcomes, reps, seed):
+    """Reference: a 95% percentile interval for the ASR resampling individual cases."""
+    rng = random.Random(seed)
+    n = len(outcomes)
+    vals = sorted(sum(rng.choices(outcomes, k=n)) / n for _ in range(reps))
+    m = len(vals)
+    return vals[int(0.025 * m)], vals[min(m - 1, int(0.975 * m))]
 
 
 def exfil_keys():
@@ -273,6 +285,83 @@ class ScoreCliTests(unittest.TestCase):
         measures = load_out(self.out)["measures"]
         self.assertEqual(measures["clean_utility"]["rate"], 1.0)
         self.assertEqual(measures["utility_under_attack"]["rate"], 0.0)
+
+    def test_banking_single_exploited_case_has_zero_lower_bound(self):
+        key = next(k for k in exfil_keys() if k[0] == "banking" and k[1] == "user_task_0")
+        run = write_run(os.path.join(self.root, "runs"),
+                        attacked=lambda k: (True, k == key, None))
+        rc, _, err = run_cli(os.path.dirname(run), self.out)
+        self.assertEqual(rc, 0, err)
+        block = load_out(self.out)["measures"]["banking_exfil_asr"]
+        self.assertEqual(block["successes"], 1)
+        self.assertEqual(block["ci95"][0], 0.0)
+
+    def test_cluster_interval_wider_than_case_level_resample(self):
+        banking_exfil = [k for k in exfil_keys() if k[0] == "banking"]
+        hit = {k for k in banking_exfil if k[1] == "user_task_0"}
+        run = write_run(os.path.join(self.root, "runs"),
+                        attacked=lambda k: (True, k in hit, None))
+        rc, _, err = run_cli(os.path.dirname(run), self.out)
+        self.assertEqual(rc, 0, err)
+        ci = load_out(self.out)["measures"]["banking_exfil_asr"]["ci95"]
+        cluster_width = ci[1] - ci[0]
+        outcomes = [1 if k in hit else 0 for k in banking_exfil]
+        lo, hi = _case_level_ci(outcomes, sc.BOOT_REPS, sc.BOOT_SEED)
+        self.assertGreater(cluster_width, hi - lo)
+
+    def test_benchmark_version_mismatch_exit_2(self):
+        runs = os.path.join(self.root, "runs")
+        write_run(runs)
+        path = os.path.join(runs, "fake-model", CASES_SUITE, CASES_USER, ATTACK,
+                            "injection_task_0.json")
+        doc = _doc(CASES_SUITE, CASES_USER, "injection_task_0", ATTACK, True, False, None)
+        doc["benchmark_version"] = "v0.0"
+        _write_doc(path, doc)
+        rc, _, err = run_cli(runs, self.out)
+        self.assertEqual(rc, 2)
+        self.assertIn("benchmark_version does not match", err)
+
+    def test_pipeline_name_mismatch_exit_2(self):
+        runs = os.path.join(self.root, "runs")
+        write_run(runs)
+        path = os.path.join(runs, "fake-model", CASES_SUITE, CASES_USER, ATTACK,
+                            "injection_task_0.json")
+        _write_doc(path, _doc(CASES_SUITE, CASES_USER, "injection_task_0", ATTACK, True, False,
+                              None, pipeline="someone_else"))
+        rc, _, err = run_cli(runs, self.out)
+        self.assertEqual(rc, 2)
+        self.assertIn("pipeline_name does not match", err)
+
+    def test_all_attacked_missing_exit_2_even_with_allow_partial(self):
+        runs = os.path.join(self.root, "runs")
+        write_run(runs, skip=set(ATTACKED_KEYS))
+        rc, _, err = run_cli(runs, self.out, "--allow-partial")
+        self.assertEqual(rc, 2)
+        self.assertIn("no attacked trials", err)
+
+    def test_asr_blocks_carry_cluster_ci_and_unclustered_wilson(self):
+        runs = os.path.join(self.root, "runs")
+        write_run(runs)
+        rc, _, err = run_cli(runs, self.out)
+        self.assertEqual(rc, 0, err)
+        report = load_out(self.out)
+        block = report["cells"]["v1/strict"]["exfil_path_labelled"]
+        self.assertIn("ci95", block)
+        self.assertIn("defined_reps", block)
+        self.assertIn("wilson95_unclustered", block)
+        self.assertNotIn("wilson95", block)
+        self.assertIn("wilson95", report["cells"]["v1/strict"]["predictor"]["precision"])
+
+    def test_markdown_labels_interval_kind_and_defined_reps(self):
+        runs = os.path.join(self.root, "runs")
+        write_run(runs)
+        rc, _, err = run_cli(runs, self.out)
+        self.assertEqual(rc, 0, err)
+        with open(os.path.join(self.out, "asr_fake-model.md"), encoding="utf-8") as f:
+            md = f.read()
+        self.assertIn("Defined reps", md)
+        self.assertIn("user-task bootstrap", md)
+        self.assertIn("Wilson", md)
 
     def test_output_name_is_sanitised(self):
         runs = os.path.join(self.root, "runs")
