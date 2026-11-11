@@ -95,7 +95,7 @@ AGENTDOJO_PY="<agentdojo-venv>/Scripts/python"
 "$AGENTDOJO_PY" -I benchmark/agentdojo_run.py --model-id qwen2.5:7b --port 11434 --suite banking slack --attacked-only
 ```
 
-Logs go to `benchmark/results/agentdojo/runs/local/<model>/` (git-ignored; `:` and other unsafe characters in the model id become `_`) and a rerun resumes. The exit code is 1 when any trial errored.
+Logs go to `benchmark/results/agentdojo/runs/local/<model>/` (git-ignored; `:` and other unsafe characters in the model id become `_`, plus a short hash of the exact id so ids can't collide) and a rerun resumes. The exit code is 1 when any trial errored.
 
 ### Gates
 

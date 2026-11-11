@@ -143,7 +143,7 @@ class StaticTests(unittest.TestCase):
         self.assertNotIn("openai.com", src)
 
     def test_top_level_imports_are_stdlib_only(self):
-        stdlib = {"__future__", "argparse", "json", "os", "re", "sys", "urllib", "pathlib"}
+        stdlib = {"__future__", "argparse", "hashlib", "json", "os", "re", "sys", "urllib", "pathlib"}
         for line in _source().splitlines():
             m = re.match(r"(?:from|import)\s+([A-Za-z_][\w.]*)", line)
             if m:
@@ -356,8 +356,14 @@ class LogdirTests(unittest.TestCase):
 
     def test_logdir_name_has_only_safe_characters(self):
         name = run.logdir_for("qwen2.5:7b").name
-        self.assertEqual(name, "qwen2.5_7b")
+        self.assertTrue(name.startswith("qwen2.5_7b-"), name)
         self.assertRegex(name, r"^[A-Za-z0-9._-]+$")
+
+    def test_ids_that_differ_only_in_unsafe_characters_do_not_collide(self):
+        # Both sanitise to foo_bar_baz; without the hash the second model would resume onto the first.
+        for a, b in (("foo:bar_baz", "foo_bar:baz"), ("qwen2.5:7b", "qwen2.5_7b")):
+            self.assertNotEqual(run.logdir_for(a), run.logdir_for(b))
+        self.assertEqual(run.logdir_for("qwen3:8b"), run.logdir_for("qwen3:8b"))
 
 
 STUB_SCRIPT = r'''
