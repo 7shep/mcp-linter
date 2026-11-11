@@ -1,0 +1,174 @@
+{
+ "labeller": "blind-haiku",
+ "server": "paypal",
+ "tools": {
+  "accept_dispute_claim": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Seller note on accepted claim is shown to the buyer (borderline)"
+  },
+  "cancel_sent_invoice": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Emails the customer a cancellation with agent-written note"
+  },
+  "cancel_subscription": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Cancels a subscription with an internal reason; no text sent (borderline)"
+  },
+  "create_invoice": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns a new draft invoice with billing details; not sent until send_invoice"
+  },
+  "create_order": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Creates payer checkout with agent-chosen item text and return URLs"
+  },
+  "create_product": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a catalog product; private catalog write, no outbound text"
+  },
+  "create_refund": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Refunds a capture; optional note_to_payer is shown to the customer"
+  },
+  "create_shipment_tracking": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Attaches an agent-chosen tracking number to a buyer's transaction"
+  },
+  "create_subscription": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Creates payer subscription and checkout link with agent-chosen text and URLs"
+  },
+  "create_subscription_plan": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates plan pricing in the catalog; no outbound text"
+  },
+  "generate_invoice_qr_code": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns a payment QR image for an existing invoice; no text sent"
+  },
+  "get_dispute": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns dispute details including buyer-written claim text"
+  },
+  "get_invoice": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns one invoice with customer billing details"
+  },
+  "get_order": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns order details including payer and amounts"
+  },
+  "get_refund": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns refund status and amount details"
+  },
+  "get_shipment_tracking": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns shipment tracking for a buyer's transaction"
+  },
+  "list_disputes": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists disputes; buyer-written claims and notes are included"
+  },
+  "list_invoices": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists the organisation's invoices with customer billing records"
+  },
+  "list_products": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists catalog products; no customer data"
+  },
+  "list_subscription_plans": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists plan catalog entries; no customer data"
+  },
+  "list_transactions": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists payment transactions and fees; no outsider text"
+  },
+  "pay_order": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Captures authorised funds; returns order and payer details"
+  },
+  "send_invoice": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Emails the invoice to the customer with an optional note"
+  },
+  "send_invoice_reminder": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Emails the customer a reminder with agent-written note and subject"
+  },
+  "show_product_details": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Shows catalog product details; no customer data"
+  },
+  "show_subscription_details": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns subscriber and billing details for a subscription"
+  },
+  "show_subscription_plan_details": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Shows plan pricing details; no customer data"
+  },
+  "update_product": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Patches catalog product fields; no outbound text"
+  }
+ }
+}

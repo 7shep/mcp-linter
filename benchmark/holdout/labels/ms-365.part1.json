@@ -1,0 +1,1138 @@
+{
+ "labeller": "blind-haiku",
+ "range": [
+  0,
+  187
+ ],
+ "server": "ms-365",
+ "tools": {
+  "accept-calendar-event": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Accepts invite, sending optional comment to organiser."
+  },
+  "add-calendar-event-attachment": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Attaches file to an event; not sent until updated (hard call)."
+  },
+  "add-excel-table-rows": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Writes rows into a workbook table privately."
+  },
+  "add-group-member": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Adds a group member; membership change, no content sent."
+  },
+  "add-group-owner": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Adds a group owner; access change only."
+  },
+  "add-mail-attachment": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Adds attachment to a message or draft privately."
+  },
+  "cancel-calendar-event": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Cancels meeting with custom message sent to attendees."
+  },
+  "clear-excel-range": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Clears cell contents or formats."
+  },
+  "copilot-retrieve": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Semantic search across mail, files and chats, permission-trimmed."
+  },
+  "copy-drive-item": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Copies a drive item to a new location privately."
+  },
+  "copy-mail-message": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Copies a message to another folder."
+  },
+  "create-calendar": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a personal calendar."
+  },
+  "create-calendar-event": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Creates event that sends invitations to attendees."
+  },
+  "create-calendar-event-attachment-upload-session": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates upload session to attach large file to event (hard call)."
+  },
+  "create-chat": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates chat object from members; no message text sent (hard call)."
+  },
+  "create-contact-child-folder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates child contact folder."
+  },
+  "create-contact-folder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates contact folder."
+  },
+  "create-contact-in-folder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a contact in a folder."
+  },
+  "create-draft-email": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Saves a draft without sending."
+  },
+  "create-drive-item-preview": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Creates embeddable preview link to a private file, usable for sharing (hard call)."
+  },
+  "create-drive-item-share-link": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Creates a sharing link that outsiders can open."
+  },
+  "create-excel-chart": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a chart inside a workbook."
+  },
+  "create-excel-table": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Converts a range into a table."
+  },
+  "create-focused-inbox-override": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates Focused Inbox override; private mail setting."
+  },
+  "create-forward-draft": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates forward draft without sending."
+  },
+  "create-group": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a group with no message content."
+  },
+  "create-mail-attachment-upload-session": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates upload session for attaching large file to a draft."
+  },
+  "create-mail-child-folder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a child mail folder."
+  },
+  "create-mail-folder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a top-level mail folder."
+  },
+  "create-mail-rule": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Creates mail rule that can forward mail to agent-chosen address."
+  },
+  "create-my-calendar-permission": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Shares the user's calendar with another user (hard call)."
+  },
+  "create-onedrive-folder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a private folder with a name."
+  },
+  "create-onenote-notebook": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a OneNote notebook."
+  },
+  "create-onenote-page": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a private OneNote page in default notebook."
+  },
+  "create-onenote-section": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a section in a notebook."
+  },
+  "create-outlook-contact": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a contact."
+  },
+  "create-reply-all-draft": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates reply-all draft without sending."
+  },
+  "create-reply-draft": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates reply draft without sending."
+  },
+  "create-specific-calendar-event": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Creates event that can invite attendees with agent-chosen text."
+  },
+  "create-upload-session": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates upload URL for the caller to write private bytes (hard call)."
+  },
+  "decline-calendar-event": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Declines invite, sending optional comment to organiser."
+  },
+  "delete-calendar": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a non-default calendar."
+  },
+  "delete-calendar-event": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes event; no agent text sent."
+  },
+  "delete-contact-folder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a contact folder."
+  },
+  "delete-drive-item-permission": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Removes a permission; access change without outbound content."
+  },
+  "delete-excel-range": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes cells and shifts content."
+  },
+  "delete-excel-table-row": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes one workbook table row."
+  },
+  "delete-focused-inbox-override": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes Focused Inbox override."
+  },
+  "delete-group": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Permanently deletes a group."
+  },
+  "delete-mail-attachment": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a mail attachment."
+  },
+  "delete-mail-folder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a mail folder and contents."
+  },
+  "delete-mail-message-skip-deleted-items": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a message without moving to Deleted Items."
+  },
+  "delete-mail-rule": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a mail rule."
+  },
+  "delete-my-calendar-permission": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Revokes calendar share access."
+  },
+  "delete-onedrive-file": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a OneDrive file; no content sent."
+  },
+  "delete-outlook-contact": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a contact."
+  },
+  "delete-specific-calendar-event": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes an event; no agent text sent (may notify attendees)."
+  },
+  "dismiss-calendar-event-reminder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Dismisses a reminder; no content sent."
+  },
+  "extract-drive-item-sensitivity-labels": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Reads sensitivity labels assigned to a private file."
+  },
+  "find-meeting-times": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Suggests meeting times from attendees' availability."
+  },
+  "format-excel-range": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Sets alignment and sizing on a range."
+  },
+  "format-excel-range-border": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Sets a border side on a range."
+  },
+  "format-excel-range-fill": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Sets background fill on a range."
+  },
+  "format-excel-range-font": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Sets font styling on a range."
+  },
+  "forward-calendar-event": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Forwards meeting invitation to new recipients."
+  },
+  "forward-mail-message": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Forwards a message to agent-chosen recipients."
+  },
+  "get-adhoc-call-transcript-content": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns call transcript text containing other speakers' words."
+  },
+  "get-calendar-event": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads one event, which others may have written."
+  },
+  "get-calendar-view": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads calendar view for a date range."
+  },
+  "get-chat": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns a private chat's metadata and members."
+  },
+  "get-chat-message": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads a single chat message written by others."
+  },
+  "get-current-user": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns the signed-in user's profile."
+  },
+  "get-drive-delta": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists changed drive items and their metadata over time."
+  },
+  "get-drive-item": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns a file's metadata including owner and download URL."
+  },
+  "get-drive-root-item": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns a drive's root folder metadata."
+  },
+  "get-excel-range": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads cell values in a workbook others may edit."
+  },
+  "get-excel-range-format": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Reads range formatting, which can encode private status meaning."
+  },
+  "get-excel-table": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Reads one workbook table's structure and style."
+  },
+  "get-excel-used-range": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads populated cell values and formulas in a worksheet."
+  },
+  "get-group": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns a group's directory details."
+  },
+  "get-group-calendar-view": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads group calendar events, which others may invite into."
+  },
+  "get-mail-attachment-content": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Downloads attachment bytes from a received email."
+  },
+  "get-mail-message": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads full email content written by others."
+  },
+  "get-mail-message-mime": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Downloads raw MIME of an email, including others' content."
+  },
+  "get-mail-tips": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Looks up recipients' mailtips including others' auto-reply text."
+  },
+  "get-mailbox-settings": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Reads the user's mailbox settings including time zone."
+  },
+  "get-my-manager": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns the user's manager from directory."
+  },
+  "get-onenote-notebook-from-web-url": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Resolves a notebook from its web URL."
+  },
+  "get-outlook-contact": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Reads one contact's details."
+  },
+  "get-presences-by-user-id": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns presence status for many users."
+  },
+  "get-schedule": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns free/busy availability for people or rooms."
+  },
+  "get-sensitivity-label": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Reads one org sensitivity label definition."
+  },
+  "get-specific-calendar-event": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads one calendar event, which others may have written."
+  },
+  "get-specific-calendar-view": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads calendar events in a range, some from others' invites."
+  },
+  "graph-batch": {
+   "E": true,
+   "P": true,
+   "U": true,
+   "why": "Arbitrary Graph requests in one call; can read private data and send mail."
+  },
+  "insert-excel-range": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Inserts blank cells into a workbook."
+  },
+  "list-accounts": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists the user's own account emails, which are private identifiers."
+  },
+  "list-adhoc-call-transcripts": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists ad hoc call transcript metadata for the user."
+  },
+  "list-calendar-event-instances": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists event occurrences in a date range."
+  },
+  "list-calendar-events": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists calendar events; some from others' invites."
+  },
+  "list-calendar-events-delta": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Delta sync of events in a calendar view."
+  },
+  "list-calendar-view-delta": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Delta sync of calendar view events."
+  },
+  "list-calendars": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists the user's calendars by name."
+  },
+  "list-chat-members": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists chat members with emails and roles."
+  },
+  "list-chat-message-hosted-contents": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists images and snippets attached to chat messages from others."
+  },
+  "list-chat-message-replies": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads replies to chat messages written by others."
+  },
+  "list-chat-messages": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads private chat messages written by other participants."
+  },
+  "list-chats": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists chats with last message previews from others."
+  },
+  "list-contact-folder-child-folders": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists child contact folders."
+  },
+  "list-contact-folder-contacts": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists contacts in a folder."
+  },
+  "list-contact-folders": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists contact folders."
+  },
+  "list-drive-item-permissions": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists who has access to a file, including sharing links."
+  },
+  "list-drive-item-thumbnails": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists thumbnail URLs for drive files."
+  },
+  "list-drive-item-versions": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists version history metadata for a file."
+  },
+  "list-drives": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists drives for a user, group or site."
+  },
+  "list-excel-table-rows": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads workbook table rows, which others may have edited."
+  },
+  "list-excel-tables": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists named tables in a workbook."
+  },
+  "list-excel-worksheets": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists worksheet names in a workbook."
+  },
+  "list-focused-inbox-overrides": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists Focused Inbox sender overrides for the user."
+  },
+  "list-folder-files": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists file and folder metadata in a drive folder."
+  },
+  "list-group-conversations": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists group conversation threads from members."
+  },
+  "list-group-events": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists group events, which others may have created."
+  },
+  "list-group-members": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists group members from directory."
+  },
+  "list-group-owners": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists group owners from directory."
+  },
+  "list-group-planner-plans": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists planner plans owned by a group."
+  },
+  "list-group-threads": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists group threads posted by members."
+  },
+  "list-groups": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists organisation groups from directory."
+  },
+  "list-joined-teams": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists joined Teams the user belongs to."
+  },
+  "list-mail-attachments": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists attachment names and types on a message."
+  },
+  "list-mail-child-folders": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists child mail folders."
+  },
+  "list-mail-folder-messages": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Searches and lists messages in a folder from others."
+  },
+  "list-mail-folder-messages-delta": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Delta sync of messages in a folder."
+  },
+  "list-mail-folders": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists top-level mail folder names."
+  },
+  "list-mail-messages": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists and searches email from others with previews."
+  },
+  "list-mail-rules": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists inbox rules including forwarding targets."
+  },
+  "list-my-calendar-permissions": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists who the calendar is shared with."
+  },
+  "list-my-direct-reports": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists the user's direct reports from directory."
+  },
+  "list-my-memberships": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists groups and roles the user belongs to."
+  },
+  "list-onenote-notebook-sections": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists sections of a notebook."
+  },
+  "list-onenote-notebooks": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists OneNote notebooks."
+  },
+  "list-onenote-pages": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists OneNote page titles and metadata across notebooks."
+  },
+  "list-outlook-contacts": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists contacts in default folder."
+  },
+  "list-pinned-chat-messages": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists pinned chat messages written by participants."
+  },
+  "list-sensitivity-labels": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists org sensitivity label definitions, organisation config not personal."
+  },
+  "list-specific-calendar-events": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists calendar events, some created from others' invites."
+  },
+  "list-trending-insights": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists trending documents around the user with titles."
+  },
+  "login": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Interactive sign-in; no mailbox or profile data returned."
+  },
+  "logout": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Signs out; no data returned or sent."
+  },
+  "merge-excel-range": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Merges cells in a workbook."
+  },
+  "move-mail-message": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Moves a message between folders."
+  },
+  "move-rename-onedrive-item": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Moves or renames a OneDrive item; no content sent."
+  },
+  "pin-chat-message": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Pins an existing message; no new text sent."
+  },
+  "remove-account": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Removes cached account; no content read or sent."
+  },
+  "remove-group-member": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Removes a group member; membership change, no content."
+  },
+  "remove-group-owner": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Removes a group owner; access change only."
+  },
+  "reply-all-mail-message": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Replies to all recipients with agent-written text."
+  },
+  "reply-mail-message": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Replies to sender with agent-written text."
+  },
+  "reply-to-chat-message": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts a reply into a chat visible to all members."
+  },
+  "reply-to-group-thread": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts a reply into a group thread visible to members."
+  },
+  "search-onedrive-files": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Searches file names and contents across drives."
+  },
+  "select-account": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Sets default account locally; no content read or sent."
+  },
+  "send-chat-message": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts agent-written message into a chat others can read."
+  },
+  "send-draft-message": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Sends an existing draft message to its recipients."
+  },
+  "set-chat-message-reaction": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Sets an emoji reaction; no free text sent."
+  },
+  "share-drive-item": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Shares a file with recipients and can send them an email."
+  },
+  "snooze-calendar-event-reminder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Postpones a reminder; no content sent."
+  },
+  "sort-excel-range": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Sorts a range in a workbook."
+  },
+  "tentatively-accept-calendar-event": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Tentatively accepts, sending optional comment to organiser."
+  },
+  "unmerge-excel-range": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Unmerges cells in a workbook."
+  },
+  "unpin-chat-message": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Unpins a message; status change only."
+  },
+  "unset-chat-message-reaction": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Removes an emoji reaction; no free text sent."
+  },
+  "update-calendar": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Renames or recolours a calendar."
+  },
+  "update-calendar-event": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Updates event; attendee changes notify outside invitees."
+  },
+  "update-chat-message": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Edits a sent chat message, replacing agent text visible to members."
+  },
+  "update-contact-folder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Renames or moves a contact folder."
+  },
+  "update-excel-range": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Writes cell values into a workbook."
+  },
+  "update-excel-table-row": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Updates one workbook table row."
+  },
+  "update-focused-inbox-override": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Changes Focused Inbox override classification."
+  },
+  "update-group": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Updates group properties."
+  },
+  "update-mail-folder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Renames a mail folder."
+  },
+  "update-mail-message": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Marks, flags or edits a message or draft; no send."
+  },
+  "update-mail-rule": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Updates mail rule; can set forwarding to an agent-chosen address."
+  },
+  "update-mailbox-settings": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Sets out-of-office replies that auto-send agent text to outside senders."
+  },
+  "update-my-calendar-permission": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Changes share role; access change, no content sent."
+  },
+  "update-outlook-contact": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Updates a contact."
+  },
+  "update-specific-calendar-event": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Updates event; setting attendees sends invitations."
+  },
+  "upload-file-content": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Writes file bytes to OneDrive; private write."
+  },
+  "verify-login": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Reports sign-in status only, no content."
+  }
+ }
+}

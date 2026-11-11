@@ -1,0 +1,582 @@
+{
+ "labeller": "blind-haiku",
+ "server": "atlassian",
+ "tools": {
+  "confluence_add_comment": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts agent-written comment on a shared page"
+  },
+  "confluence_add_inline_comment": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts agent-written inline comment anchored to page text"
+  },
+  "confluence_add_label": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Tags a page with a short label; not message text"
+  },
+  "confluence_check_content_permissions": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Checks a user's permission on private content"
+  },
+  "confluence_copy_page": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Copies private page content to an agent-chosen space (borderline)"
+  },
+  "confluence_create_page": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Creates shared-space page with agent-written body"
+  },
+  "confluence_create_page_from_template": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Creates shared page from template with agent-chosen title"
+  },
+  "confluence_delete_attachment": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes an attachment; no text content"
+  },
+  "confluence_delete_page": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a page; no text content"
+  },
+  "confluence_download_attachment": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Downloads an attachment others uploaded"
+  },
+  "confluence_download_content_attachments": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Downloads all attachments others uploaded to a page"
+  },
+  "confluence_get_attachments": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists attachments others uploaded to a page"
+  },
+  "confluence_get_comments": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns comments others wrote on a page"
+  },
+  "confluence_get_inline_comments": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns inline comments others anchored to page text"
+  },
+  "confluence_get_labels": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists label names only"
+  },
+  "confluence_get_page": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns page body others edit"
+  },
+  "confluence_get_page_children": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns child pages and content others edit"
+  },
+  "confluence_get_page_diff": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns diffs of page edits written by others"
+  },
+  "confluence_get_page_history": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns earlier page versions written by others"
+  },
+  "confluence_get_page_images": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns images others uploaded to a page"
+  },
+  "confluence_get_page_restrictions": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns who can view or edit a page"
+  },
+  "confluence_get_page_template": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Returns template body; organisation boilerplate, not user data"
+  },
+  "confluence_get_page_views": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns view analytics for a private page"
+  },
+  "confluence_get_space_page_tree": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists page titles and hierarchy in a space"
+  },
+  "confluence_get_space_permissions": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists who has access to a private space"
+  },
+  "confluence_list_page_templates": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists template names and metadata; organisation configuration"
+  },
+  "confluence_move_page": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Moves a page in the hierarchy; no text"
+  },
+  "confluence_reply_to_comment": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts agent-written reply in a page comment thread"
+  },
+  "confluence_search": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Searches private pages others edit"
+  },
+  "confluence_search_user": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Searches the user directory"
+  },
+  "confluence_set_page_restrictions": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Changes page access lists; no text content"
+  },
+  "confluence_update_page": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Overwrites a shared page with agent-written content"
+  },
+  "confluence_update_page_section": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Replaces a page section with agent-written content"
+  },
+  "confluence_upload_attachment": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Uploads an agent-chosen file to a shared page"
+  },
+  "confluence_upload_attachments": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Uploads agent-chosen files to a shared page"
+  },
+  "jira_add_comment": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts agent-written comment on a shared ticket"
+  },
+  "jira_add_issues_to_sprint": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Moves issues into a sprint; no text"
+  },
+  "jira_add_watcher": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Adds a watcher; no text content"
+  },
+  "jira_add_worklog": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Logs time with optional agent-written comment on a shared ticket"
+  },
+  "jira_assign_issue": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Sets the assignee on a ticket; no free text"
+  },
+  "jira_batch_create_issues": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Creates shared tickets from agent-written summaries; validate_only skips creation"
+  },
+  "jira_batch_create_versions": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates fix versions; configuration only"
+  },
+  "jira_create_customer_request": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Raises customer-facing request with agent-written fields and participants"
+  },
+  "jira_create_issue": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Creates shared ticket with agent-written summary and description"
+  },
+  "jira_create_issue_link": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Links tickets; optional agent-written link comment"
+  },
+  "jira_create_remote_issue_link": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Adds an agent-chosen URL and title to a shared ticket"
+  },
+  "jira_create_sprint": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Creates a sprint on a shared board with optional agent-written goal"
+  },
+  "jira_create_version": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a fix version; configuration only"
+  },
+  "jira_delete_issue": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a ticket; no text content"
+  },
+  "jira_download_attachments": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Downloads attachment files others uploaded to tickets"
+  },
+  "jira_edit_comment": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Rewrites a shared comment with agent-written text"
+  },
+  "jira_get_agile_boards": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists board names in the private workspace"
+  },
+  "jira_get_all_projects": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists projects visible to the user in the workspace"
+  },
+  "jira_get_board_issues": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns board issues others create and edit"
+  },
+  "jira_get_create_fields": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists create-screen field definitions only"
+  },
+  "jira_get_cross_project_dependencies": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists cross-project links others created"
+  },
+  "jira_get_field_options": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Returns configured field option values only"
+  },
+  "jira_get_issue": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns issue with descriptions and comments others wrote"
+  },
+  "jira_get_issue_dates": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns issue dates and status history"
+  },
+  "jira_get_issue_development_info": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns linked PRs and commits written by developers"
+  },
+  "jira_get_issue_images": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns image attachments others uploaded to tickets"
+  },
+  "jira_get_issue_proforma_forms": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists ProForma forms on an issue, often customer-filled"
+  },
+  "jira_get_issue_sla": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns SLA metrics for a private issue"
+  },
+  "jira_get_issue_watchers": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns the watcher list for a private Jira issue"
+  },
+  "jira_get_issues_development_info": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Batch PR and commit links written by developers"
+  },
+  "jira_get_link_types": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists issue link type names only"
+  },
+  "jira_get_proforma_form_details": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns form structure and customer-entered answers"
+  },
+  "jira_get_project_components": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists component names; configuration metadata"
+  },
+  "jira_get_project_epic_hierarchy": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Groups epics others created under parent initiatives"
+  },
+  "jira_get_project_fields": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists project field definitions; schema only"
+  },
+  "jira_get_project_issue_types": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists issue type names only"
+  },
+  "jira_get_project_issues": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists project issues others create and edit"
+  },
+  "jira_get_project_versions": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists version names and dates; configuration metadata"
+  },
+  "jira_get_queue_issues": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns service requests raised by outside customers"
+  },
+  "jira_get_request_type_fields": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Returns request type field definitions; schema only"
+  },
+  "jira_get_request_types": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists request type names; configuration only"
+  },
+  "jira_get_service_desk_for_project": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Returns service desk id for a project; configuration only"
+  },
+  "jira_get_service_desk_queues": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists queue names; configuration only"
+  },
+  "jira_get_sprint_issues": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns sprint issues others create and edit"
+  },
+  "jira_get_sprints_from_board": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists sprints and goals on a private board"
+  },
+  "jira_get_transitions": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists workflow transition names only"
+  },
+  "jira_get_user_profile": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns a user's profile record, which is private directory data"
+  },
+  "jira_get_worklog": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns worklog entries with comments written by others"
+  },
+  "jira_link_to_epic": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Sets epic link between tickets; no text"
+  },
+  "jira_move_issues_to_backlog": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Removes issues from sprints; no text"
+  },
+  "jira_remove_issue_link": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Removes a link; no text content"
+  },
+  "jira_remove_watcher": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Removes a watcher; no text content"
+  },
+  "jira_search": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "JQL search returns issues others create and edit"
+  },
+  "jira_search_assignable_users": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns workspace user directory matches"
+  },
+  "jira_search_fields": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Returns field schema names only"
+  },
+  "jira_search_projects": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Searches workspace project names and keys"
+  },
+  "jira_transition_issue": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Changes status; optional agent-written transition comment"
+  },
+  "jira_update_issue": {
+   "E": true,
+   "P": true,
+   "U": true,
+   "why": "Edits shared ticket fields and can post an agent-written comment"
+  },
+  "jira_update_proforma_form_answers": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Writes agent-chosen answers into a shared ProForma form"
+  },
+  "jira_update_sprint": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Changes sprint details including agent-written goal text"
+  },
+  "jira_update_version": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Edits or archives fix versions; configuration only"
+  }
+ }
+}

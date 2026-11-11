@@ -1,0 +1,1649 @@
+{
+ "command": [
+  "npx",
+  "-y",
+  "@paypal/mcp@1.8.1",
+  "--tools=all"
+ ],
+ "server": "PayPal",
+ "tools": [
+  {
+   "description": "\nCreate Invoices on PayPal.\n\nThis function creates a draft invoice, specifying a currency code, the invoicer's business information, one or more recipients to bill, and line items. Once created, the invoice can be sent to the customer for payment.\n\nprimary_recipients and items use PayPal's real nested shape (billing_info/shipping_info for recipients; unit_amount/tax/discount for items); other fields use a simplified flat shape.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "allow_partial_payment": {
+      "description": "Whether the invoice allows a partial payment. If false, the invoice must be paid in full. If true, the invoice allows partial payments. Not available for users in India, Brazil, or Israel.",
+      "type": "boolean"
+     },
+     "allow_tip": {
+      "description": "Whether the payer can add a tip when paying. Not available in Hong Kong, Taiwan, India, or Japan.",
+      "type": "boolean"
+     },
+     "currency_code": {
+      "description": "The three-character ISO-4217 currency code for the invoice (for example, USD). Applies to every monetary amount on the invoice.",
+      "type": "string"
+     },
+     "enable_pay_by_bank": {
+      "description": "Whether to enable PAY_BY_BANK as a payment method for this invoice, letting the payer pay directly from their bank account. Available only for US-based merchants and invoices with USD currency.",
+      "type": "boolean"
+     },
+     "invoice_date": {
+      "description": "The invoice date in yyyy-MM-DD format.",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$",
+      "type": "string"
+     },
+     "invoice_number": {
+      "description": "The invoice number. If omitted, PayPal auto-increments from the last invoice number used.",
+      "type": "string"
+     },
+     "invoicer_address_line_1": {
+      "description": "The first line of the invoicer's address, for example, number and street.",
+      "type": "string"
+     },
+     "invoicer_address_line_2": {
+      "description": "The second line of the invoicer's address, for example, suite or apartment number.",
+      "type": "string"
+     },
+     "invoicer_business_name": {
+      "description": "The business name of the invoicer.",
+      "maxLength": 300,
+      "type": "string"
+     },
+     "invoicer_city": {
+      "description": "The city, town, or village of the invoicer's address.",
+      "type": "string"
+     },
+     "invoicer_country_code": {
+      "description": "The two-character ISO 3166-1 country code of the invoicer's address (for example, US or GB).",
+      "pattern": "^([A-Z]{2}|C2)$",
+      "type": "string"
+     },
+     "invoicer_email_address": {
+      "description": "The email address of the invoicer.",
+      "type": "string"
+     },
+     "invoicer_given_name": {
+      "description": "The first name of the invoicer.",
+      "type": "string"
+     },
+     "invoicer_postal_code": {
+      "description": "The postal code of the invoicer's address.",
+      "type": "string"
+     },
+     "invoicer_state": {
+      "description": "The state or province of the invoicer's address.",
+      "type": "string"
+     },
+     "invoicer_surname": {
+      "description": "The last name of the invoicer.",
+      "type": "string"
+     },
+     "invoicer_tax_id": {
+      "description": "The invoicer's tax ID.",
+      "type": "string"
+     },
+     "items": {
+      "description": "The line items on the invoice.",
+      "items": {
+       "additionalProperties": false,
+       "description": "invoice line item object",
+       "properties": {
+        "description": {
+         "description": "The description of the item.",
+         "type": "string"
+        },
+        "discount": {
+         "additionalProperties": false,
+         "description": "The discount for this line item, subtracted from the item total.",
+         "properties": {
+          "amount": {
+           "additionalProperties": false,
+           "description": "The discount as a fixed amount. Mutually exclusive with percent -- set only one.",
+           "properties": {
+            "currency_code": {
+             "description": "The three-character ISO-4217 currency code that identifies the currency.",
+             "type": "string"
+            },
+            "value": {
+             "description": "The amount, as a signed decimal string with up to 2 decimal places (e.g. '50.00').",
+             "pattern": "^((-?[0-9]+)|(-?([0-9]+)?[.][0-9]+))$",
+             "type": "string"
+            }
+           },
+           "required": [
+            "currency_code",
+            "value"
+           ],
+           "type": "object"
+          },
+          "percent": {
+           "description": "The discount as a percent value, from 0 to 100. Supports up to five decimal places. Mutually exclusive with amount -- set only one.",
+           "pattern": "^((-?[0-9]+)|(-?([0-9]+)?[.][0-9]+))$",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "item_date": {
+         "description": "The date, in yyyy-MM-DD format, when the item or service was provided.",
+         "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$",
+         "type": "string"
+        },
+        "name": {
+         "description": "The name of the item",
+         "type": "string"
+        },
+        "quantity": {
+         "description": "The quantity of the item that the invoicer provides to the payer. Value is from -1000000 to 1000000. Supports up to five decimal places. Cast to string",
+         "type": "string"
+        },
+        "tax": {
+         "additionalProperties": false,
+         "description": "tax object",
+         "properties": {
+          "name": {
+           "description": "The name of the tax applied on the item, for example 'Sales Tax'.",
+           "type": "string"
+          },
+          "percent": {
+           "description": "The tax rate, as a percent value from 0 to 100. Supports up to five decimal places.",
+           "pattern": "^((-?[0-9]+)|(-?([0-9]+)?[.][0-9]+))$",
+           "type": "string"
+          },
+          "tax_note": {
+           "description": "A note about the tax, used to track tax-related data.",
+           "type": "string"
+          }
+         },
+         "required": [
+          "name",
+          "percent"
+         ],
+         "type": "object"
+        },
+        "unit_amount": {
+         "additionalProperties": false,
+         "description": "The unit price of the item. Does not include tax or discount.",
+         "properties": {
+          "currency_code": {
+           "description": "The three-character ISO-4217 currency code that identifies the currency.",
+           "type": "string"
+          },
+          "value": {
+           "description": "The amount, as a signed decimal string with up to 2 decimal places (e.g. '50.00').",
+           "pattern": "^((-?[0-9]+)|(-?([0-9]+)?[.][0-9]+))$",
+           "type": "string"
+          }
+         },
+         "required": [
+          "currency_code",
+          "value"
+         ],
+         "type": "object"
+        },
+        "unit_of_measure": {
+         "description": "The unit of measure for the invoiced item",
+         "enum": [
+          "QUANTITY",
+          "HOURS",
+          "AMOUNT"
+         ],
+         "type": "string"
+        }
+       },
+       "required": [
+        "name",
+        "quantity",
+        "unit_amount"
+       ],
+       "type": "object"
+      },
+      "type": "array"
+     },
+     "minimum_partial_payment_amount": {
+      "description": "The minimum amount allowed for a partial payment, in the invoice's currency_code. Valid only when allow_partial_payment is true.",
+      "pattern": "^((-?[0-9]+)|(-?([0-9]+)?[.][0-9]+))$",
+      "type": "string"
+     },
+     "note": {
+      "description": "A note to the invoice recipient. Also appears on the invoice notification email.",
+      "type": "string"
+     },
+     "pay_by_bank_exclusive_above_threshold": {
+      "description": "When true, PAY_BY_BANK becomes the only available payment method once the invoice total exceeds PayPal's system-defined threshold ($1000), disabling all other payment methods above that threshold.",
+      "type": "boolean"
+     },
+     "primary_recipients": {
+      "description": "The recipients who will be billed for this invoice.",
+      "items": {
+       "additionalProperties": false,
+       "properties": {
+        "billing_info": {
+         "additionalProperties": false,
+         "description": "The billing information of the invoice recipient",
+         "properties": {
+          "additional_info": {
+           "description": "Any additional information about the recipient.",
+           "maxLength": 40,
+           "type": "string"
+          },
+          "address": {
+           "additionalProperties": false,
+           "description": "The address of the invoice recipient.",
+           "properties": {
+            "address_line_1": {
+             "description": "The first line of the address, for example, number and street.",
+             "type": "string"
+            },
+            "address_line_2": {
+             "description": "The second line of the address, for example, suite or apartment number.",
+             "type": "string"
+            },
+            "admin_area_1": {
+             "description": "The highest-level sub-division in a country, such as a state or province.",
+             "type": "string"
+            },
+            "admin_area_2": {
+             "description": "A city, town, or village.",
+             "type": "string"
+            },
+            "country_code": {
+             "description": "The two-character ISO 3166-1 country code (for example, US or GB).",
+             "pattern": "^([A-Z]{2}|C2)$",
+             "type": "string"
+            },
+            "postal_code": {
+             "description": "The postal code, which is the zip code or equivalent.",
+             "type": "string"
+            }
+           },
+           "type": "object"
+          },
+          "business_name": {
+           "description": "The business name of the invoice recipient.",
+           "type": "string"
+          },
+          "email_address": {
+           "description": "email address of the recipient",
+           "type": "string"
+          },
+          "language": {
+           "description": "The BCP-47 language tag used for the recipient's email notification (for example, 'en-US'). Only used when the recipient has no PayPal account.",
+           "pattern": "^[a-z]{2}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$",
+           "type": "string"
+          },
+          "name": {
+           "additionalProperties": false,
+           "description": "name of the recipient",
+           "properties": {
+            "given_name": {
+             "description": "The first name of the person.",
+             "type": "string"
+            },
+            "surname": {
+             "description": "The last name of the person.",
+             "type": "string"
+            }
+           },
+           "type": "object"
+          },
+          "phones": {
+           "description": "The invoice recipient's phone numbers.",
+           "items": {
+            "additionalProperties": false,
+            "description": "phone object",
+            "properties": {
+             "country_code": {
+              "description": "The country calling code, in E.164 format (for example, '1' for the United States).",
+              "type": "string"
+             },
+             "national_number": {
+              "description": "The national number, in E.164 format.",
+              "type": "string"
+             },
+             "phone_type": {
+              "description": "The type of phone number.",
+              "enum": [
+               "FAX",
+               "HOME",
+               "MOBILE",
+               "OTHER",
+               "PAGER"
+              ],
+              "type": "string"
+             }
+            },
+            "required": [
+             "country_code",
+             "national_number",
+             "phone_type"
+            ],
+            "type": "object"
+           },
+           "type": "array"
+          }
+         },
+         "type": "object"
+        },
+        "shipping_info": {
+         "additionalProperties": false,
+         "description": "The shipping information of the invoice recipient.",
+         "properties": {
+          "address": {
+           "additionalProperties": false,
+           "description": "The shipping address.",
+           "properties": {
+            "address_line_1": {
+             "description": "The first line of the address, for example, number and street.",
+             "type": "string"
+            },
+            "address_line_2": {
+             "description": "The second line of the address, for example, suite or apartment number.",
+             "type": "string"
+            },
+            "admin_area_1": {
+             "description": "The highest-level sub-division in a country, such as a state or province.",
+             "type": "string"
+            },
+            "admin_area_2": {
+             "description": "A city, town, or village.",
+             "type": "string"
+            },
+            "country_code": {
+             "description": "The two-character ISO 3166-1 country code (for example, US or GB).",
+             "pattern": "^([A-Z]{2}|C2)$",
+             "type": "string"
+            },
+            "postal_code": {
+             "description": "The postal code, which is the zip code or equivalent.",
+             "type": "string"
+            }
+           },
+           "type": "object"
+          },
+          "business_name": {
+           "description": "The business name for the shipping destination.",
+           "type": "string"
+          },
+          "name": {
+           "additionalProperties": false,
+           "description": "The name for the shipping destination.",
+           "properties": {
+            "given_name": {
+             "description": "The first name of the person.",
+             "type": "string"
+            },
+            "surname": {
+             "description": "The last name of the person.",
+             "type": "string"
+            }
+           },
+           "type": "object"
+          }
+         },
+         "type": "object"
+        }
+       },
+       "type": "object"
+      },
+      "type": "array"
+     },
+     "reference": {
+      "description": "A reference value, such as a purchase order number.",
+      "type": "string"
+     },
+     "shipping_cost": {
+      "description": "The shipping cost for the invoice, in the invoice's currency_code.",
+      "pattern": "^((-?[0-9]+)|(-?([0-9]+)?[.][0-9]+))$",
+      "type": "string"
+     },
+     "theme_color": {
+      "description": "The primary color used to render the invoice, as a hex color code (e.g. #000000). If omitted, the default theme is used.",
+      "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+      "type": "string"
+     }
+    },
+    "required": [
+     "currency_code",
+     "primary_recipients",
+     "items"
+    ],
+    "type": "object"
+   },
+   "name": "create_invoice"
+  },
+  {
+   "description": "\nList invoices from PayPal.\n\nThis function retrieves a list of invoices with optional pagination parameters.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "page": {
+      "default": 1,
+      "description": "The page number of the result set to fetch.",
+      "maximum": 1000,
+      "minimum": 1,
+      "type": "number"
+     },
+     "page_size": {
+      "default": 100,
+      "description": "The number of records to return per page (maximum 100).",
+      "maximum": 100,
+      "minimum": 1,
+      "type": "number"
+     },
+     "total_required": {
+      "description": "Indicates whether the response should include the total count of items.",
+      "type": "boolean"
+     }
+    },
+    "type": "object"
+   },
+   "name": "list_invoices"
+  },
+  {
+   "description": "\nGet an invoice from PayPal.\n\nThis function retrieves details of a specific invoice using its ID.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "invoice_id": {
+      "description": "The ID of the invoice to retrieve.",
+      "pattern": "^[A-Za-z0-9_-]{1,127}$",
+      "type": "string"
+     }
+    },
+    "required": [
+     "invoice_id"
+    ],
+    "type": "object"
+   },
+   "name": "get_invoice"
+  },
+  {
+   "description": "\nSend an invoice to the recipient(s).\n\nThis function sends a previously created invoice to its intended recipients.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "additional_recipients": {
+      "description": "Additional email addresses to which to send the invoice.",
+      "items": {
+       "type": "string"
+      },
+      "type": "array"
+     },
+     "invoice_id": {
+      "description": "The ID of the invoice to send.",
+      "pattern": "^[A-Za-z0-9_-]{1,127}$",
+      "type": "string"
+     },
+     "note": {
+      "description": "A note to the recipient.",
+      "type": "string"
+     },
+     "send_to_recipient": {
+      "description": "Indicates whether to send the invoice to the recipient.",
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "invoice_id"
+    ],
+    "type": "object"
+   },
+   "name": "send_invoice"
+  },
+  {
+   "description": "\nSend a reminder for an invoice.\n\nThis function sends a reminder for an invoice that has already been sent but hasn't been paid yet.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "additional_recipients": {
+      "description": "Additional email addresses to which to send the reminder.",
+      "items": {
+       "type": "string"
+      },
+      "type": "array"
+     },
+     "invoice_id": {
+      "description": "The ID of the invoice for which to send a reminder.",
+      "pattern": "^[A-Za-z0-9_-]{1,127}$",
+      "type": "string"
+     },
+     "note": {
+      "description": "A note to the recipient.",
+      "type": "string"
+     },
+     "subject": {
+      "description": "The subject of the reminder email.",
+      "type": "string"
+     }
+    },
+    "required": [
+     "invoice_id"
+    ],
+    "type": "object"
+   },
+   "name": "send_invoice_reminder"
+  },
+  {
+   "description": "\nCancel a sent invoice.\n\nThis function cancels an invoice that has already been sent to the recipient(s).\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "additional_recipients": {
+      "description": "Additional email addresses to which to send the cancellation.",
+      "items": {
+       "type": "string"
+      },
+      "type": "array"
+     },
+     "invoice_id": {
+      "description": "The ID of the invoice to cancel.",
+      "pattern": "^[A-Za-z0-9_-]{1,127}$",
+      "type": "string"
+     },
+     "note": {
+      "description": "A cancellation note to the recipient.",
+      "type": "string"
+     },
+     "send_to_recipient": {
+      "description": "Indicates whether to send the cancellation to the recipient.",
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "invoice_id"
+    ],
+    "type": "object"
+   },
+   "name": "cancel_sent_invoice"
+  },
+  {
+   "description": "\nGenerate a QR code for an invoice.\n\nThis function generates a QR code for an invoice, which can be used to pay the invoice using a mobile device or scanning app.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "height": {
+      "default": 300,
+      "description": "The QR code height",
+      "type": "number"
+     },
+     "invoice_id": {
+      "description": "The invoice id to generate QR code for",
+      "pattern": "^[A-Za-z0-9_-]{1,127}$",
+      "type": "string"
+     },
+     "width": {
+      "default": 300,
+      "description": "The QR code width",
+      "type": "number"
+     }
+    },
+    "required": [
+     "invoice_id"
+    ],
+    "type": "object"
+   },
+   "name": "generate_invoice_qr_code"
+  },
+  {
+   "description": "\nCreate a product in PayPal using product catalog - create products API.\nThis function creates a new product that will be used in subscription plans, subscriptions.\nRequired parameters are: name (product name), type (product type).\nHigh level: \n    - id: (auto-generated or specify SKU of the product) The ID of the product\n    - name: {product_name} (required) \n    - description: {product_description} (optional)\n    - type {DIGITAL | PHYSICAL | SERVICE} (required)\n    - category: {product_category} (optional) \n    - image_url: {image_url} (optional)\n    - home_url: {home_url} (optional)\n\nBelow is the payload request structure:\n{\n    \"id\": \"#PROD-XYAB12ABSB7868434\",\n    \"name\": \"Video Streaming Service\",\n    \"description\": \"Service for streaming latest series, movies etc.\",\n    \"type\": \"SERVICE\",\n    \"category\": \"SOFTWARE\",\n    \"image_url\": \"https://example.com/streaming.jpg\",\n    \"home_url\": \"https://example.com/home\"\n}\n\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "category": {
+      "description": "The product category.",
+      "type": "string"
+     },
+     "description": {
+      "description": "The product description.",
+      "type": "string"
+     },
+     "home_url": {
+      "description": "The home page URL for the product.",
+      "type": "string"
+     },
+     "image_url": {
+      "description": "The image URL for the product.",
+      "type": "string"
+     },
+     "name": {
+      "description": "The product name.",
+      "type": "string"
+     },
+     "type": {
+      "description": "The product type. Value is PHYSICAL, DIGITAL, or SERVICE.",
+      "enum": [
+       "PHYSICAL",
+       "DIGITAL",
+       "SERVICE"
+      ],
+      "type": "string"
+     }
+    },
+    "required": [
+     "name",
+     "type"
+    ],
+    "type": "object"
+   },
+   "name": "create_product"
+  },
+  {
+   "description": "\nList products from PayPal.\n\nThis function retrieves a list of products with optional pagination parameters.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "page": {
+      "description": "The page number of the result set to fetch.",
+      "maximum": 100000,
+      "minimum": 1,
+      "type": "number"
+     },
+     "page_size": {
+      "description": "The number of records to return per page (maximum 100).",
+      "maximum": 20,
+      "minimum": 1,
+      "type": "number"
+     },
+     "total_required": {
+      "description": "Indicates whether the response should include the total count of products.",
+      "type": "boolean"
+     }
+    },
+    "type": "object"
+   },
+   "name": "list_products"
+  },
+  {
+   "description": "\nUpdate a product in PayPal.\n\nThis function updates an existing product using JSON Patch operations.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "operations": {
+      "description": "The PATCH operations to perform on the product.",
+      "items": {
+       "additionalProperties": true,
+       "properties": {},
+       "type": "object"
+      },
+      "type": "array"
+     },
+     "product_id": {
+      "description": "The ID of the product to update.",
+      "type": "string"
+     }
+    },
+    "required": [
+     "product_id",
+     "operations"
+    ],
+    "type": "object"
+   },
+   "name": "update_product"
+  },
+  {
+   "description": "\nList products from PayPal.\n\nThis function retrieves a list of products with optional pagination parameters.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "product_id": {
+      "description": "The ID of the product to update.",
+      "pattern": "^[A-Za-z0-9_-]{12,50}$",
+      "type": "string"
+     }
+    },
+    "required": [
+     "product_id"
+    ],
+    "type": "object"
+   },
+   "name": "show_product_details"
+  },
+  {
+   "description": "\nCreate a subsctiption plan in PayPal using subscription - create plan API.\nThis function creates a new subscription plan that defines pricing and billing cycle details for subscriptions.\nRequired parameters are: product_id (the ID of the product for which to create the plan), name (subscription plan name), billing_cycles (billing cycle details).\nHigh level: product_id, name, description, taxes, status: {CREATED|INACTIVE|ACTIVE}, billing_cycles, payment_preferences are required in json object.\nWhile creating billing_cycles object, trial(second) billing cycle should precede regular billing cycle.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "billing_cycles": {
+      "description": "The billing cycles of the plan.",
+      "items": {
+       "additionalProperties": true,
+       "properties": {
+        "frequency": {
+         "additionalProperties": true,
+         "description": "The frequency of the billing cycle.",
+         "properties": {
+          "interval_count": {
+           "description": "The number of units for the billing cycle.",
+           "type": "number"
+          },
+          "interval_unit": {
+           "description": "The unit of time for the billing cycle.",
+           "enum": [
+            "DAY",
+            "WEEK",
+            "MONTH",
+            "YEAR"
+           ],
+           "type": "string"
+          }
+         },
+         "required": [
+          "interval_unit",
+          "interval_count"
+         ],
+         "type": "object"
+        },
+        "pricing_scheme": {
+         "additionalProperties": true,
+         "description": "The pricing scheme for the billing cycle.",
+         "properties": {
+          "fixed_price": {
+           "additionalProperties": true,
+           "description": "The fixed price for the subscription plan.",
+           "properties": {
+            "currency_code": {
+             "description": "The currency code for the fixed price.",
+             "enum": [
+              "USD"
+             ],
+             "type": "string"
+            },
+            "value": {
+             "description": "The value of the fixed price.",
+             "type": "string"
+            }
+           },
+           "required": [
+            "currency_code",
+            "value"
+           ],
+           "type": "object"
+          },
+          "version": {
+           "description": "The version of the pricing scheme.",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "sequence": {
+         "description": "The sequence of the billing cycle.",
+         "type": "number"
+        },
+        "tenure_type": {
+         "description": "The type of billing cycle tenure.",
+         "enum": [
+          "REGULAR",
+          "TRIAL"
+         ],
+         "type": "string"
+        },
+        "total_cycles": {
+         "description": "The total number of cycles in the billing plan.",
+         "type": "number"
+        }
+       },
+       "required": [
+        "frequency",
+        "tenure_type",
+        "sequence",
+        "pricing_scheme"
+       ],
+       "type": "object"
+      },
+      "type": "array"
+     },
+     "description": {
+      "description": "The subscription plan description.",
+      "type": "string"
+     },
+     "name": {
+      "description": "The subscription plan name.",
+      "type": "string"
+     },
+     "payment_preferences": {
+      "additionalProperties": true,
+      "description": "The payment preferences for the subscription plan.",
+      "properties": {
+       "auto_bill_outstanding": {
+        "description": "Indicates whether to automatically bill outstanding amounts.",
+        "type": "boolean"
+       },
+       "payment_failure_threshold": {
+        "description": "The number of failed payments before the subscription is canceled.",
+        "type": "number"
+       },
+       "setup_fee": {
+        "additionalProperties": true,
+        "description": "The setup fee for the subscription plan.",
+        "properties": {
+         "currency_code": {
+          "description": "The currency code for the setup fee.",
+          "enum": [
+           "USD"
+          ],
+          "type": "string"
+         },
+         "value": {
+          "description": "The value of the setup fee.",
+          "type": "string"
+         }
+        },
+        "type": "object"
+       },
+       "setup_fee_failure_action": {
+        "description": "The action to take if the setup fee payment fails.",
+        "enum": [
+         "CONTINUE",
+         "CANCEL"
+        ],
+        "type": "string"
+       }
+      },
+      "type": "object"
+     },
+     "product_id": {
+      "description": "The ID of the product for which to create the plan.",
+      "type": "string"
+     },
+     "taxes": {
+      "additionalProperties": true,
+      "description": "The tax details.",
+      "properties": {
+       "inclusive": {
+        "description": "Indicates whether the tax is inclusive.",
+        "type": "boolean"
+       },
+       "percentage": {
+        "description": "The tax percentage.",
+        "type": "string"
+       }
+      },
+      "type": "object"
+     }
+    },
+    "required": [
+     "product_id",
+     "name",
+     "billing_cycles"
+    ],
+    "type": "object"
+   },
+   "name": "create_subscription_plan"
+  },
+  {
+   "description": "\nList subscription plans from PayPal.\n\nThis function retrieves a list of subscription plans with optional product filtering and pagination parameters.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "page": {
+      "description": "The page number of the result set to fetch.",
+      "maximum": 100000,
+      "minimum": 1,
+      "type": "number"
+     },
+     "page_size": {
+      "description": "The number of records to return per page (maximum 100).",
+      "maximum": 20,
+      "minimum": 1,
+      "type": "number"
+     },
+     "product_id": {
+      "description": "The ID of the product for which to get subscription plans.",
+      "type": "string"
+     },
+     "total_required": {
+      "description": "Indicates whether the response should include the total count of plans.",
+      "type": "boolean"
+     }
+    },
+    "type": "object"
+   },
+   "name": "list_subscription_plans"
+  },
+  {
+   "description": "\nShow subscription plan details from PayPal.\nThis function retrieves the details of a specific subscription plan using its ID.\nRequired parameters are: plan_id (the ID of the subscription plan).\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "plan_id": {
+      "description": "The ID of the subscription plan to show.",
+      "pattern": "^[A-Za-z0-9_-]{12,32}$",
+      "type": "string"
+     }
+    },
+    "required": [
+     "plan_id"
+    ],
+    "type": "object"
+   },
+   "name": "show_subscription_plan_details"
+  },
+  {
+   "description": "\nCreate a subscription in PayPal using the subscription - create subscription API.\nThis function allows you to create a new subscription for a specific plan, enabling the management of recurring payments.\nThe only required parameter is plan_id (the ID of the subscription plan). All other fields are optional and can be omitted if not provided.\nThe subscriber field is optional. If no subscriber information is provided, omit the subscriber field in the request payload.\nThe shipping address is optional. If no shipping address is provided, set the shipping_preference to GET_FROM_FILE in the application context.\nThe application context is also optional. If no application context information is provided, omit the application context field in the request payload.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "application_context": {
+      "additionalProperties": false,
+      "description": "The application context for the subscription.",
+      "properties": {
+       "brand_name": {
+        "description": "The brand name.",
+        "type": "string"
+       },
+       "cancel_url": {
+        "description": "The cancel URL if the user cancels the subscription.",
+        "type": "string"
+       },
+       "locale": {
+        "description": "The locale for the subscription.",
+        "type": "string"
+       },
+       "payment_method": {
+        "additionalProperties": false,
+        "description": "The payment method details.",
+        "properties": {
+         "payee_preferred": {
+          "description": "The preferred payment method for the payee.",
+          "enum": [
+           "IMMEDIATE_PAYMENT_REQUIRED",
+           "INSTANT_FUNDING_SOURCE"
+          ],
+          "type": "string"
+         },
+         "payer_selected": {
+          "description": "The payment method selected by the payer.",
+          "enum": [
+           "PAYPAL",
+           "CREDIT_CARD"
+          ],
+          "type": "string"
+         }
+        },
+        "required": [
+         "payer_selected"
+        ],
+        "type": "object"
+       },
+       "return_url": {
+        "description": "The return URL after the subscription is created.",
+        "type": "string"
+       },
+       "shipping_preference": {
+        "description": "The shipping preference.",
+        "enum": [
+         "SET_PROVIDED_ADDRESS",
+         "GET_FROM_FILE"
+        ],
+        "type": "string"
+       },
+       "user_action": {
+        "description": "The user action.",
+        "enum": [
+         "SUBSCRIBE_NOW",
+         "CONTINUE"
+        ],
+        "type": "string"
+       }
+      },
+      "required": [
+       "brand_name",
+       "return_url",
+       "cancel_url"
+      ],
+      "type": "object"
+     },
+     "plan_id": {
+      "description": "The ID of the subscription plan to create.",
+      "type": "string"
+     },
+     "quantity": {
+      "description": "The quantity of the product in the subscription.",
+      "type": "number"
+     },
+     "shipping_amount": {
+      "additionalProperties": false,
+      "description": "The shipping amount for the subscription.",
+      "properties": {
+       "currency_code": {
+        "description": "The currency code for the shipping amount.",
+        "enum": [
+         "USD"
+        ],
+        "type": "string"
+       },
+       "value": {
+        "description": "The value of the shipping amount.",
+        "type": "string"
+       }
+      },
+      "required": [
+       "currency_code",
+       "value"
+      ],
+      "type": "object"
+     },
+     "subscriber": {
+      "additionalProperties": false,
+      "description": "The subscriber details.",
+      "properties": {
+       "email_address": {
+        "description": "The subscriber email address.",
+        "type": "string"
+       },
+       "name": {
+        "additionalProperties": false,
+        "description": "The subscriber name.",
+        "properties": {
+         "given_name": {
+          "description": "The subscriber given name.",
+          "type": "string"
+         },
+         "surname": {
+          "description": "The subscriber last name.",
+          "type": "string"
+         }
+        },
+        "type": "object"
+       },
+       "shipping_address": {
+        "additionalProperties": false,
+        "description": "The subscriber shipping address.",
+        "properties": {
+         "address": {
+          "additionalProperties": false,
+          "description": "The shipping address.",
+          "properties": {
+           "address_line_1": {
+            "description": "The first line of the address.",
+            "type": "string"
+           },
+           "address_line_2": {
+            "description": "The second line of the address.",
+            "type": "string"
+           },
+           "admin_area_1": {
+            "description": "The city or locality.",
+            "type": "string"
+           },
+           "admin_area_2": {
+            "description": "The state or province.",
+            "type": "string"
+           },
+           "country_code": {
+            "description": "The country code.",
+            "enum": [
+             "US"
+            ],
+            "type": "string"
+           },
+           "postal_code": {
+            "description": "The postal code.",
+            "type": "string"
+           }
+          },
+          "required": [
+           "address_line_1",
+           "admin_area_1",
+           "admin_area_2",
+           "postal_code",
+           "country_code"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "$ref": "#/properties/subscriber/properties/name",
+          "description": "The subscriber shipping address name."
+         }
+        },
+        "type": "object"
+       }
+      },
+      "type": "object"
+     }
+    },
+    "required": [
+     "plan_id"
+    ],
+    "type": "object"
+   },
+   "name": "create_subscription"
+  },
+  {
+   "description": "\nShow subscription details from PayPal.\nThis function retrieves the details of a specific subscription using its ID.\nRequired parameters are: subscription_id (the ID of the subscription).\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "get_additional_details": {
+      "description": "Get all detailed information for the subscription.",
+      "type": "boolean"
+     },
+     "subscription_id": {
+      "description": "The ID of the subscription to show details.",
+      "pattern": "^[A-Za-z0-9_-]{3,50}$",
+      "type": "string"
+     }
+    },
+    "required": [
+     "subscription_id"
+    ],
+    "type": "object"
+   },
+   "name": "show_subscription_details"
+  },
+  {
+   "description": "\nCancel a customer subscription in PayPal.\n\nThis function cancels an active subscription for a customer. It requires the subscription ID and an optional reason for cancellation.\nRequired parameters are: subscription_id (the ID of the subscription to be canceled).\nBelow is the payload request structure:\n{\n    \"reason\": \"Customer requested cancellation\"\n}\nYou MUST ask the user for: \n - subscription_id\n - reason for cancellation.\n\nReturn all of the above as structured JSON in your response.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "payload": {
+      "additionalProperties": true,
+      "description": "Payload for subscription cancellation.",
+      "properties": {
+       "reason": {
+        "description": "The reason for the cancellation of a subscription.",
+        "type": "string"
+       }
+      },
+      "required": [
+       "reason"
+      ],
+      "type": "object"
+     },
+     "subscription_id": {
+      "description": "The ID of the subscription to show details.",
+      "pattern": "^[A-Za-z0-9_-]{3,50}$",
+      "type": "string"
+     }
+    },
+    "required": [
+     "subscription_id",
+     "payload"
+    ],
+    "type": "object"
+   },
+   "name": "cancel_subscription"
+  },
+  {
+   "description": "\nCreate a shipment for a transaction in PayPal.\nThis function creates a shipment record for a specific transaction, allowing you to track the shipment status and details.\nThe transaction_id can fetch from the captured payment details in the order information.\nRequired parameters are: tracking_number (the tracking number for the shipment), transaction_id (the transaction ID associated with the shipment). \nHigh level: tracking_number, transaction_id, status (optional), carrier (optional) are required json objects.\nBelow is the payload request structure:\n{\n    \"tracking_number\": \"1234567890\",\n    \"transaction_id\": \"9XJ12345ABC67890\",\n    \"status\": \"SHIPPED\", // Required: ON_HOLD, SHIPPED, DELIVERED, CANCELLED\n    \"carrier\": \"UPS\" // Required: The carrier handling the shipment. Link to supported carriers: http://developer.paypal.com/docs/tracking/reference/carriers/\n}\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "carrier": {
+      "description": "The carrier handling the shipment.",
+      "type": "string"
+     },
+     "order_id": {
+      "description": "The ID of the order for which to create a shipment",
+      "pattern": "^[A-Z0-9]{17,32}$",
+      "type": "string"
+     },
+     "status": {
+      "default": "SHIPPED",
+      "description": "The status of the shipment. It can be \"ON_HOLD\", \"SHIPPED\", \"DELIVERED\", or \"CANCELLED\".",
+      "type": "string"
+     },
+     "tracking_number": {
+      "description": "The tracking number for the shipment. Id is provided by the shipper. This is required to create a shipment.",
+      "type": "string"
+     },
+     "transaction_id": {
+      "description": "The transaction ID associated with the shipment. Transaction id available after the order is paid or captured. This is required to create a shipment.",
+      "pattern": "^[A-Za-z0-9_-]{12,255}$",
+      "type": "string"
+     }
+    },
+    "required": [
+     "tracking_number",
+     "transaction_id"
+    ],
+    "type": "object"
+   },
+   "name": "create_shipment_tracking"
+  },
+  {
+   "description": "\nGet tracking information for a shipment by ID.\nThis function retrieves tracking information for a specific shipment using the transaction ID and tracking number.\nThe transaction_id can fetch from the captured payment details in the order information.\nBelow is the payload request structure:\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "order_id": {
+      "description": "The ID of the order for which to create a shipment.",
+      "pattern": "^[A-Z0-9]{17,32}$",
+      "type": "string"
+     },
+     "transaction_id": {
+      "description": "The transaction ID associated with the shipment tracking to retrieve.",
+      "pattern": "^[A-Za-z0-9_-]{12,255}$",
+      "type": "string"
+     }
+    },
+    "type": "object"
+   },
+   "name": "get_shipment_tracking"
+  },
+  {
+   "description": "\nCreate an order in PayPal.\n\nThis tool is used to create a new order in PayPal. This is typically the first step in initiating a payment flow. It sets up an order with specified details such as item(s) to be purchased, quantity, amount, currency, and other details.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "cancelUrl": {
+      "default": "https://example.com/cancelUrl",
+      "type": "string"
+     },
+     "currencyCode": {
+      "description": "Currency code of the amount.",
+      "enum": [
+       "USD"
+      ],
+      "type": "string"
+     },
+     "discount": {
+      "default": 0,
+      "description": "The discount amount for the order.",
+      "type": "number"
+     },
+     "items": {
+      "items": {
+       "additionalProperties": false,
+       "properties": {
+        "description": {
+         "description": "The detailed item description.",
+         "type": "string"
+        },
+        "itemCost": {
+         "description": "The cost of each item - upto 2 decimal points.",
+         "type": "number"
+        },
+        "itemTotal": {
+         "description": "The total cost of this line item.",
+         "type": "number"
+        },
+        "name": {
+         "description": "The name of the item.",
+         "type": "string"
+        },
+        "quantity": {
+         "default": 1,
+         "description": "The item quantity. Must be a whole number.",
+         "type": "number"
+        },
+        "taxPercent": {
+         "default": 0,
+         "description": "The tax percent for the specific item.",
+         "type": "number"
+        }
+       },
+       "required": [
+        "name",
+        "itemCost",
+        "itemTotal"
+       ],
+       "type": "object"
+      },
+      "maxItems": 50,
+      "type": "array"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "anyOf": [
+         {
+          "not": {}
+         },
+         {
+          "type": "string"
+         }
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "returnUrl": {
+      "default": "https://example.com/returnUrl",
+      "type": "string"
+     },
+     "shippingAddress": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "The shipping address for the order.",
+        "properties": {
+         "address_line_1": {
+          "description": "The first line of the address, such as number and street, for example, `173 Drury Lane`.This field needs to pass the full address.",
+          "type": "string"
+         },
+         "address_line_2": {
+          "description": "The second line of the address, for example, a suite or apartment number.",
+          "type": "string"
+         },
+         "admin_area_1": {
+          "description": "The highest-level sub-division in a country, which is usually a province, state, or ISO-3166-2 subdivision. ",
+          "type": "string"
+         },
+         "admin_area_2": {
+          "description": "A city, town, or village. Smaller than `admin_area_level_1`.",
+          "type": "string"
+         },
+         "country_code": {
+          "description": "The 2-character ISO 3166-1 code that identifies the country or region. Note: The country code for Great Britain is `GB` and not `UK` as used in the top-level domain names for that country.",
+          "maxLength": 2,
+          "minLength": 2,
+          "type": "string"
+         },
+         "postal_code": {
+          "description": "The postal code, which is the ZIP code or equivalent. Typically required for countries with a postal code or an equivalent.",
+          "type": "string"
+         }
+        },
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "The shipping address for the order."
+     },
+     "shippingCost": {
+      "default": 0,
+      "description": "The cost of shipping for the order.",
+      "type": "number"
+     }
+    },
+    "required": [
+     "currencyCode",
+     "items"
+    ],
+    "type": "object"
+   },
+   "name": "create_order"
+  },
+  {
+   "description": "\nRetrieves the order details from PayPal for a given order ID.\n\nThis tool is used to retrieve details of an existing order in PayPal. It provides information about the order, including items, amounts, status, and other relevant details.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "description": "The order id generated during create call",
+      "pattern": "^[A-Z0-9]{17,32}$",
+      "type": "string"
+     }
+    },
+    "required": [
+     "id"
+    ],
+    "type": "object"
+   },
+   "name": "get_order"
+  },
+  {
+   "description": "\nCapture a payment for an order.\n\nThis tool is used to capture a payment for an order. It allows you to capture funds that have been authorized for a specific order but not yet captured.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "description": "The order id generated during create call",
+      "pattern": "^[A-Z0-9]{17,32}$",
+      "type": "string"
+     }
+    },
+    "required": [
+     "id"
+    ],
+    "type": "object"
+   },
+   "name": "pay_order"
+  },
+  {
+   "description": "\nList disputes from PayPal.\n\nThis function retrieves a list of disputes with optional pagination and filtering parameters.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "dispute_state": {
+      "description": "OPEN_INQUIRIES",
+      "enum": [
+       "REQUIRED_ACTION",
+       "REQUIRED_OTHER_PARTY_ACTION",
+       "UNDER_PAYPAL_REVIEW",
+       "RESOLVED",
+       "OPEN_INQUIRIES",
+       "APPEALABLE"
+      ],
+      "type": "string"
+     },
+     "disputed_transaction_id": {
+      "anyOf": [
+       {
+        "pattern": "^[A-Za-z0-9_-]{12,255}$",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "page": {
+      "default": 1,
+      "maximum": 1000,
+      "minimum": 1,
+      "type": "number"
+     },
+     "page_size": {
+      "default": 10,
+      "maximum": 50,
+      "minimum": 1,
+      "type": "number"
+     }
+    },
+    "type": "object"
+   },
+   "name": "list_disputes"
+  },
+  {
+   "description": "\nGet details for a specific dispute from PayPal.\n\nThis tool is used to lists disputes with a summary set of details, which shows the dispute_id, reason, status, dispute_state, dispute_life_cycle_stage, dispute_channel, dispute_amount, create_time and update_time fields.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "dispute_id": {
+      "description": "The order id generated during create call",
+      "pattern": "^[A-Za-z0-9_-]{1,255}$",
+      "type": "string"
+     }
+    },
+    "required": [
+     "dispute_id"
+    ],
+    "type": "object"
+   },
+   "name": "get_dispute"
+  },
+  {
+   "description": "\nAccept liability for a dispute claim.\n\nThis tool is used to accept liability for a dispute claim. When you accept liability for a dispute claim, the dispute closes in the customer's favor and PayPal automatically refunds money to the customer from the merchant's account.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "dispute_id": {
+      "type": "string"
+     },
+     "note": {
+      "description": "A note about why the seller is accepting the claim",
+      "pattern": "^[A-Za-z0-9_-]{1,255}$",
+      "type": "string"
+     }
+    },
+    "required": [
+     "dispute_id",
+     "note"
+    ],
+    "type": "object"
+   },
+   "name": "accept_dispute_claim"
+  },
+  {
+   "description": "\nList transactions from PayPal.\n\nThis tool is used to list transactions with optional filtering parameters within a date range of 31 days. This tool can also be used to list details of a transaction given the transaction ID.\n\n- The start_date and end_date should be specified in ISO8601 date and time format. Example dates: 1996-12-19T16:39:57-08:00, 1985-04-12T23:20:50.52Z, 1990-12-31T23:59:60Z\n- The transaction_status accepts the following 4 values:\n    1. \"D\" - represents denied transactions.\n    2. \"P\" - represents pending transactions.\n    3. \"S\" - represents successful transactions.\n    4. \"V\" - represents transactions that were reversed.\n- The transaction_id is the unique identifier for the transaction.\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "end_date": {
+      "default": "2026-11-11T04:48:49.611Z",
+      "description": "Filters the transactions in the response by an end date and time, in ISO8601 date and time format. Seconds are required. Fractional seconds are optional. The maximum supported range is 31 days.",
+      "type": "string"
+     },
+     "page": {
+      "default": 1,
+      "maximum": 10000,
+      "minimum": 1,
+      "type": "number"
+     },
+     "page_size": {
+      "default": 100,
+      "maximum": 500,
+      "minimum": 1,
+      "type": "number"
+     },
+     "search_months": {
+      "default": 12,
+      "description": "Number of months to search back for a transaction by ID. Default is 12 months.",
+      "type": "number"
+     },
+     "start_date": {
+      "default": "2026-10-11T03:48:49.611Z",
+      "description": "Filters the transactions in the response by a start date and time, in ISO8601 date and time format. Seconds are required. Fractional seconds are optional.",
+      "type": "string"
+     },
+     "transaction_id": {
+      "anyOf": [
+       {
+        "anyOf": [
+         {
+          "not": {}
+         },
+         {
+          "pattern": "^[A-Za-z0-9_-]{12,255}$",
+          "type": "string"
+         }
+        ],
+        "description": "The ID of the transaction to retrieve."
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "The ID of the transaction to retrieve."
+     },
+     "transaction_status": {
+      "default": "S",
+      "enum": [
+       "D",
+       "P",
+       "S",
+       "V"
+      ],
+      "type": "string"
+     }
+    },
+    "type": "object"
+   },
+   "name": "list_transactions"
+  },
+  {
+   "description": "\nInitiate a refund for a PayPal payment capture.\nIf you have an order ID instead of a capture ID, first use the get order tool to obtain the capture ID from the order details.\nThis function allows you to return funds to a customer by refunding a previously captured payment. You can issue a full refund or specify a partial amount. If multiple captures exist for an order, request clarification on which specific capture to refund.\nRequired parameters:\n- Capture ID: The ID of the capture to refund\n- Amount (optional): For partial refunds, specify the amount to refund (must be less than or equal to the captured amount)\n- Note to Payer (optional): Additional explanation visible to the customer\nResponse details include:\n- Refund ID and status\n- Refunded amount and currency\n\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "amount": {
+      "additionalProperties": false,
+      "description": "The amount to refund. If not specified, the full captured amount is refunded.",
+      "properties": {
+       "currency_code": {
+        "type": "string"
+       },
+       "value": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "currency_code",
+       "value"
+      ],
+      "type": "object"
+     },
+     "capture_id": {
+      "description": "The ID of the capture to refund.",
+      "pattern": "^[A-Za-z0-9_-]{15,32}$",
+      "type": "string"
+     },
+     "invoice_id": {
+      "description": "The invoice ID that is used to track this payment.",
+      "pattern": "^[A-Za-z0-9_-]{1,127}$",
+      "type": "string"
+     },
+     "note_to_payer": {
+      "description": "A note to the payer.",
+      "type": "string"
+     }
+    },
+    "required": [
+     "capture_id"
+    ],
+    "type": "object"
+   },
+   "name": "create_refund"
+  },
+  {
+   "description": "\nRetrieve detailed information about a PayPal payment refund.\nIf you have an order ID instead of a refund ID, first use the get order tool to obtain the refund ID from the order details. \nThis function returns comprehensive details about a refund, including its current status (completed, pending, cancelled), refunded amount, and processing information.\nWhen multiple refunds exist for an order or capture, request clarification on which specific refund to retrieve. \nResponse details include:\n- Refund status and ID\n- Refunded amount and currency\n- Reason for refund (if provided)\n- Source transaction details\n",
+   "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+     "refund_id": {
+      "description": "The ID of the refund to get details for.",
+      "pattern": "^[A-Za-z0-9_-]{15,32}$",
+      "type": "string"
+     }
+    },
+    "required": [
+     "refund_id"
+    ],
+    "type": "object"
+   },
+   "name": "get_refund"
+  }
+ ],
+ "version": "1.11.0"
+}

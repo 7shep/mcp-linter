@@ -1,0 +1,1132 @@
+{
+ "labeller": "blind-haiku",
+ "range": [
+  188,
+  374
+ ],
+ "server": "ms-365",
+ "tools": {
+  "add-shared-mailbox-attachment": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Attaches a file to a draft; private write."
+  },
+  "add-team-member": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Adds a team member; access change, no text sent."
+  },
+  "clear-my-presence": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Ends presence session; status change with no free text."
+  },
+  "clear-my-user-preferred-presence": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Clears preferred presence override; status change, no free text."
+  },
+  "create-channel-tab": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Pins a tab to a channel; internal config, no send."
+  },
+  "create-custom-emoji": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Adds org custom emoji image; internal, no send."
+  },
+  "create-onenote-section-page": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a private page from agent HTML; no outbound send."
+  },
+  "create-online-meeting": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Creates meeting with participants, sending invitations to attendees."
+  },
+  "create-outlook-category": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a private mailbox category label; no send."
+  },
+  "create-planner-bucket": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a bucket in a team plan; internal, not outbound."
+  },
+  "create-planner-plan": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a plan in a group; internal, not outbound."
+  },
+  "create-planner-task": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a team plan task; internal, not outbound."
+  },
+  "create-planner-task-message": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts agent-written message to Planner task chat others read."
+  },
+  "create-shared-calendar-event": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Creates event that can invite attendees with agent-written text."
+  },
+  "create-shared-mailbox-child-folder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a mailbox subfolder; private write."
+  },
+  "create-shared-mailbox-draft": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates an unsent draft; private write."
+  },
+  "create-shared-mailbox-folder": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a mailbox folder; private write, no send."
+  },
+  "create-shared-mailbox-forward-draft": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns unsent forward draft quoting private and others' mail."
+  },
+  "create-shared-mailbox-reply-all-draft": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns unsent reply-all draft quoting the original thread."
+  },
+  "create-shared-mailbox-reply-draft": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns unsent reply draft quoting the original thread."
+  },
+  "create-sharepoint-list": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a site list; internal write."
+  },
+  "create-sharepoint-list-column": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Adds a column to a list; internal write."
+  },
+  "create-sharepoint-list-item": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Adds a list item; internal write."
+  },
+  "create-sharepoint-site-onenote-notebook": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a site notebook; internal write."
+  },
+  "create-sharepoint-site-onenote-section": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a site notebook section; internal write."
+  },
+  "create-sharepoint-site-onenote-section-group-section": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a section in a section group; internal write."
+  },
+  "create-sharepoint-site-onenote-section-page": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a site OneNote page; internal write."
+  },
+  "create-subscription": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Registers agent-chosen URL to receive change notifications, possibly with data."
+  },
+  "create-team-channel": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a team channel; internal write."
+  },
+  "create-todo-checklist-item": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Adds a private step to a To Do task."
+  },
+  "create-todo-linked-resource": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Links a private task to a partner item; no send."
+  },
+  "create-todo-task": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a private To Do task; no outbound send."
+  },
+  "create-todo-task-list": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a private To Do list; no send."
+  },
+  "delete-mail-message": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Moves mail to Deleted Items; returns the moved message."
+  },
+  "delete-onenote-page": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a page; returns nothing private, no outbound send."
+  },
+  "delete-online-meeting": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a meeting; no content returned, no send."
+  },
+  "delete-planner-bucket": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a plan bucket; no content returned."
+  },
+  "delete-planner-task-message": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a task chat message; no content returned."
+  },
+  "delete-shared-calendar-event": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes an event; no content returned."
+  },
+  "delete-shared-mailbox-attachment": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a draft attachment; no content returned."
+  },
+  "delete-sharepoint-list-column": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a list column; no content returned."
+  },
+  "delete-sharepoint-list-item": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a list item; no content returned."
+  },
+  "delete-sharepoint-site-onenote-page": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a site OneNote page; no content returned."
+  },
+  "delete-subscription": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a webhook subscription; no content returned."
+  },
+  "delete-team-channel": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a channel; no content returned."
+  },
+  "delete-todo-checklist-item": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a private To Do step; no content returned."
+  },
+  "delete-todo-linked-resource": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Removes a task linked resource; no content returned."
+  },
+  "delete-todo-task": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a private To Do task; no content returned."
+  },
+  "delete-todo-task-list": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a To Do list; deletes are not external writes."
+  },
+  "download-bytes": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns base64 file, mail attachment or recording from Graph."
+  },
+  "download-bytes-to-file": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Saves Graph binary content to local file; content from others."
+  },
+  "forward-shared-mailbox-mail": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Forwards mail with agent-written comment to outside recipients."
+  },
+  "get-channel-files-folder": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns channel files folder metadata and drive ids."
+  },
+  "get-channel-message": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns one channel message posted by others."
+  },
+  "get-download-url": {
+   "E": true,
+   "P": true,
+   "U": true,
+   "why": "Mints bearer download URL for private files that leaves boundary."
+  },
+  "get-meeting-attendance-report": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns one meeting's attendance report with participant counts."
+  },
+  "get-meeting-recording": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns recording metadata for a meeting."
+  },
+  "get-meeting-recording-content": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns recording video bytes; binary, not text others wrote."
+  },
+  "get-meeting-transcript": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns transcript metadata for a meeting."
+  },
+  "get-meeting-transcript-content": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns speaker-attributed transcript text others said in meeting."
+  },
+  "get-my-presence": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns user's own availability and activity status."
+  },
+  "get-my-profile": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns user's profile: education, anniversaries, activities."
+  },
+  "get-onenote-page-content": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns page HTML; pages may sit in shared sections others edit."
+  },
+  "get-online-meeting": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns meeting details, participants and join link."
+  },
+  "get-planner-bucket": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns team plan bucket metadata."
+  },
+  "get-planner-plan": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns team plan metadata."
+  },
+  "get-planner-task": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns team task fields written by team members."
+  },
+  "get-planner-task-details": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns task description and checklist written by team members."
+  },
+  "get-room": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns tenant room and place directory data."
+  },
+  "get-room-list": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns tenant room list directory data."
+  },
+  "get-room-list-room": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns one room's directory details."
+  },
+  "get-shared-calendar-view": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Expands another user's events, many created by others."
+  },
+  "get-shared-mailbox-attachment-content": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns attachment bytes from mail received from others."
+  },
+  "get-shared-mailbox-message": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns one mailbox message received from others."
+  },
+  "get-shared-mailbox-message-mime": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns raw MIME of a mailbox message from others."
+  },
+  "get-sharepoint-list-column": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns one list column definition."
+  },
+  "get-sharepoint-site": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns org SharePoint site metadata."
+  },
+  "get-sharepoint-site-by-path": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Resolves an org SharePoint site by path; metadata."
+  },
+  "get-sharepoint-site-drive-by-id": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns one site document library's metadata."
+  },
+  "get-sharepoint-site-item": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns shared site item others can edit."
+  },
+  "get-sharepoint-site-list": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns site list metadata."
+  },
+  "get-sharepoint-site-list-item": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns list item fields others entered."
+  },
+  "get-sharepoint-site-list-item-version": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns one prior version of a list item."
+  },
+  "get-sharepoint-site-onenote-page-content": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns site OneNote page HTML others may edit."
+  },
+  "get-sharepoint-sites-delta": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists changed site metadata."
+  },
+  "get-subscription": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns one webhook subscription's configuration."
+  },
+  "get-team": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns team metadata."
+  },
+  "get-team-channel": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns channel metadata."
+  },
+  "get-todo-task": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns private task notes, checklist and linked resources."
+  },
+  "get-upload-url": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Mints a one-time upload URL for drafts or drive; no data read."
+  },
+  "get-user-manager": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns manager directory entry for a user."
+  },
+  "get-user-presence": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns another user's availability and activity status."
+  },
+  "get-virtual-event-webinar": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns internal webinar details, presenters and audience."
+  },
+  "list-all-onenote-sections": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists all user's OneNote section names; private metadata."
+  },
+  "list-channel-message-hosted-contents": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists hosted content in channel messages others posted."
+  },
+  "list-channel-message-replies": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists replies others posted to a channel message."
+  },
+  "list-channel-messages": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists channel messages posted by others."
+  },
+  "list-channel-tabs": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists channel tab configuration."
+  },
+  "list-custom-emojis": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists org custom emoji names; not private."
+  },
+  "list-meeting-attendance-records": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists attendee names, emails and attendance durations."
+  },
+  "list-meeting-attendance-reports": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists attendance reports for meetings, with participant data."
+  },
+  "list-meeting-recordings": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists recording metadata for meetings."
+  },
+  "list-meeting-transcripts": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists transcript metadata for a meeting."
+  },
+  "list-my-associated-teams": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists teams the user belongs to; private membership data."
+  },
+  "list-my-installed-teams-apps": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists user's personal Teams app installs; private metadata."
+  },
+  "list-onenote-section-groups": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists notebook folder structure; private metadata only."
+  },
+  "list-onenote-section-pages": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists page titles in a section; private metadata."
+  },
+  "list-online-meetings": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists user's online meeting objects with join links and participants."
+  },
+  "list-outlook-categories": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists user's private Outlook category labels."
+  },
+  "list-plan-buckets": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists team plan bucket names."
+  },
+  "list-plan-tasks": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists team plan tasks whose titles team members wrote."
+  },
+  "list-planner-task-messages": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists Planner task chat messages written by team members."
+  },
+  "list-planner-tasks": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists Planner tasks assigned to user, titles written by others."
+  },
+  "list-relevant-people": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns directory people ranked by user's communication patterns."
+  },
+  "list-room-list-rooms": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists rooms in a room list; directory data."
+  },
+  "list-shared-calendar-events": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists another user's events, often created by others."
+  },
+  "list-shared-mailbox-attachments": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists attachments on mail received from others."
+  },
+  "list-shared-mailbox-child-folders": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists mailbox child folder names."
+  },
+  "list-shared-mailbox-folder-messages": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists mail messages received from others."
+  },
+  "list-shared-mailbox-folders": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists mailbox top-level folder names."
+  },
+  "list-shared-mailbox-messages": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists mailbox messages received from others."
+  },
+  "list-sharepoint-list-columns": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists list column definitions; org structure metadata."
+  },
+  "list-sharepoint-site-drives": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists site document libraries; metadata only."
+  },
+  "list-sharepoint-site-items": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists shared site items others can edit."
+  },
+  "list-sharepoint-site-list-item-versions": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists prior versions of list items others edited."
+  },
+  "list-sharepoint-site-list-items": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists list items others entered; org data."
+  },
+  "list-sharepoint-site-list-items-delta": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns changed list items others edited."
+  },
+  "list-sharepoint-site-lists": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists site list metadata."
+  },
+  "list-sharepoint-site-onenote-child-section-groups": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists child section group metadata."
+  },
+  "list-sharepoint-site-onenote-notebook-section-groups": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists notebook section group metadata."
+  },
+  "list-sharepoint-site-onenote-notebook-sections": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists notebook section metadata."
+  },
+  "list-sharepoint-site-onenote-notebooks": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists site notebook metadata."
+  },
+  "list-sharepoint-site-onenote-section-group-sections": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists sections in a section group; metadata."
+  },
+  "list-sharepoint-site-onenote-section-pages": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists page titles in a site section."
+  },
+  "list-subscriptions": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists webhook subscriptions with notification URLs and resources."
+  },
+  "list-supported-languages": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists mailbox server locales, not user or org private data."
+  },
+  "list-supported-time-zones": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists mailbox server time zones, not private data."
+  },
+  "list-team-channels": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists team channel names and metadata."
+  },
+  "list-team-members": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists team members with names and emails."
+  },
+  "list-todo-checklist-items": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists steps of a private To Do task."
+  },
+  "list-todo-linked-resources": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists partner-app items (e.g. emails) linked to a task."
+  },
+  "list-todo-task-lists": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists user's To Do list names."
+  },
+  "list-todo-task-lists-delta": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists changed To Do list names; private metadata."
+  },
+  "list-todo-tasks": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists user's private To Do tasks in a list."
+  },
+  "list-user-direct-reports": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists direct reports from directory data."
+  },
+  "list-users": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists org user directory data."
+  },
+  "list-webinar-sessions": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists webinar session summaries with join URLs."
+  },
+  "move-shared-mailbox-message": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Moves a mailbox message between folders; no send."
+  },
+  "parse-teams-url": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Converts a Teams URL locally; no Graph call."
+  },
+  "read-mail-text": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns text of up to 20 received mail messages."
+  },
+  "reauthorize-subscription": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Reauthorizes a subscription; no content moved."
+  },
+  "remove-team-member": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Removes a team member; no content returned."
+  },
+  "reply-all-shared-mailbox-mail": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Sends agent-written reply to all mail recipients."
+  },
+  "reply-shared-mailbox-mail": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Sends agent-written reply to the mail sender."
+  },
+  "reply-to-channel-message": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts agent-written reply to a channel thread others read."
+  },
+  "search-query": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Searches all M365 content, returning others' mail, files and messages."
+  },
+  "search-sharepoint-sites": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists org SharePoint sites; internal directory data."
+  },
+  "send-channel-message": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts agent-written message to a channel others can read."
+  },
+  "send-mail": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Sends agent-written mail from user's account to any recipients."
+  },
+  "send-my-activity-notification": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Notifies only the current user's own Teams activity feed."
+  },
+  "send-shared-mailbox-draft": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Sends a draft from a shared mailbox to its recipients."
+  },
+  "send-shared-mailbox-mail": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Sends agent-written mail from a shared mailbox."
+  },
+  "set-channel-message-reaction": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Adds emoji reaction; no free text."
+  },
+  "set-my-presence": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Sets presence session state; status change with no free text."
+  },
+  "set-my-status-message": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Sets Teams status text shown to org contacts; internal, not outbound."
+  },
+  "set-my-user-preferred-presence": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Sets preferred presence status; status change with no free text."
+  },
+  "unset-channel-message-reaction": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Removes emoji reaction; no free text."
+  },
+  "update-channel-message": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Rewrites a channel message readers see; agent text."
+  },
+  "update-channel-message-reply": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Rewrites a channel reply readers see; agent text."
+  },
+  "update-onenote-page-content": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Rewrites a page; private note write, no outbound send."
+  },
+  "update-online-meeting": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Can change participants and subject, notifying attendees with agent text."
+  },
+  "update-place": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Edits tenant room or place metadata; internal directory write."
+  },
+  "update-planner-bucket": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Renames a plan bucket; internal write."
+  },
+  "update-planner-plan": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Updates plan properties; internal write."
+  },
+  "update-planner-task": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Updates a team task; internal write."
+  },
+  "update-planner-task-details": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Writes task description and checklist; internal write."
+  },
+  "update-shared-calendar-event": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Edits event that can notify attendees with agent text."
+  },
+  "update-shared-mailbox-message": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Marks, flags or edits a message or draft; no send."
+  },
+  "update-sharepoint-list-column": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Edits list column metadata; internal write."
+  },
+  "update-sharepoint-list-item": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Edits list item fields; internal write."
+  },
+  "update-sharepoint-site-onenote-page-content": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Rewrites site OneNote page; internal write, no send."
+  },
+  "update-subscription": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Renews subscription expiry; no content moved."
+  },
+  "update-team-channel": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Edits channel properties; internal write."
+  },
+  "update-todo-checklist-item": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Checks or renames a private To Do step."
+  },
+  "update-todo-task": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Edits or completes a private To Do task; no outbound send."
+  },
+  "update-todo-task-list": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Renames a private To Do list; no send."
+  },
+  "upload-my-profile-photo": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Sets user's own profile photo; internal write, no content returned."
+  }
+ }
+}

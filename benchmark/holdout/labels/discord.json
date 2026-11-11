@@ -1,0 +1,138 @@
+{
+ "labeller": "blind-haiku",
+ "server": "discord",
+ "tools": {
+  "discord_add_multiple_reactions": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Adds several emoji reactions; no free text"
+  },
+  "discord_add_reaction": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Adds an emoji reaction; no free text"
+  },
+  "discord_create_category": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a server category; structure only, no message text"
+  },
+  "discord_create_forum_post": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Creates forum post with agent-written title and content"
+  },
+  "discord_create_text_channel": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Creates a channel with optional topic; no message sent"
+  },
+  "discord_create_webhook": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns webhook URL and token, which are credentials"
+  },
+  "discord_delete_category": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a category; no text content"
+  },
+  "discord_delete_channel": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a channel; no text content"
+  },
+  "discord_delete_forum_post": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a forum thread; no text content"
+  },
+  "discord_delete_message": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a channel message; no text content"
+  },
+  "discord_delete_webhook": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes a webhook; no text content"
+  },
+  "discord_edit_category": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Renames or moves a category; structure only"
+  },
+  "discord_edit_webhook": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Edits webhook name and avatar; no message text"
+  },
+  "discord_get_forum_channels": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists forum channel names and ids"
+  },
+  "discord_get_forum_post": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads forum thread messages other members wrote"
+  },
+  "discord_get_server_info": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Returns server structure and member count"
+  },
+  "discord_login": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Logs the bot in with its configured token"
+  },
+  "discord_read_messages": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Reads channel messages members posted"
+  },
+  "discord_remove_reaction": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Removes an emoji reaction; no free text"
+  },
+  "discord_reply_to_forum": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts agent-written reply in a forum thread"
+  },
+  "discord_send": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts agent-written message to a Discord text channel"
+  },
+  "discord_send_webhook_message": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Posts agent-written content and username via webhook"
+  }
+ }
+}

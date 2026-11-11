@@ -1,0 +1,487 @@
+{
+ "command": [
+  "npx",
+  "-y",
+  "mcp-discord@1.3.4"
+ ],
+ "server": "MCP-Discord",
+ "tools": [
+  {
+   "description": "Creates a new category in a Discord server.",
+   "inputSchema": {
+    "properties": {
+     "guildId": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "position": {
+      "type": "number"
+     },
+     "reason": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "guildId",
+     "name"
+    ],
+    "type": "object"
+   },
+   "name": "discord_create_category"
+  },
+  {
+   "description": "Edits an existing Discord category (name and position).",
+   "inputSchema": {
+    "properties": {
+     "categoryId": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "position": {
+      "type": "number"
+     },
+     "reason": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "categoryId"
+    ],
+    "type": "object"
+   },
+   "name": "discord_edit_category"
+  },
+  {
+   "description": "Deletes a Discord category by ID.",
+   "inputSchema": {
+    "properties": {
+     "categoryId": {
+      "type": "string"
+     },
+     "reason": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "categoryId"
+    ],
+    "type": "object"
+   },
+   "name": "discord_delete_category"
+  },
+  {
+   "description": "Logs in to Discord using the configured token",
+   "inputSchema": {
+    "properties": {
+     "token": {
+      "type": "string"
+     }
+    },
+    "required": [],
+    "type": "object"
+   },
+   "name": "discord_login"
+  },
+  {
+   "description": "Sends a message to a specified Discord text channel",
+   "inputSchema": {
+    "properties": {
+     "channelId": {
+      "type": "string"
+     },
+     "message": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "channelId",
+     "message"
+    ],
+    "type": "object"
+   },
+   "name": "discord_send"
+  },
+  {
+   "description": "Lists all forum channels in a specified Discord server (guild)",
+   "inputSchema": {
+    "properties": {
+     "guildId": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "guildId"
+    ],
+    "type": "object"
+   },
+   "name": "discord_get_forum_channels"
+  },
+  {
+   "description": "Creates a new post in a Discord forum channel with optional tags",
+   "inputSchema": {
+    "properties": {
+     "content": {
+      "type": "string"
+     },
+     "forumChannelId": {
+      "type": "string"
+     },
+     "tags": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array"
+     },
+     "title": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "forumChannelId",
+     "title",
+     "content"
+    ],
+    "type": "object"
+   },
+   "name": "discord_create_forum_post"
+  },
+  {
+   "description": "Retrieves details about a forum post including its messages",
+   "inputSchema": {
+    "properties": {
+     "threadId": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "threadId"
+    ],
+    "type": "object"
+   },
+   "name": "discord_get_forum_post"
+  },
+  {
+   "description": "Adds a reply to an existing forum post or thread",
+   "inputSchema": {
+    "properties": {
+     "message": {
+      "type": "string"
+     },
+     "threadId": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "threadId",
+     "message"
+    ],
+    "type": "object"
+   },
+   "name": "discord_reply_to_forum"
+  },
+  {
+   "description": "Creates a new text channel in a Discord server with an optional topic",
+   "inputSchema": {
+    "properties": {
+     "channelName": {
+      "type": "string"
+     },
+     "guildId": {
+      "type": "string"
+     },
+     "topic": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "guildId",
+     "channelName"
+    ],
+    "type": "object"
+   },
+   "name": "discord_create_text_channel"
+  },
+  {
+   "description": "Deletes a Discord channel with an optional reason",
+   "inputSchema": {
+    "properties": {
+     "channelId": {
+      "type": "string"
+     },
+     "reason": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "channelId"
+    ],
+    "type": "object"
+   },
+   "name": "discord_delete_channel"
+  },
+  {
+   "description": "Retrieves messages from a Discord text channel with a configurable limit",
+   "inputSchema": {
+    "properties": {
+     "channelId": {
+      "type": "string"
+     },
+     "limit": {
+      "default": 50,
+      "maximum": 100,
+      "minimum": 1,
+      "type": "number"
+     }
+    },
+    "required": [
+     "channelId"
+    ],
+    "type": "object"
+   },
+   "name": "discord_read_messages"
+  },
+  {
+   "description": "Retrieves detailed information about a Discord server including channels and member count",
+   "inputSchema": {
+    "properties": {
+     "guildId": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "guildId"
+    ],
+    "type": "object"
+   },
+   "name": "discord_get_server_info"
+  },
+  {
+   "description": "Adds an emoji reaction to a specific Discord message",
+   "inputSchema": {
+    "properties": {
+     "channelId": {
+      "type": "string"
+     },
+     "emoji": {
+      "type": "string"
+     },
+     "messageId": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "channelId",
+     "messageId",
+     "emoji"
+    ],
+    "type": "object"
+   },
+   "name": "discord_add_reaction"
+  },
+  {
+   "description": "Adds multiple emoji reactions to a Discord message at once",
+   "inputSchema": {
+    "properties": {
+     "channelId": {
+      "type": "string"
+     },
+     "emojis": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array"
+     },
+     "messageId": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "channelId",
+     "messageId",
+     "emojis"
+    ],
+    "type": "object"
+   },
+   "name": "discord_add_multiple_reactions"
+  },
+  {
+   "description": "Removes a specific emoji reaction from a Discord message",
+   "inputSchema": {
+    "properties": {
+     "channelId": {
+      "type": "string"
+     },
+     "emoji": {
+      "type": "string"
+     },
+     "messageId": {
+      "type": "string"
+     },
+     "userId": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "channelId",
+     "messageId",
+     "emoji"
+    ],
+    "type": "object"
+   },
+   "name": "discord_remove_reaction"
+  },
+  {
+   "description": "Deletes a forum post or thread with an optional reason",
+   "inputSchema": {
+    "properties": {
+     "reason": {
+      "type": "string"
+     },
+     "threadId": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "threadId"
+    ],
+    "type": "object"
+   },
+   "name": "discord_delete_forum_post"
+  },
+  {
+   "description": "Deletes a specific message from a Discord text channel",
+   "inputSchema": {
+    "properties": {
+     "channelId": {
+      "type": "string"
+     },
+     "messageId": {
+      "type": "string"
+     },
+     "reason": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "channelId",
+     "messageId"
+    ],
+    "type": "object"
+   },
+   "name": "discord_delete_message"
+  },
+  {
+   "description": "Creates a new webhook for a Discord channel",
+   "inputSchema": {
+    "properties": {
+     "avatar": {
+      "type": "string"
+     },
+     "channelId": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "reason": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "channelId",
+     "name"
+    ],
+    "type": "object"
+   },
+   "name": "discord_create_webhook"
+  },
+  {
+   "description": "Sends a message to a Discord channel using a webhook",
+   "inputSchema": {
+    "properties": {
+     "avatarURL": {
+      "type": "string"
+     },
+     "content": {
+      "type": "string"
+     },
+     "threadId": {
+      "type": "string"
+     },
+     "username": {
+      "type": "string"
+     },
+     "webhookId": {
+      "type": "string"
+     },
+     "webhookToken": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "webhookId",
+     "webhookToken",
+     "content"
+    ],
+    "type": "object"
+   },
+   "name": "discord_send_webhook_message"
+  },
+  {
+   "description": "Edits an existing webhook for a Discord channel",
+   "inputSchema": {
+    "properties": {
+     "avatar": {
+      "type": "string"
+     },
+     "channelId": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "reason": {
+      "type": "string"
+     },
+     "webhookId": {
+      "type": "string"
+     },
+     "webhookToken": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "webhookId"
+    ],
+    "type": "object"
+   },
+   "name": "discord_edit_webhook"
+  },
+  {
+   "description": "Deletes an existing webhook for a Discord channel",
+   "inputSchema": {
+    "properties": {
+     "reason": {
+      "type": "string"
+     },
+     "webhookId": {
+      "type": "string"
+     },
+     "webhookToken": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "webhookId"
+    ],
+    "type": "object"
+   },
+   "name": "discord_delete_webhook"
+  }
+ ],
+ "version": "1.0.0"
+}

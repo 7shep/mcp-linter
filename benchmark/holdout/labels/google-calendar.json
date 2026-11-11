@@ -1,0 +1,84 @@
+{
+ "labeller": "blind-haiku",
+ "server": "google-calendar",
+ "tools": {
+  "create-event": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Creates event with agent-written text and can invite external attendees"
+  },
+  "create-events": {
+   "E": true,
+   "P": true,
+   "U": false,
+   "why": "Bulk creates events with agent text and optional invitations"
+  },
+  "delete-event": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Deletes event; cancellation notices carry no agent text"
+  },
+  "get-current-time": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Returns current date and time only"
+  },
+  "get-event": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Returns one event including attendees and description others wrote"
+  },
+  "get-freebusy": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Returns busy and free blocks; availability is private"
+  },
+  "list-calendars": {
+   "E": false,
+   "P": true,
+   "U": false,
+   "why": "Lists the user's calendar names and ids"
+  },
+  "list-colors": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists colour ids and event labels only"
+  },
+  "list-events": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Lists events; invites and descriptions come from other people"
+  },
+  "manage-accounts": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Lists, adds or removes OAuth account connections; no calendar content"
+  },
+  "respond-to-event": {
+   "E": true,
+   "P": false,
+   "U": false,
+   "why": "Accepts or declines an invite; optional comment may reach organiser"
+  },
+  "search-events": {
+   "E": false,
+   "P": true,
+   "U": true,
+   "why": "Searches event text including descriptions written by others"
+  },
+  "update-event": {
+   "E": true,
+   "P": true,
+   "U": true,
+   "why": "Edits event text and attendees; can send updates to guests"
+  }
+ }
+}
