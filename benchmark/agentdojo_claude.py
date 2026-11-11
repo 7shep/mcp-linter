@@ -96,6 +96,56 @@ ATTACK = "important_instructions_no_model_name"
 ATTACK_CLAUDE_CODE = "important_instructions_no_model_name_claude_code"
 TOKEN_ENV = "AGENTDOJO_BRIDGE_TOKEN"
 HOST = "127.0.0.1"
+
+
+# The session runs preflight (two commands, up to 60 s each) before claude's own timer starts,
+# so the session's own timeout leaves that much room inside the trial timeout.
+SESSION_TIMEOUT_MARGIN = 150.0
+
+
+def kill_tree(proc: subprocess.Popen) -> None:
+    """Kill proc and every descendant (claude, node, the MCP bridge), not just the direct child."""
+    try:
+        if os.name == "nt":
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], stdin=subprocess.DEVNULL,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+        else:
+            import signal
+            os.killpg(proc.pid, signal.SIGKILL)
+    except (OSError, subprocess.SubprocessError):
+        pass
+    try:
+        proc.kill()
+    except OSError:
+        pass
+
+
+def run_tree(cmd: list[str], *, timeout: float, env: dict[str, str]) -> subprocess.CompletedProcess:
+    """Like subprocess.run(capture_output=True, text=True), but a timeout kills the whole process tree.
+
+    The child gets its own process group (POSIX session / Windows process group), so the kill reaches
+    every descendant. Raises subprocess.TimeoutExpired after the tree is killed and reaped.
+    """
+    kwargs: dict[str, Any] = {}
+    if os.name == "nt":
+        kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+    else:
+        kwargs["start_new_session"] = True
+    proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            text=True, encoding="utf-8", errors="replace", env=env, **kwargs)
+    try:
+        out, err = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        kill_tree(proc)
+        try:
+            proc.communicate(timeout=30)
+        except subprocess.TimeoutExpired:
+            pass
+        raise
+    except BaseException:
+        kill_tree(proc)
+        raise
+    return subprocess.CompletedProcess(cmd, proc.returncode, out, err)
 TRIAL_TIMEOUT = 600.0
 READ_TIMEOUT = 10.0
 MAX_TOKEN_LINE = 256
@@ -390,16 +440,14 @@ class ClaudeCodeLLM(BasePipelineElement):
             prompt_file.write_text(json.dumps(prompt_doc), encoding="utf-8")
             cmd = [self.mcp_python or find_mcp_python(), str(self.session_script), "--port", str(server.port),
                    "--model", self.model, "--prompt-file", str(prompt_file),
-                   "--timeout", str(max(self.timeout - 30, 30))]
+                   "--timeout", str(max(self.timeout - SESSION_TIMEOUT_MARGIN, 30))]
             if self.fake_ground_truth:
                 cmd.append("--fake-ground-truth")
             problem: str | None = None
             stop: str | None = None
             final_text = ""
             try:
-                done = subprocess.run(cmd, stdin=subprocess.DEVNULL, capture_output=True, text=True,
-                                      encoding="utf-8", errors="replace", env=session_env(token),
-                                      timeout=self.timeout)
+                done = run_tree(cmd, env=session_env(token), timeout=self.timeout)
             except subprocess.TimeoutExpired:
                 problem = f"session timed out after {self.timeout:.0f} s"
             else:

@@ -26,6 +26,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -519,7 +520,7 @@ from agentdojo.logging import OutputLogger
 tmp = Path(tempfile.mkdtemp())
 ac.LOGDIR_FAKE = tmp
 failed = subprocess.CompletedProcess([], 1, json.dumps({"ok": False, "error": "session failed", "stop": None}), "")
-with mock.patch.object(ac.subprocess, "run", return_value=failed), mock.patch.object(ac, "find_mcp_python", return_value="x"):
+with mock.patch.object(ac, "run_tree", return_value=failed), mock.patch.object(ac, "find_mcp_python", return_value="x"):
     code = ac.main(["--model", "claude-haiku-5-5", "--fake-ground-truth", "--clean-only", "--suite", "banking",
                     "--user-task", "user_task_0"])
 files = sorted(str(p.relative_to(tmp)) for p in tmp.rglob("*") if p.is_file())
@@ -544,6 +545,53 @@ print(json.dumps({"code": code, "files": files, "rows": rows}))
                               capture_output=True, text=True, env=env, timeout=600)
         self.assertEqual(done.returncode, 0, done.stdout[-800:] + done.stderr[-800:])
         self.assertIn("mismatches 0, trial errors 0", done.stdout)
+
+
+@needs_ad
+class RunTreeTests(unittest.TestCase):
+    """Codex review: a session timeout must kill claude and the bridge too, not just the session."""
+
+    def test_timeout_kills_grandchildren(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            beat = Path(tmp) / "beat.txt"
+            grandchild = Path(tmp) / "grandchild.py"
+            grandchild.write_text(
+                "import sys, time\n"
+                "while True:\n"
+                "    open(sys.argv[1], 'a').write('x')\n"
+                "    time.sleep(0.1)\n", encoding="utf-8")
+            child = Path(tmp) / "child.py"
+            child.write_text(
+                "import subprocess, sys, time\n"
+                "subprocess.Popen([sys.executable, sys.argv[1], sys.argv[2]])\n"
+                "time.sleep(600)\n", encoding="utf-8")
+            proc = run_ad(f"""
+import os, subprocess, sys, time
+import agentdojo_claude as ac
+cmd = [sys.executable, {str(child)!r}, {str(grandchild)!r}, {str(beat)!r}]
+t0 = time.monotonic()
+try:
+    ac.run_tree(cmd, timeout=3, env=dict(os.environ))
+    print("NO TIMEOUT")
+except subprocess.TimeoutExpired:
+    print("TIMEOUT", round(time.monotonic() - t0))
+""", timeout=120)
+            self.assertIn("TIMEOUT", proc.stdout, proc.stdout + proc.stderr)
+            self.assertNotIn("NO TIMEOUT", proc.stdout)
+            time.sleep(1.0)
+            size = beat.stat().st_size
+            time.sleep(1.5)
+            self.assertGreater(size, 0, "grandchild never started")
+            self.assertEqual(beat.stat().st_size, size, "grandchild still running after the timeout")
+
+    def test_normal_exit_returns_output(self):
+        proc = run_ad("""
+import os, sys
+import agentdojo_claude as ac
+done = ac.run_tree([sys.executable, "-c", "print('hi')"], timeout=60, env=dict(os.environ))
+print("RC", done.returncode, done.stdout.strip())
+""", timeout=120)
+        self.assertIn("RC 0 hi", proc.stdout, proc.stdout + proc.stderr)
 
 
 if __name__ == "__main__":
