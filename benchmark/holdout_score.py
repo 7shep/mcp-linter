@@ -101,7 +101,7 @@ def build() -> dict:
                               for s in tools}
                 macro = [c["recall"]["rate"] for c in per_server.values() if c["recall"]["rate"] is not None]
                 legs[leg] = {"pooled": confusion(pooled), "per_server": per_server,
-                             "macro_recall": round(sum(macro) / len(macro), 4) if macro else None}
+                             "macro_recall": round(math.fsum(macro) / len(macro), 4) if macro else None}
             flags = {}
             for s in tools:
                 truth = all(any(labels[s][n][leg] for n in got[s]) for leg in LEGS)
@@ -144,7 +144,7 @@ def main() -> int:
         stale = []
         for path, text in ((JSON_PATH, text_json), (MD_PATH, text_md)):
             try:
-                with open(path, encoding="utf-8", newline="") as f:
+                with open(path, encoding="utf-8") as f:  # universal newlines: a CRLF checkout is not stale
                     if f.read() != text:
                         stale.append(path)
             except FileNotFoundError:
