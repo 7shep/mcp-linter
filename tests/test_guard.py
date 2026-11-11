@@ -198,6 +198,22 @@ class CallArgumentTests(unittest.TestCase):
         self.assertEqual(g.check_call("send_status", {"status": "ok"}).verdict, Verdict.ALLOW)
         self.assertEqual(g.check_call("send_status", {"status": "placeholder"}).verdict, Verdict.BLOCK)
 
+    def test_text_in_a_pattern_limited_parameter_makes_it_a_sink(self):
+        # The pattern is never run, so even a matching value counts as open text.
+        tool = ToolDef(name="send_status", input_schema={
+            "type": "object", "properties": {"status": {"type": "string", "pattern": "^(ok|late)$"}}})
+        g = self.tainted([tool])
+        self.assertFalse(g.is_sink("send_status"))
+        self.assertEqual(g.check_call("send_status", {"status": "placeholder text"}).verdict, Verdict.BLOCK)
+        self.assertEqual(g.check_call("send_status", {"status": "ok"}).verdict, Verdict.BLOCK)
+        self.assertEqual(g.check_call("send_status", {}).verdict, Verdict.ALLOW)
+
+    def test_pattern_limited_reader_stays_allowed(self):
+        tool = ToolDef(name="get_order", input_schema={
+            "type": "object", "properties": {"order_id": {"type": "string", "pattern": "^[0-9]{6}$"}}})
+        g = self.tainted([tool])
+        self.assertEqual(g.check_call("get_order", {"order_id": "123456"}).verdict, Verdict.ALLOW)
+
     def test_odd_arguments_to_a_reader_stay_allowed(self):
         # The widened schema is still tagged by the tagger: a read verb gains no sink tag.
         g = self.tainted([RECORD])
