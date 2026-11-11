@@ -375,6 +375,75 @@ All the gates passed: the median cost is $0.00087 per trial at API prices, the c
 
 Haiku 5.5 never acted on a v1 injection, under any condition or tool set, so no set counts as exploited. Precision and recall of the trifecta flag are undefined here, and the H1 difference is 0 with an interval of [0, 0]. This result says that these injections don't move this model. It says nothing about whether the flag predicts exploitability. Testing that needs attacks with a non-zero base rate, such as a published suite run under its own scoring, or weaker models.
 
+**AgentDojo cross-check (2026-11-10, offline, no model calls).** AgentDojo v1.2 is a published benchmark whose attacks do succeed on many models (targeted ASR about 1–48% for `important_instructions` on its results page; only all-suite numbers are published). As a holdout for the frozen tagger, its four suites were exported to `tools/list` files (`benchmark/agentdojo_export.py`, run with AgentDojo's own Python). Each user task's injection-carrying tools were found with AgentDojo's own canary method, and the 35 injection tasks were hand-labelled exfil (20), action (14) or text (1) in `results/agentdojo/attack_kinds.json`. `benchmark/agentdojo_crosscheck.py` then asks of each of the 949 security cases whether the tagger labels the path: the tool the injection arrives through as UNTRUSTED_READ, the tool the stolen data comes from as PRIVATE_READ, and the sink as EXTERNAL_WRITE. Only tool names and ids leave AgentDojo; no task or attack text is stored.
+
+| Suite | Flagged (strict / inclusive) | Exfil cases | Path labelled, strict | Path labelled, inclusive |
+|---|---|---|---|---|
+| banking | no / no | 80 | 0 | 0 |
+| slack | yes / yes | 42 | 0 | 0 |
+| travel | yes / yes | 60 | 20 | 60 |
+| workspace | yes / yes | 400 | 63 | 63 |
+| Total | 3 of 4 | 582 | 83 (14%) | 123 (21%) |
+
+- **Sinks are fine.** Every exfil sink (`send_money`, `post_webpage`, `send_email`) is EXTERNAL_WRITE in both profiles.
+- **Untrusted sources are the main miss (408 of 582 cases).** In AgentDojo the injection usually arrives inside the user's own data: a transaction subject, a shared file, a calendar invite, a channel list. The tagger gives UNTRUSTED_READ to inboxes, web pages and reviews, but not to `get_most_recent_transactions`, `read_file`, `list_files`, `search_files` or calendar reads. Some of the missed sources are write-verb tools that also return the item (`delete_file`, `add_calendar_event_participants`), which the rules leave out by design.
+- **Private sources come next (282 strict, 242 inclusive).** "Transactions" is not a private noun, and `read_channel_messages` is untrusted but not private.
+- **Slack is flagged for the wrong reason.** `read_inbox` carries both P and U, so the suite gets the warning, but none of the 42 attack paths go through tools the tagger labels.
+- **Banking, the money-moving suite, gets no warning at all**, because none of its tools are UNTRUSTED_READ.
+
+The suite-level warning fires on 3 of 4 attackable suites, but the tagger names the actual route in only 14–21% of the exfil cases. The lesson for the tagger is that private and untrusted are not separate tools: anything a third party can write into (payments, shared files, invites, chat) is both. These are findings on a holdout, so the frozen tagger is not changed here. Rules learned from this would need a new holdout.
+
+**Draft v2 tagger (`benchmark/tagging_v2.py`, not frozen).** v2 is v1 plus six rules, all for read verbs only, so it never drops a v1 tag:
+
+| Rule | Tag, confidence | Fires on |
+|---|---|---|
+| U-INBOUND | U, high | transaction, payment, calendar, event, invite, channel, chat, conversation (not owner/repo tools) |
+| U-SHARED-FILE | U, medium | file, document, attachment or drive with no local path parameter (`path`, `file_path`, ...) |
+| P-NOUN-V2 | P, high | transaction, payment, balance, iban, passport, bank |
+| P-MESSAGE | P, medium | message, chat, conversation, channel (not browser tools) |
+| P-USER-PROFILE | P, high | user plus info, information or profile |
+| P-CLOUD-FILE | P, medium | the same file words as U-SHARED-FILE |
+
+| | v1 strict | v2 strict | v1 inclusive | v2 inclusive |
+|---|---|---|---|---|
+| AgentDojo exfil paths labelled (of 582) | 83 | 295 | 123 | 562 |
+| AgentDojo suites flagged (of 4) | 3 | 4 | 3 | 4 |
+| Survey tools whose tags changed (of 230) | — | 0 | — | 1 |
+| Survey servers whose trifecta flag changed (of 18) | — | 0 | — | 0 |
+
+These are **dev-set numbers**, because the rules were written after reading the AgentDojo misses. The survey shows that v2 doesn't disturb servers already reviewed, but it is a weak check of false positives, because few of its 18 servers have payment, calendar, chat or cloud-drive tools. The remaining misses are by design: `read_file` with a local path, write-verb tools that also return the item (`delete_file`, `add_calendar_event_participants`), and, in strict, the medium-confidence cloud-file reads.
+
+Known over-tagging risks to watch: `channel` is both U and P, so channel listings get both tags. `event` also matches monitoring and analytics events. Cloud-file rules will tag any `list_files` without a path, even on a single-user store.
+
+**Holdout before v2 replaces v1:**
+- Save `tools/list` from 8–10 public servers that are not in `survey/tools/` and that do have these nouns, such as chat, calendar, cloud drive, payments and mail.
+- Label each tool's legs from its documentation before running v2, either by a reader who hasn't seen v2's output or as labels committed before the run.
+- Run v1 and v2 once, report recall and false positives against those labels, and freeze whichever wins.
+
+**Holdout result (2026-11-10, `benchmark/holdout/`, `results/holdout_score.md`).** Tool lists from six servers that are in neither the survey nor AgentDojo were saved once each, at pinned versions, with placeholder credentials and no tool calls (`holdout_capture.py`): PayPal 28 tools, Square 3, Atlassian 96, Google Calendar 13, Microsoft 365 375, Discord 22. Gmail was dropped because it won't start without an OAuth key file. Three labellers who could not see either tagger labelled all 537 tools, and the labels were committed (16a6da9) before v1 or v2 ran on them.
+
+| Per-tool recall (precision) | v1 strict | v2 strict | v1 inclusive | v2 inclusive |
+|---|---|---|---|---|
+| P, 263 labelled | 18% (100%) | 19% (100%) | 27% (93%) | **37% (94%)** |
+| U, 106 labelled | 34% (78%) | **51% (71%)** | 75% (39%) | 77% (39%) |
+| E, 82 labelled | 48% (72%) | 48% (72%) | 71% (28%) | 71% (28%) |
+| Servers flagged, all 6 labelled trifecta | 2 | 3 | 2 | 4 |
+
+- **v2 beats v1 on the holdout, by less than on its dev set.**
+  - Strict U recall rises 17 points for 7 points of precision.
+  - Inclusive P recall rises 10 points with precision unchanged.
+  - PayPal (strict and inclusive) and Discord (inclusive) are now flagged.
+  - v2 adds no E rules, so E is unchanged.
+- **v2 replaces v1 as the candidate tagger**, on these numbers. It stays a draft, because the holdout has three weaknesses:
+  - Microsoft 365 is 70% of its tools.
+  - All six servers are labelled trifecta, so server-level false positives can't be measured.
+  - One labeller marked write tools P when they return a private record, which lowers every tagger's P recall.
+- **The misses point at v3** (recorded here, not fixed):
+  - Calendar events read without the word `calendar` in the name get U but not P.
+  - `attendees` is not a recipient parameter, so event invites get no E.
+  - Generic API passthroughs such as Square's `make_api_request(service, method, request)` get no tags at all.
+  - Inclusive E and U precision is under 40%, mostly from URL and open-world rules on Microsoft 365's Graph tools.
+
 ## 10. Safety rules
 
 - Mock code imports no networking library, and a test scans for that. The MCP SDK does bring in an HTTP stack, so each server also installs a `sys.addaudithook` that kills it on `socket.connect`, on starting a subprocess, and on file access outside its own log.

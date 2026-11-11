@@ -1,0 +1,85 @@
+{
+ "notes": "Holdout servers for the v2 tagger, chosen 2026-11-10 for chat, calendar, mail, drive, payment and project tools and pinned to exact versions. None is in survey/tools/ or AgentDojo. env values of null get a placeholder string; no real credential is ever used. Gmail (@gongrzhe/server-gmail-autoauth-mcp@1.1.11) was dropped: it will not start without an OAuth keys file and would then start a browser sign-in; ms-365 covers mail.",
+ "servers": [
+  {
+   "name": "paypal",
+   "command": [
+    "npx",
+    "-y",
+    "@paypal/mcp@1.8.1",
+    "--tools=all"
+   ],
+   "env": {
+    "PAYPAL_ACCESS_TOKEN": null,
+    "PAYPAL_ENVIRONMENT": "SANDBOX"
+   }
+  },
+  {
+   "name": "square",
+   "command": [
+    "npx",
+    "-y",
+    "square-mcp-server@0.1.2",
+    "start"
+   ],
+   "env": {
+    "ACCESS_TOKEN": null,
+    "SANDBOX": "true"
+   }
+  },
+  {
+   "name": "atlassian",
+   "command": [
+    "uvx",
+    "mcp-atlassian==0.24.1"
+   ],
+   "env": {
+    "JIRA_URL": "https://placeholder.example",
+    "JIRA_USERNAME": "placeholder@example.com",
+    "JIRA_API_TOKEN": null,
+    "CONFLUENCE_URL": "https://placeholder.example/wiki",
+    "CONFLUENCE_USERNAME": "placeholder@example.com",
+    "CONFLUENCE_API_TOKEN": null
+   }
+  },
+  {
+   "name": "google-calendar",
+   "command": [
+    "npx",
+    "-y",
+    "@cocal/google-calendar-mcp@2.8.1"
+   ],
+   "placeholder_files": {
+    "GOOGLE_OAUTH_CREDENTIALS": {
+     "installed": {
+      "client_id": "placeholder.apps.googleusercontent.com",
+      "client_secret": "placeholder",
+      "redirect_uris": [
+       "http://localhost"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "ms-365",
+   "command": [
+    "npx",
+    "-y",
+    "@softeria/ms-365-mcp-server@0.182.2",
+    "--org-mode"
+   ]
+  },
+  {
+   "name": "discord",
+   "command": [
+    "npx",
+    "-y",
+    "mcp-discord@1.3.4"
+   ],
+   "env": {
+    "DISCORD_TOKEN": null
+   }
+  }
+ ]
+}

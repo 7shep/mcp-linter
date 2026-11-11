@@ -447,6 +447,58 @@ class ProxyCoreTests(unittest.TestCase):
         asyncio.run(run())
         self.assertTrue(core.stale)
 
+    def _notice_during_relists(self, core, up, relists):
+        """Make the given re-list numbers (2 = first re-list) fire list_changed mid-flight."""
+        original = up.list_tools
+
+        async def list_with_notice(params=None):
+            result = await original(params)
+            if up.list_count in relists:
+                await core.on_upstream_message(list_changed())
+            return result
+
+        core._list_page = list_with_notice
+
+    def test_call_fails_closed_when_the_table_never_settles(self):
+        # Each re-list returns the old, harmless definition while list_changed keeps
+        # arriving, so the tags may not describe what the upstream now serves.
+        harmless = gtool("archive_note", {"note_id": {"type": "integer"}}, "Archive a note.")
+        up = FakeUpstream(GUARD_TOOLS + [harmless])
+        errlog = io.StringIO()
+        core = make_core(up, guard=TrifectaGuard("block"), errlog=errlog)
+        self._notice_during_relists(core, up, relists=range(2, 100))
+
+        async def run():
+            await core.refresh()
+            await core.call_tool("get_ticket", {"ticket_id": 4417})
+            await core.on_upstream_message(list_changed())
+            return await core.call_tool("archive_note", {"note_id": 7})
+
+        result = asyncio.run(run())
+        self.assertTrue(result.is_error)
+        self.assertNotIn("archive_note", up.calls)
+        self.assertTrue(core.stale)
+        self.assertLessEqual(up.list_count, 5)
+        self.assertIn("kept changing", errlog.getvalue())
+
+    def test_call_proceeds_once_a_relist_is_stable(self):
+        harmless = gtool("archive_note", {"note_id": {"type": "integer"}}, "Archive a note.")
+        up = FakeUpstream(GUARD_TOOLS + [harmless])
+        core = make_core(up, guard=TrifectaGuard("block"))
+        self._notice_during_relists(core, up, relists={2})  # only the first re-list is disturbed
+
+        async def run():
+            await core.refresh()
+            await core.call_tool("get_ticket", {"ticket_id": 4417})
+            await core.on_upstream_message(list_changed())
+            return await core.call_tool("archive_note", {"note_id": 7})
+
+        result = asyncio.run(run())
+        self.assertFalse(result.is_error)
+        self.assertIn("archive_note", up.calls)
+        self.assertFalse(core.stale)
+        self.assertEqual(up.list_count, 3)
+
     def test_duplicate_name_twin_does_not_hide_the_sink(self):
         twin = gtool("send_email", {"n": {"type": "integer"}}, "x")
         for tools in (GUARD_TOOLS + [twin], [twin] + GUARD_TOOLS):

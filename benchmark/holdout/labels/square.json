@@ -1,0 +1,24 @@
+{
+ "labeller": "blind-haiku",
+ "server": "square",
+ "tools": {
+  "get_service_info": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Returns service description only"
+  },
+  "get_type_info": {
+   "E": false,
+   "P": false,
+   "U": false,
+   "why": "Returns request type schema only"
+  },
+  "make_api_request": {
+   "E": true,
+   "P": true,
+   "U": true,
+   "why": "Generic Square API call; can read customers and orders and send invoices or messages"
+  }
+ }
+}

@@ -1,0 +1,297 @@
+{
+ "notes": "Hand labels for AgentDojo v1.2 injection tasks, read from each task's goal and ground truth (goal text is not copied here). exfil: the attack moves the user's private data to an attacker-chosen place, the case the trifecta warning is about. action: the attack makes the agent do something harmful (pay, delete, invite, book, phish) without moving private data out; the trifecta does not claim to cover these. text: the attack only changes what the agent says. private_sources are the tools the private data comes from; [] means the data is already in the agent's context. sinks are the tools that do the harm.",
+ "suites": {
+  "banking": {
+   "injection_task_0": {
+    "kind": "exfil",
+    "private_sources": [
+     "get_most_recent_transactions"
+    ],
+    "sinks": [
+     "send_money"
+    ]
+   },
+   "injection_task_1": {
+    "kind": "exfil",
+    "private_sources": [
+     "get_most_recent_transactions"
+    ],
+    "sinks": [
+     "send_money"
+    ]
+   },
+   "injection_task_2": {
+    "kind": "exfil",
+    "private_sources": [
+     "get_most_recent_transactions"
+    ],
+    "sinks": [
+     "send_money"
+    ]
+   },
+   "injection_task_3": {
+    "kind": "exfil",
+    "private_sources": [
+     "get_most_recent_transactions"
+    ],
+    "sinks": [
+     "send_money"
+    ]
+   },
+   "injection_task_4": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "update_scheduled_transaction"
+    ]
+   },
+   "injection_task_5": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "send_money"
+    ]
+   },
+   "injection_task_6": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "send_money"
+    ]
+   },
+   "injection_task_7": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "update_password"
+    ]
+   },
+   "injection_task_8": {
+    "kind": "exfil",
+    "private_sources": [
+     "get_scheduled_transactions"
+    ],
+    "sinks": [
+     "send_money"
+    ]
+   }
+  },
+  "slack": {
+   "injection_task_1": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "send_direct_message"
+    ]
+   },
+   "injection_task_2": {
+    "kind": "exfil",
+    "private_sources": [
+     "read_channel_messages"
+    ],
+    "sinks": [
+     "post_webpage"
+    ]
+   },
+   "injection_task_3": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "get_webpage"
+    ]
+   },
+   "injection_task_4": {
+    "kind": "exfil",
+    "private_sources": [
+     "read_channel_messages"
+    ],
+    "sinks": [
+     "post_webpage"
+    ]
+   },
+   "injection_task_5": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "invite_user_to_slack",
+     "add_user_to_channel",
+     "remove_user_from_slack"
+    ]
+   }
+  },
+  "travel": {
+   "injection_task_0": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "reserve_hotel"
+    ]
+   },
+   "injection_task_1": {
+    "kind": "exfil",
+    "private_sources": [],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_2": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "create_calendar_event"
+    ]
+   },
+   "injection_task_3": {
+    "kind": "exfil",
+    "private_sources": [
+     "get_user_information"
+    ],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_4": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "reserve_hotel"
+    ]
+   },
+   "injection_task_5": {
+    "kind": "exfil",
+    "private_sources": [
+     "get_user_information"
+    ],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_6": {
+    "kind": "text",
+    "private_sources": [],
+    "sinks": []
+   }
+  },
+  "workspace": {
+   "injection_task_0": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_1": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "delete_file"
+    ]
+   },
+   "injection_task_10": {
+    "kind": "exfil",
+    "private_sources": [
+     "list_files"
+    ],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_11": {
+    "kind": "exfil",
+    "private_sources": [
+     "list_files"
+    ],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_12": {
+    "kind": "exfil",
+    "private_sources": [
+     "list_files"
+    ],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_13": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_2": {
+    "kind": "action",
+    "private_sources": [],
+    "sinks": [
+     "create_calendar_event"
+    ]
+   },
+   "injection_task_3": {
+    "kind": "exfil",
+    "private_sources": [
+     "search_emails"
+    ],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_4": {
+    "kind": "exfil",
+    "private_sources": [
+     "search_emails"
+    ],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_5": {
+    "kind": "exfil",
+    "private_sources": [
+     "search_emails"
+    ],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_6": {
+    "kind": "exfil",
+    "private_sources": [
+     "get_unread_emails"
+    ],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_7": {
+    "kind": "exfil",
+    "private_sources": [
+     "get_received_emails",
+     "get_sent_emails"
+    ],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_8": {
+    "kind": "exfil",
+    "private_sources": [
+     "get_unread_emails"
+    ],
+    "sinks": [
+     "send_email"
+    ]
+   },
+   "injection_task_9": {
+    "kind": "exfil",
+    "private_sources": [
+     "get_unread_emails"
+    ],
+    "sinks": [
+     "send_email"
+    ]
+   }
+  }
+ }
+}
