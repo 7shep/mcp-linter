@@ -232,6 +232,9 @@ def warn_result(result: types.CallToolResult, decision: Decision) -> types.CallT
     return result.model_copy(update={"content": [warning] + list(result.content or [])})
 
 
+STABLE_REFRESH_ATTEMPTS = 3  # re-lists before a call gives up on a table that keeps changing
+
+
 class ProxyCore:
     """The proxy's call and list logic, with no transport in it.
 
@@ -286,9 +289,10 @@ class ProxyCore:
         if self._guard is not None:
             self._guard.retag([tool_def(t) for t in raw])
 
-    async def _guarded_refresh(self) -> None:
+    async def _guarded_refresh(self) -> bool:
         """Re-list (caller holds the lock). If it fails, every name becomes unknown
-        (all three tags: fail closed) until a later re-list succeeds."""
+        (all three tags: fail closed) until a later re-list succeeds. Returns
+        whether the list call succeeded."""
         try:
             await self.refresh()
         except Exception as exc:  # noqa: BLE001 - any failure fails closed
@@ -296,12 +300,29 @@ class ProxyCore:
                       "treating every tool name as unknown until the next successful list")
             self._guard.retag([])
             self.stale = True
+            return False
+        return True
 
     async def _refresh_for_call(self, name: str) -> None:
-        """Re-list once before a call when the table may be out of date."""
+        """Re-list before a call when the table may be out of date.
+
+        A tools/list_changed that lands during a re-list leaves the table stale:
+        the tags may describe definitions the upstream no longer serves. Re-list
+        up to STABLE_REFRESH_ATTEMPTS times for a table nothing invalidated; if
+        none settles, every name becomes unknown (fail closed) and the table
+        stays stale, so the next call tries again.
+        """
         async with self._lock:
-            if self.stale or not self._guard.knows(name):
-                await self._guarded_refresh()
+            if not (self.stale or not self._guard.knows(name)):
+                return
+            for _ in range(STABLE_REFRESH_ATTEMPTS):
+                if not await self._guarded_refresh():
+                    return  # already failed closed
+                if not self.stale:
+                    return
+            self._say("mcp-lint guard: the tool list kept changing while re-listing; "
+                      "treating every tool name as unknown until a list holds still")
+            self._guard.retag([])
 
     async def list_tools(self) -> types.ListToolsResult:
         if self._guard is not None and self.stale:
