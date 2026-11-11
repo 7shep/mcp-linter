@@ -5,7 +5,7 @@
     mcp-lint run --url URL [--header "Name: value"] [--header-env Name=VAR]
     mcp-lint check tools.json
     mcp-lint init-fixtures fixtures.json -- <server command>
-    mcp-lint proxy [--no-paging] [--descriptions FIXES.json] -- <server command>
+    mcp-lint proxy [--no-paging] [--descriptions FIXES.json] [--guard off|warn|block] -- <server command>
     mcp-lint eval --setup | --run | --report
     mcp-lint lock [--lock PATH] [--accept] [--from TOOLS_JSON] -- <server command>
     mcp-lint lock --check [--lock PATH] [--fail-on LEVEL] [--json PATH] (--from TOOLS_JSON | -- <server command>)
@@ -97,6 +97,10 @@ def _build_parser() -> argparse.ArgumentParser:
     proxy.add_argument("--no-errors", action="store_true",
                        help="don't set isError on error text returned as a success")
     proxy.add_argument("--log", metavar="PATH", help="append one JSON line per proxied call")
+    proxy.add_argument("--guard", choices=["off", "warn", "block"], default="off",
+                       help="refuse (block) or flag (warn) calls to tools that can send data out, "
+                            "after a tool that returns untrusted content has been called this session "
+                            "(default: off)")
     server_cmd(proxy, http=False)
 
     lock = sub.add_parser("lock", help="record a server's tools in a lockfile, or check them against it")
@@ -425,7 +429,7 @@ def _proxy(args: argparse.Namespace) -> int:
     opts = FixOptions(paging=not args.no_paging, page_tokens=args.page_tokens,
                       descriptions=descriptions, errors=not args.no_errors)
     try:
-        asyncio.run(serve(cmd[0], cmd[1:], opts, args.pass_env, args.log))
+        asyncio.run(serve(cmd[0], cmd[1:], opts, args.pass_env, args.log, guard=args.guard))
     except KeyboardInterrupt:
         pass
     return 0

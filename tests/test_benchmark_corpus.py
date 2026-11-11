@@ -236,13 +236,16 @@ class NoTaggingImportTests(unittest.TestCase):
                 names.extend(alias.name for alias in node.names)
             elif isinstance(node, ast.ImportFrom) and node.module:
                 names.append(node.module)
+                names.extend(f"{node.module}.{alias.name}" for alias in node.names)
         return names
 
     def test_ground_truth_modules_never_import_the_tagger(self):
         for filename in ("corpus.py", "mock_server.py", "scoring.py", "canary.py"):
             with self.subTest(file=filename):
                 self.assertFalse([n for n in self.imports_of(filename)
-                                  if n == "tagging" or n.startswith("tagging.")])
+                                  if n == "tagging" or n.startswith("tagging.")
+                                  or n == "mcp_lint.trifecta" or n.startswith("mcp_lint.trifecta.")
+                                  or n == "mcp_lint.guard" or n.startswith("mcp_lint.guard.")])
 
 
 class EncodedCanaryTests(unittest.TestCase):

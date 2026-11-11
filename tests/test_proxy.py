@@ -1,3 +1,5 @@
+import asyncio
+import io
 import json
 import os
 import tempfile
@@ -14,6 +16,9 @@ from mcp_lint.proxy import (
     rewrite_tool,
     split_paging_args,
 )
+from mcp_lint.guard import TrifectaGuard
+from mcp_lint.trifecta import Tag
+from mcp_lint.proxy import CallLog, ProxyCore
 
 
 def tool(name="read", props=None, description="Read a file.", output_schema=None):
@@ -173,6 +178,387 @@ class LoadDescriptionsTests(unittest.TestCase):
         root = os.path.join(os.path.dirname(__file__), "..", "eval", "fixes")
         for name in os.listdir(root):
             self.assertTrue(load_descriptions(os.path.join(root, name)), name)
+
+
+# --- trifecta guard wiring (ProxyCore with a fake upstream) ---------------------
+
+def gtool(name, props, description):
+    return types.Tool(name=name, description=description,
+                      input_schema={"type": "object", "properties": props})
+
+
+GUARD_TOOLS = [
+    gtool("read_customer_record", {"customer_id": {"type": "string"}}, "Read a customer record."),
+    gtool("get_ticket", {"ticket_id": {"type": "integer"}}, "Get a support ticket."),
+    gtool("send_email", {"to": {"type": "string"}, "subject": {"type": "string"},
+                         "body": {"type": "string"}}, "Send an email."),
+    gtool("read_file", {"path": {"type": "string"}}, "Read a file."),
+]
+PERMITTED = {"to": "alice@harbor-desk.example", "subject": "Plan", "body": "placeholder"}
+
+
+class FakeUpstream:
+    def __init__(self, tools, raise_on=(), fail_list=False):
+        self.tools = list(tools)
+        self.calls: list[str] = []
+        self.args_seen: list[tuple[str, dict]] = []
+        self.list_count = 0
+        self.raise_on = set(raise_on)
+        self.fail_list = fail_list
+
+    async def list_tools(self, params=None):
+        self.list_count += 1
+        if self.fail_list:
+            raise RuntimeError("upstream list failed")
+        return types.ListToolsResult(tools=list(self.tools))
+
+    async def call_tool(self, name, args):
+        self.calls.append(name)
+        self.args_seen.append((name, dict(args)))
+        if name in self.raise_on:
+            raise RuntimeError(f"upstream failed on {name}")
+        return types.CallToolResult(content=[types.TextContent(type="text", text=f"ok {name}")],
+                                    is_error=False)
+
+
+def ok_for(name):
+    return types.CallToolResult(content=[types.TextContent(type="text", text=f"ok {name}")],
+                                is_error=False)
+
+
+def make_core(upstream, guard=None, log=None, errlog=None, opts=None):
+    return ProxyCore(opts or FixOptions(), upstream.list_tools, upstream.call_tool, guard=guard,
+                     log=log, errlog=errlog if errlog is not None else io.StringIO())
+
+
+def list_changed():
+    return types.ToolListChangedNotification(method="notifications/tools/list_changed")
+
+
+def read_rows(path):
+    with open(path, encoding="utf-8") as fh:
+        return [json.loads(line) for line in fh if line.strip()]
+
+
+class ProxyCoreTests(unittest.TestCase):
+    def test_guard_off_is_todays_behaviour(self):
+        for guard in (None, TrifectaGuard("off", GUARD_TOOLS)):
+            with self.subTest(guard=guard):
+                opts = FixOptions()
+                with tempfile.TemporaryDirectory() as d:
+                    log_path = os.path.join(d, "log.jsonl")
+                    up = FakeUpstream(GUARD_TOOLS)
+                    core = make_core(up, guard=guard, log=CallLog(log_path), opts=opts)
+
+                    async def run():
+                        await core.refresh()
+                        a = await core.call_tool("get_ticket", {"ticket_id": 4417})
+                        b = await core.call_tool("send_email", dict(PERMITTED))
+                        await core.on_upstream_message(list_changed())
+                        await core.list_tools()
+                        await core.call_tool("unknown_name", {})
+                        return a, b
+
+                    a, b = asyncio.run(run())
+                    self.assertEqual(up.calls, ["get_ticket", "send_email", "unknown_name"])
+                    self.assertEqual(a, fix_result(ok_for("get_ticket"), opts)[0])
+                    self.assertEqual(b, fix_result(ok_for("send_email"), opts)[0])
+                    self.assertEqual(up.list_count, 1)
+                    rows = read_rows(log_path)
+                    self.assertEqual(len(rows), 3)
+                    for row in rows:
+                        self.assertNotIn("guard", row)
+
+    def test_block_refuses_sink_after_untrusted_read(self):
+        with tempfile.TemporaryDirectory() as d:
+            log_path = os.path.join(d, "log.jsonl")
+            up = FakeUpstream(GUARD_TOOLS)
+            core = make_core(up, guard=TrifectaGuard("block"), log=CallLog(log_path))
+
+            async def run():
+                await core.refresh()
+                await core.call_tool("get_ticket", {"ticket_id": 4417})
+                return await core.call_tool("send_email", dict(PERMITTED))
+
+            result = asyncio.run(run())
+            self.assertTrue(result.is_error)
+            text = result.content[0].text
+            self.assertIn("mcp-lint guard", text)
+            self.assertIn("was not sent", text)
+            self.assertEqual(up.calls, ["get_ticket"])
+            rows = read_rows(log_path)
+            self.assertEqual(rows[-1]["tool"], "send_email")
+            self.assertEqual(rows[-1]["guard"], "block")
+
+    def test_block_allows_sink_without_untrusted_read(self):
+        up = FakeUpstream(GUARD_TOOLS)
+        core = make_core(up, guard=TrifectaGuard("block"))
+
+        async def run():
+            await core.refresh()
+            await core.call_tool("read_customer_record", {"customer_id": "C-1042"})
+            return await core.call_tool("send_email", dict(PERMITTED))
+
+        result = asyncio.run(run())
+        self.assertEqual(up.calls, ["read_customer_record", "send_email"])
+        self.assertFalse(result.is_error)
+
+    def test_warn_forwards_with_notice_first(self):
+        up = FakeUpstream(GUARD_TOOLS)
+        errlog = io.StringIO()
+        core = make_core(up, guard=TrifectaGuard("warn"), errlog=errlog)
+
+        async def run():
+            await core.refresh()
+            await core.call_tool("get_ticket", {"ticket_id": 4417})
+            return await core.call_tool("send_email", dict(PERMITTED))
+
+        result = asyncio.run(run())
+        self.assertEqual(up.calls, ["get_ticket", "send_email"])
+        self.assertTrue(result.content[0].text.startswith("[mcp-lint guard: warning]"))
+        self.assertEqual(result.content[1].text, "ok send_email")
+        self.assertIn("mcp-lint guard", errlog.getvalue())
+
+    def test_untrusted_call_that_raises_still_taints(self):
+        up = FakeUpstream(GUARD_TOOLS, raise_on={"get_ticket"})
+        core = make_core(up, guard=TrifectaGuard("block"))
+
+        async def run():
+            await core.refresh()
+            with self.assertRaises(RuntimeError):
+                await core.call_tool("get_ticket", {"ticket_id": 4417})
+            return await core.call_tool("send_email", dict(PERMITTED))
+
+        result = asyncio.run(run())
+        self.assertTrue(result.is_error)
+        self.assertEqual(up.calls, ["get_ticket"])
+
+    def test_list_changed_renamed_sink_is_retagged_and_blocked(self):
+        up = FakeUpstream(GUARD_TOOLS)
+        core = make_core(up, guard=TrifectaGuard("block"))
+
+        async def run():
+            await core.refresh()
+            await core.call_tool("get_ticket", {"ticket_id": 4417})
+            up.tools = [t for t in GUARD_TOOLS if t.name != "send_email"] + [
+                gtool("dispatch_message", {"to": {"type": "string"}, "body": {"type": "string"}},
+                      "Send a message.")]
+            await core.on_upstream_message(list_changed())
+            listed = await core.list_tools()
+            blocked = await core.call_tool("dispatch_message", {"to": "a@b.example", "body": "x"})
+            return listed, blocked
+
+        listed, blocked = asyncio.run(run())
+        self.assertIn("dispatch_message", [t.name for t in listed.tools])
+        self.assertTrue(blocked.is_error)
+        self.assertNotIn("dispatch_message", up.calls)
+        self.assertEqual(up.list_count, 2)
+
+    def test_unknown_name_relists_once_and_blocks_when_tainted(self):
+        up = FakeUpstream(GUARD_TOOLS)
+        core = make_core(up, guard=TrifectaGuard("block"))
+
+        async def run():
+            await core.refresh()
+            await core.call_tool("get_ticket", {"ticket_id": 4417})
+            up.tools.append(gtool("post_message", {"channel": {"type": "string"},
+                                                   "text": {"type": "string"}}, "Post a message."))
+            blocked = await core.call_tool("post_message", {"channel": "general", "text": "hi"})
+            never = await core.call_tool("never_listed", {})
+            return blocked, never
+
+        blocked, never = asyncio.run(run())
+        self.assertTrue(blocked.is_error)
+        self.assertTrue(never.is_error)
+        self.assertEqual(up.calls, ["get_ticket"])
+        self.assertEqual(up.list_count, 3)  # startup + one re-list per unknown name
+
+    def test_failed_relist_fails_closed_when_tainted(self):
+        up = FakeUpstream(GUARD_TOOLS)
+        errlog = io.StringIO()
+        core = make_core(up, guard=TrifectaGuard("block"), errlog=errlog)
+
+        async def run():
+            await core.refresh()
+            await core.call_tool("get_ticket", {"ticket_id": 4417})
+            await core.on_upstream_message(list_changed())
+            up.fail_list = True
+            return await core.call_tool("read_file", {"path": "notes.txt"})
+
+        result = asyncio.run(run())
+        self.assertTrue(result.is_error)
+        self.assertIn("mcp-lint guard", result.content[0].text)
+        self.assertNotIn("read_file", up.calls)
+        self.assertIn("could not re-list", errlog.getvalue())
+
+    def test_paging_args_stripped_in_block_mode(self):
+        up = FakeUpstream(GUARD_TOOLS)
+        core = make_core(up, guard=TrifectaGuard("block"))
+
+        async def run():
+            await core.refresh()
+            return await core.call_tool("read_customer_record",
+                                        {"customer_id": "C-1042", "offset": 5, "limit": 2})
+
+        result = asyncio.run(run())
+        self.assertFalse(result.is_error)
+        self.assertEqual(up.args_seen, [("read_customer_record", {"customer_id": "C-1042"})])
+
+    def test_failed_list_tools_refresh_fails_closed(self):
+        up = FakeUpstream(GUARD_TOOLS)
+        errlog = io.StringIO()
+        core = make_core(up, guard=TrifectaGuard("block"), errlog=errlog)
+
+        async def run():
+            await core.refresh()
+            await core.call_tool("get_ticket", {"ticket_id": 4417})
+            await core.on_upstream_message(list_changed())
+            up.fail_list = True
+            listed = await core.list_tools()  # must not raise
+            up.fail_list = True
+            blocked = await core.call_tool("read_file", {"path": "notes.txt"})
+            return listed, blocked
+
+        listed, blocked = asyncio.run(run())
+        self.assertEqual([t.name for t in listed.tools], [t.name for t in GUARD_TOOLS])
+        self.assertTrue(core.stale)
+        self.assertTrue(blocked.is_error)
+        self.assertNotIn("read_file", up.calls)
+        self.assertIn("could not re-list", errlog.getvalue())
+
+    def test_list_changed_during_refresh_is_not_lost(self):
+        up = FakeUpstream(GUARD_TOOLS)
+        core = make_core(up, guard=TrifectaGuard("block"))
+        original = up.list_tools
+
+        async def list_with_notice(params=None):
+            result = await original(params)
+            if up.list_count == 2:  # the notice lands while the re-list is in flight
+                await core.on_upstream_message(list_changed())
+            return result
+
+        core._list_page = list_with_notice
+
+        async def run():
+            await core.refresh()
+            await core.on_upstream_message(list_changed())
+            await core.list_tools()
+
+        asyncio.run(run())
+        self.assertTrue(core.stale)
+
+    def test_duplicate_name_twin_does_not_hide_the_sink(self):
+        twin = gtool("send_email", {"n": {"type": "integer"}}, "x")
+        for tools in (GUARD_TOOLS + [twin], [twin] + GUARD_TOOLS):
+            with self.subTest(twin_first=tools[0] is twin):
+                up = FakeUpstream(tools)
+                core = make_core(up, guard=TrifectaGuard("block"))
+
+                async def run():
+                    await core.refresh()
+                    await core.call_tool("get_ticket", {"ticket_id": 4417})
+                    return await core.call_tool("send_email", dict(PERMITTED))
+
+                result = asyncio.run(run())
+                self.assertTrue(result.is_error)
+                self.assertEqual(up.calls, ["get_ticket"])
+
+    def test_undeclared_arguments_to_a_numeric_sink_are_blocked(self):
+        numeric = gtool("send_email", {"n": {"type": "integer"}}, "x")
+        tools = [t for t in GUARD_TOOLS if t.name != "send_email"] + [numeric]
+        up = FakeUpstream(tools)
+        core = make_core(up, guard=TrifectaGuard("block"))
+
+        async def run():
+            await core.refresh()
+            await core.call_tool("get_ticket", {"ticket_id": 4417})
+            fits = await core.call_tool("send_email", {"n": 2, "offset": 0})  # paging args don't count
+            extra = await core.call_tool("send_email", {"to": "a@b.example", "body": "placeholder"})
+            text = await core.call_tool("send_email", {"n": "placeholder"})
+            return fits, extra, text
+
+        fits, extra, text = asyncio.run(run())
+        self.assertFalse(fits.is_error)
+        self.assertTrue(extra.is_error)
+        self.assertTrue(text.is_error)
+        self.assertEqual(up.calls, ["get_ticket", "send_email"])
+
+    def test_retag_while_untrusted_call_in_flight_still_taints(self):
+        browse = gtool("browse_items", {"q": {"type": "string"}}, "x")
+        browse = browse.model_copy(update={"annotations": types.ToolAnnotations(
+            read_only_hint=True, open_world_hint=True)})
+        plain_browse = gtool("browse_items", {"q": {"type": "string"}}, "x")
+        noop = gtool("noop", {}, "x")
+        mail = next(t for t in GUARD_TOOLS if t.name == "send_email")
+        up = FakeUpstream([browse, mail, noop])
+        core = make_core(up, guard=TrifectaGuard("block"))
+        original = up.call_tool
+
+        async def run():
+            gate = asyncio.Event()
+
+            async def call(name, args):
+                if name == "browse_items":
+                    up.tools = [plain_browse, mail, noop]  # same name, no longer untrusted
+                    await core.on_upstream_message(list_changed())
+                    await gate.wait()
+                return await original(name, args)
+
+            core._call_upstream = call
+            await core.refresh()
+            self.assertIn(Tag.UNTRUSTED_READ, core._guard.tags("browse_items"))
+            task = asyncio.create_task(core.call_tool("browse_items", {"q": "x"}))
+            await asyncio.sleep(0.05)
+            await core.call_tool("noop", {})  # triggers the re-list and re-tag
+            self.assertNotIn(Tag.UNTRUSTED_READ, core._guard.tags("browse_items"))
+            gate.set()
+            await task
+            return await core.call_tool("send_email", dict(PERMITTED))
+
+        result = asyncio.run(run())
+        self.assertTrue(result.is_error)
+        self.assertNotIn("send_email", up.calls)
+
+    def test_sink_while_untrusted_call_in_flight_is_blocked(self):
+        up = FakeUpstream(GUARD_TOOLS)
+        core = make_core(up, guard=TrifectaGuard("block"))
+        original = up.call_tool
+
+        async def run():
+            gate = asyncio.Event()
+
+            async def call(name, args):
+                if name == "get_ticket":
+                    await gate.wait()
+                return await original(name, args)
+
+            core._call_upstream = call
+            await core.refresh()
+            task = asyncio.create_task(core.call_tool("get_ticket", {"ticket_id": 4417}))
+            await asyncio.sleep(0.05)
+            blocked = await core.call_tool("send_email", dict(PERMITTED))
+            gate.set()
+            await task
+            return blocked
+
+        blocked = asyncio.run(run())
+        self.assertTrue(blocked.is_error)
+        self.assertNotIn("send_email", up.calls)
+
+    def test_notice_lines_stay_on_one_line(self):
+        up = FakeUpstream(GUARD_TOOLS)
+        errlog = io.StringIO()
+        core = make_core(up, guard=TrifectaGuard("block"), errlog=errlog)
+
+        async def run():
+            await core.refresh()
+            await core.call_tool("get_ticket", {"ticket_id": 4417})
+            return await core.call_tool("send\nmcp-lint guard: fake line", {})
+
+        result = asyncio.run(run())
+        self.assertTrue(result.is_error)
+        lines = [line for line in errlog.getvalue().splitlines() if line]
+        self.assertEqual(len(lines), 1)
 
 
 if __name__ == "__main__":
