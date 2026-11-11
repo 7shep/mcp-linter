@@ -107,7 +107,7 @@ class ValidationTests(unittest.TestCase):
             run.validate_model_id(model)
 
     def test_bad_model_ids_refused(self):
-        for model in ("bad model;rm", "", "a/b", "x\n", "x y", "$(id)"):
+        for model in ("bad model;rm", "", "a/b", "x\n", "x y", "$(id)", "..", ".", "-x"):
             with self.subTest(model=model), self.assertRaises(ValueError):
                 run.validate_model_id(model)
 
@@ -343,6 +343,176 @@ class AgentDojoProcessTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stdout[-2000:])
         self.assertEqual(len(re.findall(r"no-action baseline false \d+/\d+ -> PASS", proc.stdout)), 4)
         self.assertIn("SELF-CHECK PASS", proc.stdout)
+
+
+class LogdirTests(unittest.TestCase):
+    """Blocker 2: each model gets its own logdir, so AgentDojo's resume never mixes models."""
+
+    def test_models_get_different_logdirs_under_runs_local(self):
+        a, b = run.logdir_for("qwen2.5:7b"), run.logdir_for("qwen3:8b")
+        self.assertNotEqual(a, b)
+        self.assertEqual(a.parent, run.LOGDIR)
+        self.assertEqual(b.parent, run.LOGDIR)
+
+    def test_logdir_name_has_only_safe_characters(self):
+        name = run.logdir_for("qwen2.5:7b").name
+        self.assertEqual(name, "qwen2.5_7b")
+        self.assertRegex(name, r"^[A-Za-z0-9._-]+$")
+
+
+STUB_SCRIPT = r'''
+import importlib.util, json, sys
+from pathlib import Path
+
+spec = importlib.util.spec_from_file_location("agentdojo_run", sys.argv[1])
+run = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(run)
+mode, logdir, fail = sys.argv[2], Path(sys.argv[3]), sys.argv[4] == "fail"
+
+from agentdojo.agent_pipeline.base_pipeline_element import BasePipelineElement
+from agentdojo.task_suite.load_suites import get_suites
+from agentdojo.types import text_content_block_from_string
+
+
+class Stub(BasePipelineElement):
+    name = "local-stub"
+
+    def query(self, query, runtime, env=None, messages=(), extra_args={}):
+        if fail:
+            raise RuntimeError("stub model failed")
+        reply = {"role": "assistant", "content": [text_content_block_from_string("done")], "tool_calls": None}
+        return query, runtime, env, [*messages, reply], extra_args
+
+
+suites = get_suites(run.BENCHMARK_VERSION)
+info = {"slack": {"user_tasks": list(suites["slack"].user_tasks), "injection_tasks": list(suites["slack"].injection_tasks)}}
+p = run.plan(
+    info, ["slack"], ["user_task_0"],
+    ["injection_task_1"] if mode == "attacked" else None, mode,
+)
+totals = run.run_trials(p, suites, "qwen2.5:7b", 11434, run.DEFAULT_ATTACK, pipeline=Stub(), logdir=logdir)
+print("TOTALS " + json.dumps(totals))
+'''
+
+PIPELINE_SCRIPT = r'''
+import importlib.util, sys
+
+spec = importlib.util.spec_from_file_location("agentdojo_run", sys.argv[1])
+run = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(run)
+
+from agentdojo.attacks.attack_registry import load_attack
+from agentdojo.task_suite.load_suites import get_suites
+
+pipeline = run.build_pipeline("qwen2.5:7b", 11434)
+suite = get_suites(run.BENCHMARK_VERSION)["slack"]
+attack = load_attack("important_instructions", suite, pipeline)
+print("NAME " + pipeline.name)
+print("MODEL " + attack.model_name)
+'''
+
+
+@unittest.skipUnless(HAVE_AGENTDOJO, "set AGENTDOJO_PYTHON to AgentDojo's python to run these tests")
+class RealAgentDojoPathTests(unittest.TestCase):
+    """Drive AgentDojo's real benchmark functions with a stub pipeline. No model, no network."""
+
+    def _helper(self, tmp, source, *args):
+        script = os.path.join(tmp, "helper.py")
+        with open(script, "w", encoding="utf-8") as f:
+            f.write(source)
+        return subprocess.run(
+            [AGENTDOJO_PY, "-I", script, SCRIPT, *args], capture_output=True, text=True, timeout=600, cwd=REPO
+        )
+
+    def _stub(self, tmp, mode, fail=False):
+        logdir = os.path.join(tmp, "logs")
+        proc = self._helper(tmp, STUB_SCRIPT, mode, logdir, "fail" if fail else "ok")
+        return proc, logdir
+
+    def test_clean_trial_writes_a_scored_log(self):
+        import json as _json
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            proc, logdir = self._stub(tmp, "clean")
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            path = os.path.join(logdir, "local-stub", "slack", "user_task_0", "none", "none.json")
+            self.assertTrue(os.path.isfile(path), proc.stdout + proc.stderr)
+            with open(path, encoding="utf-8") as f:
+                data = _json.load(f)
+            self.assertIsInstance(data["utility"], bool)
+            self.assertFalse(os.path.exists(os.path.join(logdir, "errors.jsonl")), proc.stdout)
+
+    def test_attacked_pair_has_no_injection_task_user_dirs_and_is_scorable(self):
+        import json as _json
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            proc, logdir = self._stub(tmp, "attacked")
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            pipe = os.path.join(logdir, "local-stub")
+            user_dirs = sorted(os.listdir(os.path.join(pipe, "slack")))
+            self.assertEqual(user_dirs, ["user_task_0"])  # no injection_task_N run as a user task
+            attack_dirs = sorted(os.listdir(os.path.join(pipe, "slack", "user_task_0")))
+            self.assertEqual(attack_dirs, ["important_instructions"])
+            trial = os.path.join(pipe, "slack", "user_task_0", "important_instructions", "injection_task_1.json")
+            with open(trial, encoding="utf-8") as f:
+                data = _json.load(f)
+            self.assertEqual(data["suite_name"], "slack")
+            self.assertEqual(data["user_task_id"], "user_task_0")
+            self.assertEqual(data["injection_task_id"], "injection_task_1")
+            self.assertEqual(data["attack_type"], "important_instructions")
+            self.assertIsInstance(data["utility"], bool)
+            self.assertIsInstance(data["security"], bool)
+
+            # The scorer must accept this layout and not meet unknown user-task ids.
+            bench = os.path.join(REPO, "benchmark")
+            spec = importlib.util.spec_from_file_location("agentdojo_score_for_run_test", os.path.join(bench, "agentdojo_score.py"))
+            sys.path.insert(0, bench)
+            try:
+                score = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(score)
+            finally:
+                sys.path.remove(bench)
+            # Real AgentDojo logs must carry the fields the scorer checks.
+            self.assertEqual(data["benchmark_version"], "v1.2")
+            self.assertEqual(data["pipeline_name"], "local-stub")
+            cases = {"benchmark_version": "v1.2",
+                     "suites": {"slack": {"user_tasks": ["user_task_0"], "injection_tasks": ["injection_task_1"]}}}
+            attacked, clean = score.walk_run(pipe, "local-stub", cases, "important_instructions")
+            self.assertEqual(list(attacked), [("slack", "user_task_0", "injection_task_1")])
+
+    def test_raising_pipeline_logs_error_and_leaves_no_trial_json(self):
+        import json as _json
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            proc, logdir = self._stub(tmp, "clean", fail=True)
+            with open(os.path.join(logdir, "errors.jsonl"), encoding="utf-8") as f:
+                entries = [_json.loads(line) for line in f]
+            self.assertEqual(len(entries), 1, proc.stdout + proc.stderr)
+            self.assertIn("RuntimeError", entries[0]["error"])
+            leftovers = [
+                os.path.join(d, n) for d, _, names in os.walk(logdir) for n in names if n.endswith(".json")
+            ]
+            self.assertEqual(leftovers, [])
+
+    def test_pipeline_name_keeps_local_and_attack_says_local_model(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self._helper(tmp, PIPELINE_SCRIPT)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            lines = dict(line.split(" ", 1) for line in proc.stdout.splitlines() if line.startswith(("NAME ", "MODEL ")))
+            self.assertIn("local", lines["NAME"])
+            self.assertEqual(lines["MODEL"].strip(), "Local model")
+
+
+class MainExitCodeTests(unittest.TestCase):
+    def test_any_trial_error_gives_nonzero(self):
+        self.assertEqual(run.exit_code({"s": {"clean": 1, "clean_errors": 0, "attacked": 2, "attacked_errors": 0}}), 0)
+        self.assertEqual(run.exit_code({"s": {"clean": 1, "clean_errors": 1, "attacked": 2, "attacked_errors": 0}}), 1)
+        self.assertEqual(run.exit_code({"s": {"clean": 1, "clean_errors": 0, "attacked": 2, "attacked_errors": 3}}), 1)
 
 
 if __name__ == "__main__":

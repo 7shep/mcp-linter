@@ -74,7 +74,7 @@ Real agents take extra turns and think, so the cost estimate below doubles input
   - Local models use AgentDojo's `local` provider and its own loop.
   - Claude models use the MCP bridge above. Its attack is `important_instructions_no_model_name`, because the stock attack looks the model name up in a table that has no 5.5 entry. Local models use the stock attack with its "Local model" name.
   - A bridge check, offline: replaying a ground-truth trace through the MCP server gives the same `utility()` result as AgentDojo's own `GroundTruthPipeline`, for every user task.
-  - It calls `benchmark_suite_with_injections` and `benchmark_suite_without_injections` with a `logdir` under `benchmark/results/agentdojo/runs/<model>/`. AgentDojo skips trials it has already logged, so it resumes.
+  - Both runners call AgentDojo's `run_task_with_injection_tasks` and `run_task_without_injection_tasks` once per trial. They don't use `benchmark_suite_*`, which also runs every injection task as a user task. Logs go under a per-model `logdir`: `runs/local/<model>/` and `runs/claude/`, with the pipeline named `claude-code-<model>`. AgentDojo skips trials it has already logged, so a rerun resumes.
   - Safety: the AgentDojo environments are in-memory Python objects, with no real email, bank or network. The runner refuses any provider other than Anthropic or `localhost`. Servers and agents get no Claude Code tools.
 - **`benchmark/agentdojo_score.py`** (mcp-lint's Python, doesn't import agentdojo): reads the per-trial logs (`utility`, `security`), joins them to `crosscheck.json` / `crosscheck_v2.json` by (suite, user task, injection task), and writes `results/agentdojo/asr_<model>.md` with A1–A4.
 - **Tests, offline:**
@@ -95,7 +95,7 @@ AGENTDOJO_PY="<agentdojo-venv>/Scripts/python"
 "$AGENTDOJO_PY" -I benchmark/agentdojo_run.py --model-id qwen2.5:7b --port 11434 --suite banking slack --attacked-only
 ```
 
-Logs go to `benchmark/results/agentdojo/runs/local/` (git-ignored) and a rerun resumes.
+Logs go to `benchmark/results/agentdojo/runs/local/<model>/` (git-ignored; `:` and other unsafe characters in the model id become `_`) and a rerun resumes. The exit code is 1 when any trial errored.
 
 ### Gates
 

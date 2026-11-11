@@ -22,8 +22,10 @@ A model run only talks to a server on localhost. Before any trial it:
   can be used;
 - sets LOCAL_LLM_PORT, which AgentDojo's local provider reads.
 
-Logs go to benchmark/results/agentdojo/runs/local/ (git-ignored). AgentDojo skips
-trials it has already logged there, so a rerun resumes. Only the scored table is
+Logs go to benchmark/results/agentdojo/runs/local/<model>/ (git-ignored), one directory
+per model id, because every local model has the pipeline name "local" and AgentDojo
+resumes by that name. AgentDojo skips trials it has already logged there, so a rerun
+resumes. The exit code is 1 when any trial errored. Only the scored table is
 committed, the same rule as agentdojo_export.py.
 
 AgentDojo is imported only inside functions, so the validation helpers can be
@@ -45,13 +47,19 @@ LOGDIR = REPO / "benchmark" / "results" / "agentdojo" / "runs" / "local"
 BENCHMARK_VERSION = "v1.2"
 DEFAULT_PORT = 11434
 DEFAULT_ATTACK = "important_instructions"
-MODEL_ID_RE = re.compile(r"[A-Za-z0-9._:-]+")
+MODEL_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]*")
 MODES = ("both", "clean", "attacked")
 
 
 def validate_model_id(model_id: str) -> None:
     if not MODEL_ID_RE.fullmatch(model_id or ""):
         raise ValueError(f"model id {model_id!r} must match {MODEL_ID_RE.pattern}")
+
+
+def logdir_for(model_id: str) -> Path:
+    """Per-model logdir. Every local model has pipeline name "local", and AgentDojo resumes by
+    pipeline name, so models must not share a directory. ':' is not valid in Windows paths."""
+    return LOGDIR / re.sub(r"[^A-Za-z0-9._-]", "_", model_id)
 
 
 def validate_port(port: int) -> None:
@@ -217,7 +225,7 @@ def build_pipeline(model_id: str, port: int):
     return AgentPipeline.from_config(config)
 
 
-def _guarded(call, record: dict, errors_path: Path, emit):
+def _guarded(call, record: dict, errors_path: Path, emit, cleanup=None):
     """Run one benchmark call. Any Exception is logged as one JSON line and skipped.
 
     AgentDojo only catches some provider errors, so one bad model output or timeout
@@ -231,11 +239,14 @@ def _guarded(call, record: dict, errors_path: Path, emit):
         entry = dict(record, error=f"{type(exc).__name__}: {str(exc)[:300]}")
         with open(errors_path, "a", encoding="utf-8", newline="\n") as f:
             f.write(json.dumps(entry, sort_keys=True) + "\n")
+        if cleanup is not None:
+            cleanup(record)
         emit(f"ERROR {record['suite']} {record['user_task_id']} {record['injection_task_id']}: {entry['error'][:120]}")
         return None
 
 
-def run_cases(p: dict, suites, attack_name: str, logdir: Path, clean_fn, attacked_fn, make_attack, emit=print) -> dict:
+def run_cases(p: dict, suites, attack_name: str, logdir: Path, clean_fn, attacked_fn, make_attack, emit=print,
+              cleanup=None) -> dict:
     """Run every planned case one at a time, so one failure cannot stop the others.
 
     clean_fn(suite, user_task_ids) and attacked_fn(suite, attack, user_task_ids, injection_task_ids)
@@ -255,7 +266,7 @@ def run_cases(p: dict, suites, attack_name: str, logdir: Path, clean_fn, attacke
         if info["clean"]:
             for uid in info["user_tasks"]:
                 record = {"suite": name, "user_task_id": uid, "injection_task_id": None}
-                res = _guarded(lambda: clean_fn(suite, [uid]), record, errors_path, emit)
+                res = _guarded(lambda: clean_fn(suite, [uid]), record, errors_path, emit, cleanup)
                 if res is None:
                     row["clean_errors"] += 1
                 else:
@@ -265,7 +276,7 @@ def run_cases(p: dict, suites, attack_name: str, logdir: Path, clean_fn, attacke
             for uid in info["user_tasks"]:
                 for iid in info["injection_tasks"]:
                     record = {"suite": name, "user_task_id": uid, "injection_task_id": iid}
-                    res = _guarded(lambda: attacked_fn(suite, attack, [uid], [iid]), record, errors_path, emit)
+                    res = _guarded(lambda: attacked_fn(suite, attack, [uid], [iid]), record, errors_path, emit, cleanup)
                     if res is None:
                         row["attacked_errors"] += 1
                     else:
@@ -278,34 +289,63 @@ def run_cases(p: dict, suites, attack_name: str, logdir: Path, clean_fn, attacke
     return totals
 
 
-def run_trials(p: dict, suites, model_id: str, port: int, attack_name: str) -> dict:
+def drop_partial_log(logdir: Path, pipeline: str, suite: str, user_task_id: str, attack: str,
+                     injection_task_id: str | None) -> None:
+    """AgentDojo's TraceLogger saves a stub (duration only) when a trial raises. Remove it when it has
+    no utility, so a failed trial has no log and counts as missing. Copied from agentdojo_claude.py
+    because this file must run under -I with only the stdlib and agentdojo."""
+    path = Path(logdir) / pipeline.replace("/", "_") / suite / user_task_id / attack / f"{injection_task_id or 'none'}.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return
+    if not isinstance(data, dict) or "utility" not in data:
+        path.unlink(missing_ok=True)
+
+
+def exit_code(totals: dict) -> int:
+    """1 when any trial errored, else 0."""
+    return 1 if any(row["clean_errors"] or row["attacked_errors"] for row in totals.values()) else 0
+
+
+def run_trials(p: dict, suites, model_id: str, port: int, attack_name: str, pipeline=None, logdir=None) -> dict:
+    """Run the planned trials. pipeline and logdir default to the real local model and its per-model
+    logdir; tests pass a stub pipeline and a temp logdir."""
     from agentdojo.attacks.attack_registry import load_attack
-    from agentdojo.benchmark import benchmark_suite_with_injections, benchmark_suite_without_injections
+    from agentdojo.benchmark import run_task_with_injection_tasks, run_task_without_injection_tasks
+    from agentdojo.logging import OutputLogger
 
     # Keys go before the pipeline is built, so no client can pick one up.
     os.environ.pop("ANTHROPIC_API_KEY", None)
     os.environ.pop("OPENAI_API_KEY", None)
-    pipeline = build_pipeline(model_id, port)
+    if pipeline is None:
+        pipeline = build_pipeline(model_id, port)
+    logdir = Path(logdir) if logdir is not None else logdir_for(model_id)
+    logdir.mkdir(parents=True, exist_ok=True)
 
     def clean_fn(suite, uids):
-        return benchmark_suite_without_injections(
-            pipeline, suite, LOGDIR, False, user_tasks=uids, benchmark_version=BENCHMARK_VERSION
+        # One user task per call. run_task_* does not run the injection tasks as user tasks.
+        utility, _ = run_task_without_injection_tasks(
+            suite, pipeline, suite.get_user_task_by_id(uids[0]), logdir, False, BENCHMARK_VERSION
         )
+        return {"utility_results": {(uids[0], ""): utility}, "security_results": {}}
 
     def attacked_fn(suite, attack, uids, iids):
-        return benchmark_suite_with_injections(
-            pipeline,
-            suite,
-            attack,
-            LOGDIR,
-            False,
-            user_tasks=uids,
-            injection_tasks=iids,
-            verbose=True,
-            benchmark_version=BENCHMARK_VERSION,
+        utility, security = run_task_with_injection_tasks(
+            suite, pipeline, suite.get_user_task_by_id(uids[0]), attack, logdir, False, list(iids), BENCHMARK_VERSION
         )
+        return {"utility_results": utility, "security_results": security}
 
-    return run_cases(p, suites, attack_name, LOGDIR, clean_fn, attacked_fn, lambda n, s: load_attack(n, s, pipeline))
+    def cleanup(record):
+        attack = attack_name if record["injection_task_id"] else "none"
+        drop_partial_log(logdir, pipeline.name, record["suite"], record["user_task_id"], attack, record["injection_task_id"])
+
+    # TraceLogger delegates to the active OutputLogger and reads its logdir.
+    with OutputLogger(str(logdir), live=None):
+        return run_cases(
+            p, suites, attack_name, logdir, clean_fn, attacked_fn,
+            lambda n, s: load_attack(n, s, pipeline), cleanup=cleanup,
+        )
 
 
 def main(argv=None) -> int:
@@ -353,6 +393,7 @@ def main(argv=None) -> int:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
     print(format_plan(p))
+    print(f"logs: {logdir_for(args.model_id)}")
     if args.dry_run:
         return 0
 
@@ -366,8 +407,8 @@ def main(argv=None) -> int:
         print(f"listed: {', '.join(models[:10]) or '(none)'}", file=sys.stderr)
         return 1
 
-    run_trials(p, suites, args.model_id, args.port, args.attack)
-    return 0
+    totals = run_trials(p, suites, args.model_id, args.port, args.attack)
+    return exit_code(totals)
 
 
 if __name__ == "__main__":
