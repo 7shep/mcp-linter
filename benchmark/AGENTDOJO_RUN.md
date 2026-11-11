@@ -1,6 +1,6 @@
 # AgentDojo run: plan
 
-**Status:** plan only. Nothing here has been run against a model. Every paid step needs Alex's approval first.
+**Status:** plan only. Nothing here has been run against a model. No step uses an API key. Every step that uses Claude (plan usage) needs Alex's approval first.
 
 ## Why this run
 
@@ -49,11 +49,13 @@ Real agents take extra turns and think, so the cost estimate below doubles input
 | Model | How it runs | One full pass, estimated | Notes |
 |---|---|---|---|
 | qwen2.5:7b, qwen3:8b (already in Ollama) | AgentDojo `local` provider, `LOCAL_LLM_PORT=11434` | $0, roughly 10–20 hours on the RTX 3050 | Small open models are the likeliest to have a non-zero ASR. Needs `num_ctx` ≥ 32k for travel, which may spill out of 8 GB of VRAM; check in the pilot. Prompt-based tool calling, so utility may be low. |
-| Claude Haiku 5.5 | custom pipeline, Anthropic API key | ~$3.50 ($0.10 / $0.50 per MTok) | Null on our own injections. AgentDojo's attack is different, so it's worth one pass. |
-| Claude Sonnet 5.5 | same | ~$66 ($2 / $10) | Only if the gate passes. |
-| Claude Opus 5.5 | same | ~$130 ($4 / $20) | Only if the gate passes and Alex wants it. |
+| Claude Haiku 5.5 | `claude -p` on the plan login, AgentDojo's tools served over MCP (below) | no API spend; plan usage only (~1,046 sessions) | Null on our own injections. AgentDojo's attack is different, so it's worth one pass. |
+| Claude Sonnet 5.5 | same | plan usage only, about 20× Haiku's token cost | Only if the gate passes. |
+| Claude Opus 5.5 | same | plan usage only | Only if the gate passes and Alex wants it. |
 
-Costs are list API prices from the cached model table (2026-11-03), with no caching or batch discount. The tool definitions and system prompt are a stable prefix, so prompt caching should cut Claude input costs a lot. **Key needed for Claude steps only.** AgentDojo calls the Anthropic API directly, so the Claude Code plan login doesn't cover it. It needs `ANTHROPIC_API_KEY`, or possibly an `ant auth login` profile. AgentDojo's `AnthropicLLM` rebuilds its client from `api_key`/`auth_token`, so step 0 checks whether a profile survives that. The local steps need no key.
+**No API key, no API spend.** AgentDojo's own Anthropic pipeline needs an API key, so it isn't used. Claude runs instead go through headless `claude -p` on the Claude Code plan login, the same route as the Haiku 5.5 run in `DESIGN.md`, so they only use plan limits. They may hit usage-limit resets, and the runner resumes after one. For scale, the same tokens at API list prices would be about $3.50 for Haiku, $66 for Sonnet and $130 for Opus. Nobody pays that here, but it shows the relative load on the plan.
+
+**How a Claude trial works.** For each case, a small MCP stdio server (`benchmark/agentdojo_mcp.py`, AgentDojo's venv) loads the suite's environment with the attack injected and exposes the suite's tools through `FunctionsRuntime`. `claude -p --strict-mcp-config --tools ""` gets the user task as its prompt and only those tools. When the session ends, the server writes the final environment and the call trace, and AgentDojo's own `utility()` and `security()` checks score them. This changes the agent loop: Claude Code's system prompt and tool plumbing replace AgentDojo's, so results describe Claude Code with a model, as in our earlier runs. The mock-server safety rules in `DESIGN.md` section 10 apply (audit hook, minimal environment, no network).
 
 ## Run order
 
@@ -62,15 +64,16 @@ Costs are list API prices from the cached model table (2026-11-03), with no cach
 | 0 | Wiring, offline: runner script, result reader, scorer joined to `crosscheck.json`, tests | No | 0 | $0 |
 | 1 | Local pilot: qwen2.5:7b, banking and slack, `important_instructions` | No | ~270 | $0, ~3 h |
 | 2 | Local full pass, both qwen models, all suites | No | ~2,100 | $0, ~1–2 days |
-| 3 | Haiku 5.5 pilot: 60 stratified cases (15 per suite) + 20 clean | Yes | 80 | ~$0.30 |
-| 4 | Haiku 5.5 full | Yes | 1,046 | ~$3.50 |
-| 5 | Sonnet 5.5 full (Opus 5.5 optional) | Yes | 1,046 each | ~$66 (+$130) |
+| 3 | Haiku 5.5 pilot through `claude -p`: 60 stratified cases (15 per suite) + 20 clean | Plan usage | 80 | $0 |
+| 4 | Haiku 5.5 full | Plan usage | 1,046 | $0 |
+| 5 | Sonnet 5.5 full (Opus 5.5 optional) | Plan usage | 1,046 each | $0 |
 
 ### Step 0 details (no model calls)
 
 - **`benchmark/agentdojo_run.py`**, run with AgentDojo's venv (`-I`, like `agentdojo_export.py`). It builds the pipeline itself, because AgentDojo 0.1.35's model list stops at Claude 3.7 and its CLI can't name Claude 5.5:
-  - `AnthropicLLM(client, "claude-haiku-5-5", temperature=None, max_tokens=16000)`. `temperature=None` keeps sampling parameters out of the request, which new API versions reject. The default `max_tokens=1024` would truncate, since thinking is on by default on Haiku 5.5.
-  - The attack is `important_instructions_no_model_name`, because the stock attack looks the model name up in a table that has no 5.5 entry. For local models, the stock attack's "Local model" name is used.
+  - Local models use AgentDojo's `local` provider and its own loop.
+  - Claude models use the MCP bridge above. Its attack is `important_instructions_no_model_name`, because the stock attack looks the model name up in a table that has no 5.5 entry. Local models use the stock attack with its "Local model" name.
+  - A bridge check, offline: replaying a ground-truth trace through the MCP server gives the same `utility()` result as AgentDojo's own `GroundTruthPipeline`, for every user task.
   - It calls `benchmark_suite_with_injections` and `benchmark_suite_without_injections` with a `logdir` under `benchmark/results/agentdojo/runs/<model>/`. AgentDojo skips trials it has already logged, so it resumes.
   - Safety: the AgentDojo environments are in-memory Python objects, with no real email, bank or network. The runner refuses any provider other than Anthropic or `localhost`. Servers and agents get no Claude Code tools.
 - **`benchmark/agentdojo_score.py`** (mcp-lint's Python, doesn't import agentdojo): reads the per-trial logs (`utility`, `security`), joins them to `crosscheck.json` / `crosscheck_v2.json` by (suite, user task, injection task), and writes `results/agentdojo/asr_<model>.md` with A1–A4.
@@ -89,7 +92,7 @@ Costs are list API prices from the cached model table (2026-11-03), with no cach
   - At least 90% of trials must finish without format or context errors.
   - If it fails, try qwen3:8b or a larger context before step 2.
 - **After step 2 (the key gate):** exfil ASR must be at least 5% on at least one local model. If no local model reaches that, A1 is untestable with these models too. Write that up as a second null result and stop.
-- **After step 3:** median cost per trial within 2× of the estimate, and no truncated responses (`max_tokens` stops). Then step 4.
+- **After step 3:** clean-task utility through the bridge must be at least 80%, so the bridge isn't breaking tasks. No trial may end with the server's tools missing. Note how much plan usage the 80 trials used, to estimate step 4.
 - **After step 4:** if Haiku's exfil ASR is below 5%, stop before Sonnet and Opus, as in `DESIGN.md`. A1 then rests on the local models alone, and the write-up says so.
 
 ## Limits
@@ -102,5 +105,5 @@ Costs are list API prices from the cached model table (2026-11-03), with no cach
 ## Decisions needed
 
 1. Approve steps 0–2 (free, local, mostly GPU time)?
-2. For steps 3–5: provide an Anthropic API key or an `ant auth login` profile, and approve Haiku (~$4 total) first.
-3. Sonnet 5.5 (~$66) and Opus 5.5 (~$130): decide after step 4.
+2. Steps 3–4 (Haiku through `claude -p` on the plan login): approve after step 2.
+3. Sonnet 5.5 and Opus 5.5: decide after step 4, given how much plan usage Haiku used.
