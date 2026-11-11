@@ -11,3 +11,5 @@ report.json
 survey/sandbox/
 .claude/settings.local.json
 eval/results/*.lock
+benchmark/results/transcripts/
+benchmark/results/*.lock

@@ -1,0 +1,3293 @@
+{
+  "false_negatives": {
+    "by_split": {
+      "all": 7,
+      "dev": 0,
+      "holdout": 7
+    },
+    "entries": [
+      {
+        "in_strict": false,
+        "reason": "Accepts file: URIs, so it reads local files. The rules treat a URI parameter as web only.",
+        "server": "markitdown",
+        "split": "holdout",
+        "tag": "PRIVATE_READ",
+        "tool": "convert_to_markdown"
+      },
+      {
+        "in_strict": false,
+        "reason": "Reads a local file through 'filePath'. The camelCase name misses PATH_PARAMS.",
+        "server": "firecrawl",
+        "split": "holdout",
+        "tag": "PRIVATE_READ",
+        "tool": "firecrawl_parse"
+      },
+      {
+        "in_strict": false,
+        "reason": "Returns web research. Its 'input' parameter is not in QUERY_PARAMS.",
+        "server": "tavily",
+        "split": "holdout",
+        "tag": "UNTRUSTED_READ",
+        "tool": "tavily_research"
+      },
+      {
+        "in_strict": false,
+        "reason": "Returns response bodies from visited sites. 'network' is not a browser noun.",
+        "server": "chrome-devtools",
+        "split": "holdout",
+        "tag": "UNTRUSTED_READ",
+        "tool": "get_network_request"
+      },
+      {
+        "in_strict": false,
+        "reason": "Form fields are sent to whatever page is open.",
+        "server": "chrome-devtools",
+        "split": "holdout",
+        "tag": "EXTERNAL_WRITE",
+        "tool": "fill_form"
+      },
+      {
+        "in_strict": false,
+        "reason": "Sends a local file to the open page. The verb is third in the name, past the two-word verb window.",
+        "server": "playwright",
+        "split": "holdout",
+        "tag": "EXTERNAL_WRITE",
+        "tool": "browser_file_upload"
+      },
+      {
+        "in_strict": false,
+        "reason": "Form fields are sent to whatever page is open.",
+        "server": "playwright",
+        "split": "holdout",
+        "tag": "EXTERNAL_WRITE",
+        "tool": "browser_fill_form"
+      }
+    ]
+  },
+  "false_positives": {
+    "by_profile": {
+      "inclusive": {
+        "all": {
+          "apparent_fp": 24,
+          "assigned": 182,
+          "per_tag": {
+            "EXTERNAL_WRITE": {
+              "apparent_fp": 8,
+              "assigned": 42,
+              "rate": 0.1905
+            },
+            "PRIVATE_READ": {
+              "apparent_fp": 6,
+              "assigned": 61,
+              "rate": 0.0984
+            },
+            "UNTRUSTED_READ": {
+              "apparent_fp": 10,
+              "assigned": 79,
+              "rate": 0.1266
+            }
+          },
+          "rate": 0.1319
+        },
+        "dev": {
+          "apparent_fp": 6,
+          "assigned": 84,
+          "per_tag": {
+            "EXTERNAL_WRITE": {
+              "apparent_fp": 2,
+              "assigned": 13,
+              "rate": 0.1538
+            },
+            "PRIVATE_READ": {
+              "apparent_fp": 1,
+              "assigned": 51,
+              "rate": 0.0196
+            },
+            "UNTRUSTED_READ": {
+              "apparent_fp": 3,
+              "assigned": 20,
+              "rate": 0.15
+            }
+          },
+          "rate": 0.0714
+        },
+        "holdout": {
+          "apparent_fp": 18,
+          "assigned": 98,
+          "per_tag": {
+            "EXTERNAL_WRITE": {
+              "apparent_fp": 6,
+              "assigned": 29,
+              "rate": 0.2069
+            },
+            "PRIVATE_READ": {
+              "apparent_fp": 5,
+              "assigned": 10,
+              "rate": 0.5
+            },
+            "UNTRUSTED_READ": {
+              "apparent_fp": 7,
+              "assigned": 59,
+              "rate": 0.1186
+            }
+          },
+          "rate": 0.1837
+        }
+      },
+      "strict": {
+        "all": {
+          "apparent_fp": 6,
+          "assigned": 68,
+          "per_tag": {
+            "EXTERNAL_WRITE": {
+              "apparent_fp": 1,
+              "assigned": 17,
+              "rate": 0.0588
+            },
+            "PRIVATE_READ": {
+              "apparent_fp": 1,
+              "assigned": 17,
+              "rate": 0.0588
+            },
+            "UNTRUSTED_READ": {
+              "apparent_fp": 4,
+              "assigned": 34,
+              "rate": 0.1176
+            }
+          },
+          "rate": 0.0882
+        },
+        "dev": {
+          "apparent_fp": 2,
+          "assigned": 38,
+          "per_tag": {
+            "EXTERNAL_WRITE": {
+              "apparent_fp": 1,
+              "assigned": 9,
+              "rate": 0.1111
+            },
+            "PRIVATE_READ": {
+              "apparent_fp": 0,
+              "assigned": 16,
+              "rate": 0.0
+            },
+            "UNTRUSTED_READ": {
+              "apparent_fp": 1,
+              "assigned": 13,
+              "rate": 0.0769
+            }
+          },
+          "rate": 0.0526
+        },
+        "holdout": {
+          "apparent_fp": 4,
+          "assigned": 30,
+          "per_tag": {
+            "EXTERNAL_WRITE": {
+              "apparent_fp": 0,
+              "assigned": 8,
+              "rate": 0.0
+            },
+            "PRIVATE_READ": {
+              "apparent_fp": 1,
+              "assigned": 1,
+              "rate": 1.0
+            },
+            "UNTRUSTED_READ": {
+              "apparent_fp": 3,
+              "assigned": 21,
+              "rate": 0.1429
+            }
+          },
+          "rate": 0.1333
+        }
+      }
+    },
+    "entries": [
+      {
+        "in_strict": true,
+        "reason": "Demo tool returning fixed text. Tagged only for the noun 'message'.",
+        "server": "everything",
+        "split": "dev",
+        "tag": "UNTRUSTED_READ",
+        "tool": "get-annotated-message"
+      },
+      {
+        "in_strict": false,
+        "reason": "The URI names a resource for a notification. No content comes back.",
+        "server": "everything",
+        "split": "dev",
+        "tag": "UNTRUSTED_READ",
+        "tool": "trigger-resource-update"
+      },
+      {
+        "in_strict": false,
+        "reason": "The URI names a resource for a notification. Nothing is sent to that address.",
+        "server": "everything",
+        "split": "dev",
+        "tag": "EXTERNAL_WRITE",
+        "tool": "trigger-resource-update"
+      },
+      {
+        "in_strict": false,
+        "reason": "Returns public GitHub profiles.",
+        "server": "github",
+        "split": "dev",
+        "tag": "PRIVATE_READ",
+        "tool": "search_users"
+      },
+      {
+        "in_strict": false,
+        "reason": "Searches page titles inside the connected workspace, with no outside corpus.",
+        "server": "notion",
+        "split": "dev",
+        "tag": "UNTRUSTED_READ",
+        "tool": "API-post-search"
+      },
+      {
+        "in_strict": true,
+        "reason": "A comment is visible only to people with access to the page, so it leaves the boundary only on a publicly shared page. This one call decides Notion's whole trifecta.",
+        "server": "notion",
+        "split": "dev",
+        "tag": "EXTERNAL_WRITE",
+        "tool": "API-create-a-comment"
+      },
+      {
+        "in_strict": true,
+        "reason": "Description limits URLs to docs.aws.amazon.com, so the content is AWS-authored.",
+        "server": "aws-docs",
+        "split": "holdout",
+        "tag": "UNTRUSTED_READ",
+        "tool": "read_documentation"
+      },
+      {
+        "in_strict": false,
+        "reason": "Description limits URLs to docs.aws.amazon.com, so an attacker host cannot receive a request.",
+        "server": "aws-docs",
+        "split": "holdout",
+        "tag": "EXTERNAL_WRITE",
+        "tool": "read_documentation"
+      },
+      {
+        "in_strict": true,
+        "reason": "AWS documentation pages only, as for read_documentation.",
+        "server": "aws-docs",
+        "split": "holdout",
+        "tag": "UNTRUSTED_READ",
+        "tool": "read_sections"
+      },
+      {
+        "in_strict": false,
+        "reason": "AWS documentation pages only, as for read_documentation.",
+        "server": "aws-docs",
+        "split": "holdout",
+        "tag": "EXTERNAL_WRITE",
+        "tool": "read_sections"
+      },
+      {
+        "in_strict": true,
+        "reason": "'table' here is a table in a public documentation page.",
+        "server": "aws-docs",
+        "split": "holdout",
+        "tag": "PRIVATE_READ",
+        "tool": "search_table"
+      },
+      {
+        "in_strict": true,
+        "reason": "Description limits URLs to docs.aws.amazon.com.",
+        "server": "aws-docs",
+        "split": "holdout",
+        "tag": "UNTRUSTED_READ",
+        "tool": "search_table"
+      },
+      {
+        "in_strict": false,
+        "reason": "Description limits URLs to docs.aws.amazon.com.",
+        "server": "aws-docs",
+        "split": "holdout",
+        "tag": "EXTERNAL_WRITE",
+        "tool": "search_table"
+      },
+      {
+        "in_strict": false,
+        "reason": "Takes an AWS documentation page URL and returns related AWS pages.",
+        "server": "aws-docs",
+        "split": "holdout",
+        "tag": "UNTRUSTED_READ",
+        "tool": "recommend"
+      },
+      {
+        "in_strict": false,
+        "reason": "Takes an AWS documentation page URL and returns related AWS pages.",
+        "server": "aws-docs",
+        "split": "holdout",
+        "tag": "EXTERNAL_WRITE",
+        "tool": "recommend"
+      },
+      {
+        "in_strict": false,
+        "reason": "The nested 'script' is a page action in Firecrawl's own browser, which has no access to the user's local data.",
+        "server": "firecrawl",
+        "split": "holdout",
+        "tag": "PRIVATE_READ",
+        "tool": "firecrawl_scrape"
+      },
+      {
+        "in_strict": false,
+        "reason": "The nested 'script' is a page action in Firecrawl's own browser, which has no access to the user's local data.",
+        "server": "firecrawl",
+        "split": "holdout",
+        "tag": "PRIVATE_READ",
+        "tool": "firecrawl_search"
+      },
+      {
+        "in_strict": false,
+        "reason": "The nested 'script' is a page action in Firecrawl's own browser, which has no access to the user's local data.",
+        "server": "firecrawl",
+        "split": "holdout",
+        "tag": "PRIVATE_READ",
+        "tool": "firecrawl_crawl"
+      },
+      {
+        "in_strict": false,
+        "reason": "The code runs in Firecrawl's own browser session, which has no access to the user's local data.",
+        "server": "firecrawl",
+        "split": "holdout",
+        "tag": "PRIVATE_READ",
+        "tool": "firecrawl_interact"
+      },
+      {
+        "in_strict": false,
+        "reason": "Takes only a monitor id. openWorldHint is true, but no chosen data can leave.",
+        "server": "firecrawl",
+        "split": "holdout",
+        "tag": "EXTERNAL_WRITE",
+        "tool": "firecrawl_monitor_delete"
+      },
+      {
+        "in_strict": false,
+        "reason": "Takes only a monitor id. openWorldHint is true, but no chosen data can leave.",
+        "server": "firecrawl",
+        "split": "holdout",
+        "tag": "EXTERNAL_WRITE",
+        "tool": "firecrawl_monitor_run"
+      },
+      {
+        "in_strict": false,
+        "reason": "Closes the page. Tagged only for the 'browser' prefix.",
+        "server": "playwright",
+        "split": "holdout",
+        "tag": "UNTRUSTED_READ",
+        "tool": "browser_close"
+      },
+      {
+        "in_strict": false,
+        "reason": "Resizes the window. Tagged only for the 'browser' prefix.",
+        "server": "playwright",
+        "split": "holdout",
+        "tag": "UNTRUSTED_READ",
+        "tool": "browser_resize"
+      },
+      {
+        "in_strict": false,
+        "reason": "Sets CSS media features. Tagged only for the 'browser' prefix.",
+        "server": "playwright",
+        "split": "holdout",
+        "tag": "UNTRUSTED_READ",
+        "tool": "browser_emulate_media"
+      }
+    ]
+  },
+  "minimal_sets": {
+    "inclusive": {
+      "count": 8,
+      "sets": [
+        [
+          "aws-docs"
+        ],
+        [
+          "chrome-devtools"
+        ],
+        [
+          "desktop-commander"
+        ],
+        [
+          "everything"
+        ],
+        [
+          "firecrawl"
+        ],
+        [
+          "github"
+        ],
+        [
+          "notion"
+        ],
+        [
+          "playwright"
+        ]
+      ],
+      "size": 1
+    },
+    "strict": {
+      "count": 3,
+      "sets": [
+        [
+          "desktop-commander"
+        ],
+        [
+          "github"
+        ],
+        [
+          "notion"
+        ]
+      ],
+      "size": 1
+    }
+  },
+  "rule_hits": [
+    {
+      "confidence": "high",
+      "rule": "E-EXEC",
+      "tag": "EXTERNAL_WRITE",
+      "tools": 8
+    },
+    {
+      "confidence": "high",
+      "rule": "E-FORGE-WRITE",
+      "tag": "EXTERNAL_WRITE",
+      "tools": 2
+    },
+    {
+      "confidence": "medium",
+      "rule": "E-OPEN-WRITE",
+      "tag": "EXTERNAL_WRITE",
+      "tools": 10
+    },
+    {
+      "confidence": "high",
+      "rule": "E-RECIPIENT",
+      "tag": "EXTERNAL_WRITE",
+      "tools": 1
+    },
+    {
+      "confidence": "high",
+      "rule": "E-SEND",
+      "tag": "EXTERNAL_WRITE",
+      "tools": 1
+    },
+    {
+      "confidence": "high",
+      "rule": "E-SHARED-OBJECT",
+      "tag": "EXTERNAL_WRITE",
+      "tools": 6
+    },
+    {
+      "confidence": "medium",
+      "rule": "E-URL-EGRESS",
+      "tag": "EXTERNAL_WRITE",
+      "tools": 23
+    },
+    {
+      "confidence": "medium",
+      "rule": "P-CALL-HISTORY",
+      "tag": "PRIVATE_READ",
+      "tools": 1
+    },
+    {
+      "confidence": "medium",
+      "rule": "P-EXEC",
+      "tag": "PRIVATE_READ",
+      "tools": 8
+    },
+    {
+      "confidence": "medium",
+      "rule": "P-FILE-META",
+      "tag": "PRIVATE_READ",
+      "tools": 9
+    },
+    {
+      "confidence": "high",
+      "rule": "P-FILE-READ",
+      "tag": "PRIVATE_READ",
+      "tools": 6
+    },
+    {
+      "confidence": "high",
+      "rule": "P-FORGE-CONTENT",
+      "tag": "PRIVATE_READ",
+      "tools": 2
+    },
+    {
+      "confidence": "medium",
+      "rule": "P-FORGE-READ",
+      "tag": "PRIVATE_READ",
+      "tools": 8
+    },
+    {
+      "confidence": "high",
+      "rule": "P-NOUN",
+      "tag": "PRIVATE_READ",
+      "tools": 4
+    },
+    {
+      "confidence": "medium",
+      "rule": "P-NOUN-AMBIGUOUS",
+      "tag": "PRIVATE_READ",
+      "tools": 15
+    },
+    {
+      "confidence": "medium",
+      "rule": "P-PROCESS-OUTPUT",
+      "tag": "PRIVATE_READ",
+      "tools": 1
+    },
+    {
+      "confidence": "medium",
+      "rule": "P-VCS-META",
+      "tag": "PRIVATE_READ",
+      "tools": 2
+    },
+    {
+      "confidence": "high",
+      "rule": "P-VCS-READ",
+      "tag": "PRIVATE_READ",
+      "tools": 5
+    },
+    {
+      "confidence": "high",
+      "rule": "U-BROWSER",
+      "tag": "UNTRUSTED_READ",
+      "tools": 4
+    },
+    {
+      "confidence": "medium",
+      "rule": "U-BROWSER",
+      "tag": "UNTRUSTED_READ",
+      "tools": 25
+    },
+    {
+      "confidence": "medium",
+      "rule": "U-EXEC",
+      "tag": "UNTRUSTED_READ",
+      "tools": 8
+    },
+    {
+      "confidence": "medium",
+      "rule": "U-FORGE-READ",
+      "tag": "UNTRUSTED_READ",
+      "tools": 2
+    },
+    {
+      "confidence": "medium",
+      "rule": "U-OPEN-READ",
+      "tag": "UNTRUSTED_READ",
+      "tools": 13
+    },
+    {
+      "confidence": "medium",
+      "rule": "U-SEARCH",
+      "tag": "UNTRUSTED_READ",
+      "tools": 7
+    },
+    {
+      "confidence": "high",
+      "rule": "U-THIRD-PARTY",
+      "tag": "UNTRUSTED_READ",
+      "tools": 13
+    },
+    {
+      "confidence": "high",
+      "rule": "U-URL-READ",
+      "tag": "UNTRUSTED_READ",
+      "tools": 17
+    },
+    {
+      "confidence": "medium",
+      "rule": "U-URL-READ",
+      "tag": "UNTRUSTED_READ",
+      "tools": 6
+    },
+    {
+      "confidence": "high",
+      "rule": "U-WEB",
+      "tag": "UNTRUSTED_READ",
+      "tools": 2
+    }
+  ],
+  "rules_note": "Rules were tuned while reading the dev lists and frozen before the holdout lists were tagged.",
+  "servers": {
+    "aws-docs": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 4,
+          "PRIVATE_READ": 1,
+          "UNTRUSTED_READ": 4
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 1,
+          "UNTRUSTED_READ": 3
+        }
+      },
+      "split": "holdout",
+      "tagged": {
+        "inclusive": 4,
+        "strict": 3
+      },
+      "tools": 5,
+      "trifecta": {
+        "inclusive": true,
+        "strict": false
+      }
+    },
+    "chrome-devtools": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 4,
+          "PRIVATE_READ": 2,
+          "UNTRUSTED_READ": 6
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 2,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 3
+        }
+      },
+      "split": "holdout",
+      "tagged": {
+        "inclusive": 8,
+        "strict": 5
+      },
+      "tools": 32,
+      "trifecta": {
+        "inclusive": true,
+        "strict": false
+      }
+    },
+    "context7": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 2
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 0
+        }
+      },
+      "split": "holdout",
+      "tagged": {
+        "inclusive": 2,
+        "strict": 0
+      },
+      "tools": 2,
+      "trifecta": {
+        "inclusive": false,
+        "strict": false
+      }
+    },
+    "desktop-commander": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 3,
+          "PRIVATE_READ": 9,
+          "UNTRUSTED_READ": 2
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 1,
+          "PRIVATE_READ": 2,
+          "UNTRUSTED_READ": 1
+        }
+      },
+      "split": "dev",
+      "tagged": {
+        "inclusive": 10,
+        "strict": 3
+      },
+      "tools": 25,
+      "trifecta": {
+        "inclusive": true,
+        "strict": true
+      }
+    },
+    "duckduckgo": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 1,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 2
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 1
+        }
+      },
+      "split": "holdout",
+      "tagged": {
+        "inclusive": 2,
+        "strict": 1
+      },
+      "tools": 3,
+      "trifecta": {
+        "inclusive": false,
+        "strict": false
+      }
+    },
+    "everything": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 1,
+          "PRIVATE_READ": 1,
+          "UNTRUSTED_READ": 2
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 1,
+          "UNTRUSTED_READ": 1
+        }
+      },
+      "split": "dev",
+      "tagged": {
+        "inclusive": 3,
+        "strict": 2
+      },
+      "tools": 16,
+      "trifecta": {
+        "inclusive": true,
+        "strict": false
+      }
+    },
+    "exa": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 1,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 2
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 2
+        }
+      },
+      "split": "holdout",
+      "tagged": {
+        "inclusive": 2,
+        "strict": 2
+      },
+      "tools": 2,
+      "trifecta": {
+        "inclusive": false,
+        "strict": false
+      }
+    },
+    "fetch": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 1,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 1
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 1
+        }
+      },
+      "split": "dev",
+      "tagged": {
+        "inclusive": 1,
+        "strict": 1
+      },
+      "tools": 1,
+      "trifecta": {
+        "inclusive": false,
+        "strict": false
+      }
+    },
+    "filesystem": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 9,
+          "UNTRUSTED_READ": 0
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 4,
+          "UNTRUSTED_READ": 0
+        }
+      },
+      "split": "dev",
+      "tagged": {
+        "inclusive": 9,
+        "strict": 4
+      },
+      "tools": 14,
+      "trifecta": {
+        "inclusive": false,
+        "strict": false
+      }
+    },
+    "firecrawl": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 11,
+          "PRIVATE_READ": 4,
+          "UNTRUSTED_READ": 13
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 4,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 4
+        }
+      },
+      "split": "holdout",
+      "tagged": {
+        "inclusive": 17,
+        "strict": 6
+      },
+      "tools": 26,
+      "trifecta": {
+        "inclusive": true,
+        "strict": false
+      }
+    },
+    "git": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 7,
+          "UNTRUSTED_READ": 0
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 5,
+          "UNTRUSTED_READ": 0
+        }
+      },
+      "split": "dev",
+      "tagged": {
+        "inclusive": 7,
+        "strict": 5
+      },
+      "tools": 12,
+      "trifecta": {
+        "inclusive": false,
+        "strict": false
+      }
+    },
+    "github": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 7,
+          "PRIVATE_READ": 11,
+          "UNTRUSTED_READ": 13
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 7,
+          "PRIVATE_READ": 2,
+          "UNTRUSTED_READ": 9
+        }
+      },
+      "split": "dev",
+      "tagged": {
+        "inclusive": 21,
+        "strict": 17
+      },
+      "tools": 26,
+      "trifecta": {
+        "inclusive": true,
+        "strict": true
+      }
+    },
+    "markitdown": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 1,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 1
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 1
+        }
+      },
+      "split": "holdout",
+      "tagged": {
+        "inclusive": 1,
+        "strict": 1
+      },
+      "tools": 1,
+      "trifecta": {
+        "inclusive": false,
+        "strict": false
+      }
+    },
+    "memory": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 3,
+          "UNTRUSTED_READ": 0
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 1,
+          "UNTRUSTED_READ": 0
+        }
+      },
+      "split": "dev",
+      "tagged": {
+        "inclusive": 3,
+        "strict": 1
+      },
+      "tools": 9,
+      "trifecta": {
+        "inclusive": false,
+        "strict": false
+      }
+    },
+    "notion": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 1,
+          "PRIVATE_READ": 11,
+          "UNTRUSTED_READ": 2
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 1,
+          "PRIVATE_READ": 1,
+          "UNTRUSTED_READ": 1
+        }
+      },
+      "split": "dev",
+      "tagged": {
+        "inclusive": 14,
+        "strict": 3
+      },
+      "tools": 24,
+      "trifecta": {
+        "inclusive": true,
+        "strict": true
+      }
+    },
+    "playwright": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 4,
+          "PRIVATE_READ": 3,
+          "UNTRUSTED_READ": 25
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 2,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 4
+        }
+      },
+      "split": "holdout",
+      "tagged": {
+        "inclusive": 25,
+        "strict": 6
+      },
+      "tools": 25,
+      "trifecta": {
+        "inclusive": true,
+        "strict": false
+      }
+    },
+    "tavily": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 3,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 4
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 3
+        }
+      },
+      "split": "holdout",
+      "tagged": {
+        "inclusive": 4,
+        "strict": 3
+      },
+      "tools": 5,
+      "trifecta": {
+        "inclusive": false,
+        "strict": false
+      }
+    },
+    "time": {
+      "per_tag": {
+        "inclusive": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 0
+        },
+        "strict": {
+          "EXTERNAL_WRITE": 0,
+          "PRIVATE_READ": 0,
+          "UNTRUSTED_READ": 0
+        }
+      },
+      "split": "dev",
+      "tagged": {
+        "inclusive": 0,
+        "strict": 0
+      },
+      "tools": 2,
+      "trifecta": {
+        "inclusive": false,
+        "strict": false
+      }
+    }
+  },
+  "tools": {
+    "aws-docs": [
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "read_documentation"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "read_sections"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "search on ['table']",
+            "rule": "P-NOUN",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "search_table"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "recommend"
+      }
+    ],
+    "chrome-devtools": [
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "runs code or commands (evaluate, function)",
+            "rule": "E-EXEC",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can read local data (evaluate, function)",
+            "rule": "P-EXEC",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can pull in outside content (evaluate, function)",
+            "rule": "U-EXEC",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "evaluate_script"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "get on ['message']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "browser content (['console'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "get_console_message"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "list on ['message']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "browser content (['console'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "list_console_messages"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "list on ['page']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "list_pages"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "browser content (['navigate'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "navigate_page"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "new_page"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['snapshot'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "take_snapshot"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "send verb 'upload'",
+            "rule": "E-SEND",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "upload_file"
+      }
+    ],
+    "context7": [
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "resolve-library-id"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "query-docs"
+      }
+    ],
+    "desktop-commander": [
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "get on ['config']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "get_config"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (url mode)",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "read file content by path",
+            "rule": "P-FILE-READ",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (url mode)",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "read_file"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "read file content by path",
+            "rule": "P-FILE-READ",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "read_multiple_files"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "file names, metadata or matches under a path",
+            "rule": "P-FILE-META",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "list_directory"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "file names, metadata or matches under a path",
+            "rule": "P-FILE-META",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "start_search"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "file names, metadata or matches under a path",
+            "rule": "P-FILE-META",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "get_file_info"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "runs code or commands (command, shell)",
+            "rule": "E-EXEC",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "not read-only and openWorldHint: true",
+            "rule": "E-OPEN-WRITE",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can read local data (command, shell)",
+            "rule": "P-EXEC",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can pull in outside content (command, shell)",
+            "rule": "U-EXEC",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "start_process"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "returns process output",
+            "rule": "P-PROCESS-OUTPUT",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "read_process_output"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "not read-only and openWorldHint: true",
+            "rule": "E-OPEN-WRITE",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "interact_with_process"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "returns recorded tool calls",
+            "rule": "P-CALL-HISTORY",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "get_recent_tool_calls"
+      }
+    ],
+    "duckduckgo": [
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "free-text search over an unnamed corpus",
+            "rule": "U-SEARCH",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "search"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "fetch_content"
+      }
+    ],
+    "everything": [
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "get on ['message']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "get-annotated-message"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "get on ['env']",
+            "rule": "P-NOUN",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "get-env"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['uri'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "reads a caller-chosen URL (['uri'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "trigger-resource-update"
+      }
+    ],
+    "exa": [
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "web in the name",
+            "rule": "U-WEB",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "free-text search over an unnamed corpus",
+            "rule": "U-SEARCH",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "web_search_exa"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['urls'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['urls'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "web in the name",
+            "rule": "U-WEB",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "web_fetch_exa"
+      }
+    ],
+    "fetch": [
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "fetch"
+      }
+    ],
+    "filesystem": [
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "read file content by path",
+            "rule": "P-FILE-READ",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "read_file"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "read file content by path",
+            "rule": "P-FILE-READ",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "read_text_file"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "read file content by path",
+            "rule": "P-FILE-READ",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "read_media_file"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "read file content by path",
+            "rule": "P-FILE-READ",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "read_multiple_files"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "file names, metadata or matches under a path",
+            "rule": "P-FILE-META",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "list_directory"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "file names, metadata or matches under a path",
+            "rule": "P-FILE-META",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "list_directory_with_sizes"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "file names, metadata or matches under a path",
+            "rule": "P-FILE-META",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "directory_tree"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "file names, metadata or matches under a path",
+            "rule": "P-FILE-META",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "search_files"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "file names, metadata or matches under a path",
+            "rule": "P-FILE-META",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "get_file_info"
+      }
+    ],
+    "firecrawl": [
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "runs code or commands (script)",
+            "rule": "E-EXEC",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "not read-only and openWorldHint: true",
+            "rule": "E-OPEN-WRITE",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can read local data (script)",
+            "rule": "P-EXEC",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can pull in outside content (script)",
+            "rule": "U-EXEC",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_scrape"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_map"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "runs code or commands (script)",
+            "rule": "E-EXEC",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can read local data (script)",
+            "rule": "P-EXEC",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can pull in outside content (script)",
+            "rule": "U-EXEC",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "free-text search over an unnamed corpus",
+            "rule": "U-SEARCH",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_search"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['urls'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['urls'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_find_tools"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "runs code or commands (script)",
+            "rule": "E-EXEC",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "recipient param ['webhook']",
+            "rule": "E-RECIPIENT",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "not read-only and openWorldHint: true",
+            "rule": "E-OPEN-WRITE",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can read local data (script)",
+            "rule": "P-EXEC",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can pull in outside content (script)",
+            "rule": "U-EXEC",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_crawl"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "not read-only and openWorldHint: true",
+            "rule": "E-OPEN-WRITE",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['urls'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "reads a caller-chosen URL (['urls'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_agent"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "runs code or commands (code, script)",
+            "rule": "E-EXEC",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "not read-only and openWorldHint: true",
+            "rule": "E-OPEN-WRITE",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can read local data (code, script)",
+            "rule": "P-EXEC",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can pull in outside content (code, script)",
+            "rule": "U-EXEC",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_interact"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "not read-only and openWorldHint: true",
+            "rule": "E-OPEN-WRITE",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "firecrawl_monitor_create"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "not read-only and openWorldHint: true",
+            "rule": "E-OPEN-WRITE",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "firecrawl_monitor_update"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "not read-only and openWorldHint: true",
+            "rule": "E-OPEN-WRITE",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "firecrawl_monitor_delete"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "not read-only and openWorldHint: true",
+            "rule": "E-OPEN-WRITE",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "firecrawl_monitor_run"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_research_search_papers"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_research_inspect_paper"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_research_related_papers"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_research_read_paper"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_developer_search"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "read-only and openWorldHint: true",
+            "rule": "U-OPEN-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "firecrawl_gov_search"
+      }
+    ],
+    "git": [
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "local repository metadata",
+            "rule": "P-VCS-META",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "git_status"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "local repository content",
+            "rule": "P-VCS-READ",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "git_diff_unstaged"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "local repository content",
+            "rule": "P-VCS-READ",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "git_diff_staged"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "local repository content",
+            "rule": "P-VCS-READ",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "git_diff"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "local repository content",
+            "rule": "P-VCS-READ",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "git_log"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "local repository content",
+            "rule": "P-VCS-READ",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "git_show"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "local repository metadata",
+            "rule": "P-VCS-META",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "git_branch"
+      }
+    ],
+    "github": [
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "create to owner/repo with ['content', 'message']",
+            "rule": "E-FORGE-WRITE",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "create_or_update_file"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "free-text search over an unnamed corpus",
+            "rule": "U-SEARCH",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "search_repositories"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "reads repository content; the token may reach private repos",
+            "rule": "P-FORGE-CONTENT",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "reads any owner/repo, which may be public",
+            "rule": "U-FORGE-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "get_file_contents"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "push to owner/repo with ['files', 'message']",
+            "rule": "E-FORGE-WRITE",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "push_files"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "create on ['issue']",
+            "rule": "E-SHARED-OBJECT",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "create_issue"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "create on ['pull_request']",
+            "rule": "E-SHARED-OBJECT",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "create_pull_request"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "reads any owner/repo, which may be private",
+            "rule": "P-FORGE-READ",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "reads any owner/repo, which may be public",
+            "rule": "U-FORGE-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "list_commits"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "reads any owner/repo, which may be private",
+            "rule": "P-FORGE-READ",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "list on ['issue']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "list_issues"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "update on ['issue']",
+            "rule": "E-SHARED-OBJECT",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "update_issue"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "add on ['comment', 'issue']",
+            "rule": "E-SHARED-OBJECT",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "add_issue_comment"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "free-text search over an unnamed corpus",
+            "rule": "U-SEARCH",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "search_code"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "search on ['issue']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "search_issues"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "search on ['user']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "search_users"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "reads any owner/repo, which may be private",
+            "rule": "P-FORGE-READ",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "get on ['issue']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "get_issue"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "reads any owner/repo, which may be private",
+            "rule": "P-FORGE-READ",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "get on ['pull_request']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "get_pull_request"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "reads any owner/repo, which may be private",
+            "rule": "P-FORGE-READ",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "list on ['pull_request']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "list_pull_requests"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "create on ['pull_request', 'review']",
+            "rule": "E-SHARED-OBJECT",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "create_pull_request_review"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "reads repository content; the token may reach private repos",
+            "rule": "P-FORGE-CONTENT",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "get on ['pull_request']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "get_pull_request_files"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "reads any owner/repo, which may be private",
+            "rule": "P-FORGE-READ",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "get on ['pull_request']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "get_pull_request_status"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "reads any owner/repo, which may be private",
+            "rule": "P-FORGE-READ",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "get on ['comment', 'pull_request']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "get_pull_request_comments"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "reads any owner/repo, which may be private",
+            "rule": "P-FORGE-READ",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "get on ['pull_request', 'review']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "get_pull_request_reviews"
+      }
+    ],
+    "markitdown": [
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['uri'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['uri'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "convert_to_markdown"
+      }
+    ],
+    "memory": [
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "read on ['graph']",
+            "rule": "P-NOUN",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "read_graph"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "search on ['node']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "search_nodes"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "open on ['node']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "open_nodes"
+      }
+    ],
+    "notion": [
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "get on ['user']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "API-get-user"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "get on ['user']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "API-get-users"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "free-text search over an unnamed corpus",
+            "rule": "U-SEARCH",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "API-post-search"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "get on ['block']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "API-get-block-children"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "retrieve on ['block']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "API-retrieve-a-block"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "retrieve on ['page']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "API-retrieve-a-page"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "retrieve on ['page']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "API-retrieve-a-page-property"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "retrieve on ['comment']",
+            "rule": "U-THIRD-PARTY",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "API-retrieve-a-comment"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "create on ['comment']",
+            "rule": "E-SHARED-OBJECT",
+            "tag": "EXTERNAL_WRITE"
+          }
+        ],
+        "tool": "API-create-a-comment"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "query on ['data_source']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "API-query-data-source"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "retrieve on ['data_source']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "API-retrieve-a-data-source"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "list on ['data_source']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "API-list-data-source-templates"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "retrieve on ['database']",
+            "rule": "P-NOUN",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "API-retrieve-a-database"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "retrieve on ['page']",
+            "rule": "P-NOUN-AMBIGUOUS",
+            "tag": "PRIVATE_READ"
+          }
+        ],
+        "tool": "API-retrieve-page-markdown"
+      }
+    ],
+    "playwright": [
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_close"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_resize"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser', 'console'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_console_messages"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_handle_dialog"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_emulate_media"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "runs code or commands (evaluate, function)",
+            "rule": "E-EXEC",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can read local data (evaluate, function)",
+            "rule": "P-EXEC",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can pull in outside content (evaluate, function)",
+            "rule": "U-EXEC",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_evaluate"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "file names, metadata or matches under a path",
+            "rule": "P-FILE-META",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_file_upload"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_drop"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_find"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_fill_form"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_press_key"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_type"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "browser content (['browser', 'navigate'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_navigate"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "browser content (['browser', 'navigate'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_navigate_back"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_network_requests"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_network_request"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "runs code or commands (code)",
+            "rule": "E-EXEC",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can read local data (code)",
+            "rule": "P-EXEC",
+            "tag": "PRIVATE_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "code can pull in outside content (code)",
+            "rule": "U-EXEC",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_run_code_unsafe"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "high",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_take_screenshot"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser', 'snapshot'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_snapshot"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_click"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_drag"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_hover"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_select_option"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          },
+          {
+            "confidence": "medium",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_tabs"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "browser content (['browser'])",
+            "rule": "U-BROWSER",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "browser_wait_for"
+      }
+    ],
+    "tavily": [
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "free-text search over an unnamed corpus",
+            "rule": "U-SEARCH",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "tavily_search"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['urls'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['urls'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "tavily_extract"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "tavily_crawl"
+      },
+      {
+        "evidence": [
+          {
+            "confidence": "medium",
+            "detail": "data can leave in a URL (['url'])",
+            "rule": "E-URL-EGRESS",
+            "tag": "EXTERNAL_WRITE"
+          },
+          {
+            "confidence": "high",
+            "detail": "reads a caller-chosen URL (['url'])",
+            "rule": "U-URL-READ",
+            "tag": "UNTRUSTED_READ"
+          }
+        ],
+        "tool": "tavily_map"
+      }
+    ],
+    "time": []
+  },
+  "totals": {
+    "inclusive": {
+      "all": {
+        "per_tag": {
+          "EXTERNAL_WRITE": 42,
+          "PRIVATE_READ": 61,
+          "UNTRUSTED_READ": 79
+        },
+        "servers_trifecta": 8,
+        "tagged": 133,
+        "tools": 230
+      },
+      "dev": {
+        "per_tag": {
+          "EXTERNAL_WRITE": 13,
+          "PRIVATE_READ": 51,
+          "UNTRUSTED_READ": 20
+        },
+        "servers_trifecta": 4,
+        "tagged": 68,
+        "tools": 129
+      },
+      "holdout": {
+        "per_tag": {
+          "EXTERNAL_WRITE": 29,
+          "PRIVATE_READ": 10,
+          "UNTRUSTED_READ": 59
+        },
+        "servers_trifecta": 4,
+        "tagged": 65,
+        "tools": 101
+      }
+    },
+    "strict": {
+      "all": {
+        "per_tag": {
+          "EXTERNAL_WRITE": 17,
+          "PRIVATE_READ": 17,
+          "UNTRUSTED_READ": 34
+        },
+        "servers_trifecta": 3,
+        "tagged": 63,
+        "tools": 230
+      },
+      "dev": {
+        "per_tag": {
+          "EXTERNAL_WRITE": 9,
+          "PRIVATE_READ": 16,
+          "UNTRUSTED_READ": 13
+        },
+        "servers_trifecta": 3,
+        "tagged": 36,
+        "tools": 129
+      },
+      "holdout": {
+        "per_tag": {
+          "EXTERNAL_WRITE": 8,
+          "PRIVATE_READ": 1,
+          "UNTRUSTED_READ": 21
+        },
+        "servers_trifecta": 0,
+        "tagged": 27,
+        "tools": 101
+      }
+    }
+  },
+  "trifecta_after_review": {
+    "inclusive": {
+      "minimal_sets": {
+        "count": 4,
+        "sets": [
+          [
+            "chrome-devtools"
+          ],
+          [
+            "desktop-commander"
+          ],
+          [
+            "github"
+          ],
+          [
+            "playwright"
+          ]
+        ],
+        "size": 1
+      },
+      "minimal_sets_without_singletons": {
+        "count": 30,
+        "sets": [
+          [
+            "duckduckgo",
+            "everything"
+          ],
+          [
+            "duckduckgo",
+            "filesystem"
+          ],
+          [
+            "duckduckgo",
+            "git"
+          ],
+          [
+            "duckduckgo",
+            "memory"
+          ],
+          [
+            "duckduckgo",
+            "notion"
+          ],
+          [
+            "everything",
+            "exa"
+          ],
+          [
+            "everything",
+            "fetch"
+          ],
+          [
+            "everything",
+            "firecrawl"
+          ],
+          [
+            "everything",
+            "markitdown"
+          ],
+          [
+            "everything",
+            "tavily"
+          ],
+          [
+            "exa",
+            "filesystem"
+          ],
+          [
+            "exa",
+            "git"
+          ],
+          [
+            "exa",
+            "memory"
+          ],
+          [
+            "exa",
+            "notion"
+          ],
+          [
+            "fetch",
+            "filesystem"
+          ],
+          [
+            "fetch",
+            "git"
+          ],
+          [
+            "fetch",
+            "memory"
+          ],
+          [
+            "fetch",
+            "notion"
+          ],
+          [
+            "filesystem",
+            "firecrawl"
+          ],
+          [
+            "filesystem",
+            "markitdown"
+          ],
+          [
+            "filesystem",
+            "tavily"
+          ],
+          [
+            "firecrawl",
+            "git"
+          ],
+          [
+            "firecrawl",
+            "memory"
+          ],
+          [
+            "firecrawl",
+            "notion"
+          ],
+          [
+            "git",
+            "markitdown"
+          ]
+        ],
+        "size": 2
+      },
+      "trifecta_servers": [
+        "chrome-devtools",
+        "desktop-commander",
+        "github",
+        "playwright"
+      ]
+    },
+    "strict": {
+      "minimal_sets": {
+        "count": 2,
+        "sets": [
+          [
+            "desktop-commander"
+          ],
+          [
+            "github"
+          ]
+        ],
+        "size": 1
+      },
+      "minimal_sets_without_singletons": {
+        "count": 15,
+        "sets": [
+          [
+            "chrome-devtools",
+            "everything"
+          ],
+          [
+            "chrome-devtools",
+            "filesystem"
+          ],
+          [
+            "chrome-devtools",
+            "git"
+          ],
+          [
+            "chrome-devtools",
+            "memory"
+          ],
+          [
+            "chrome-devtools",
+            "notion"
+          ],
+          [
+            "everything",
+            "firecrawl"
+          ],
+          [
+            "everything",
+            "playwright"
+          ],
+          [
+            "filesystem",
+            "firecrawl"
+          ],
+          [
+            "filesystem",
+            "playwright"
+          ],
+          [
+            "firecrawl",
+            "git"
+          ],
+          [
+            "firecrawl",
+            "memory"
+          ],
+          [
+            "firecrawl",
+            "notion"
+          ],
+          [
+            "git",
+            "playwright"
+          ],
+          [
+            "memory",
+            "playwright"
+          ],
+          [
+            "notion",
+            "playwright"
+          ]
+        ],
+        "size": 2
+      },
+      "trifecta_servers": [
+        "desktop-commander",
+        "github"
+      ]
+    }
+  }
+}
