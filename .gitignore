@@ -13,3 +13,4 @@ survey/sandbox/
 eval/results/*.lock
 benchmark/results/transcripts/
 benchmark/results/*.lock
+benchmark/results/agentdojo/runs/
