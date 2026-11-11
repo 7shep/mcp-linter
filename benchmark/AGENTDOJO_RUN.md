@@ -86,6 +86,17 @@ Real agents take extra turns and think, so the cost estimate below doubles input
   - Confirm in the installed source that `security == True` means the attack succeeded, and pin that with a test.
 - **What gets stored:** AgentDojo's per-trial logs contain the attack text and the model's messages. They stay out of git (`benchmark/results/agentdojo/runs/` is in `.gitignore`, like the existing transcripts). Only the scored table, with case ids, outcomes and tags, gets committed, the same rule as `agentdojo_export.py`.
 
+**Usage of `benchmark/agentdojo_run.py`** (AgentDojo's Python, `-I`; no model is called by `--self-check` or `--dry-run`):
+
+```bash
+AGENTDOJO_PY="<agentdojo-venv>/Scripts/python"
+"$AGENTDOJO_PY" -I benchmark/agentdojo_run.py --self-check
+"$AGENTDOJO_PY" -I benchmark/agentdojo_run.py --model-id qwen2.5:7b --dry-run
+"$AGENTDOJO_PY" -I benchmark/agentdojo_run.py --model-id qwen2.5:7b --port 11434 --suite banking slack --attacked-only
+```
+
+Logs go to `benchmark/results/agentdojo/runs/local/` (git-ignored) and a rerun resumes.
+
 ### Gates
 
 - **After step 1:**
