@@ -1032,6 +1032,15 @@ class ReviewFixAnalysisTests(unittest.TestCase):
         target["delivered"] = False  # the item was never read, so nothing was stripped
         self.assertEqual(analyze.summarize(rows, reps=20)["models"][MODEL]["i4_stripped"], 0)
 
+    def test_refusal_before_delivery_is_not_in_the_delivered_denominator(self):
+        # score_trial labels a refusal "refused" before it checks delivery, so the
+        # delivered count has to come from the row's delivered fact.
+        row = {"tool_set": SCORED[0].id, "condition": "I1", "outcome": "refused", "delivered": False,
+               "task_success": False, "run": 1}
+        self.assertEqual(analyze.set_stats([row])[SCORED[0].id]["delivered"], 0)
+        row = dict(row, delivered=True)
+        self.assertEqual(analyze.set_stats([row])[SCORED[0].id]["delivered"], 1)
+
 
 # ---------------------------------------------------------------- G3: Codex CLI runner
 

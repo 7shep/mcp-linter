@@ -48,6 +48,7 @@ from mcp_lint.trifecta import (
     NON_TEXT_TYPES,
     READ_VERBS,
     Tag,
+    _constrained,
     _properties,
     _singular,
     _verb,
@@ -141,9 +142,15 @@ def _listing(names: list[str]) -> str:
 def _fits(spec: Any, value: Any) -> bool:
     """Could ``value`` be what this property allows, as far as data-carrying goes?
 
-    Only the limits the tagger relies on are checked (``const``, ``enum`` and
-    non-text types); anything else counts as fitting, since the tagger already
-    treats such a property as able to carry text.
+    Only the limits the tagger relies on are checked (``const``, ``enum``, an
+    anchored ``pattern`` and non-text types); anything else counts as fitting,
+    since the tagger already treats such a property as able to carry text.
+
+    A pattern is never run (it comes from the upstream, so a crafted one could
+    backtrack for a long time on the agent's value). Any text sent to a
+    pattern-limited property counts as not fitting, so the call is re-tagged as
+    if the property were open. In a tainted session that blocks a call to a
+    sink-named tool even when the value would have matched.
     """
     if not isinstance(spec, dict):
         return True
@@ -152,6 +159,8 @@ def _fits(spec: Any, value: Any) -> bool:
     enum = spec.get("enum")
     if isinstance(enum, list) and enum:
         return value in enum
+    if _constrained(spec):  # an anchored pattern, the only limit left
+        return value is None or isinstance(value, (bool, int, float))
     kind = spec.get("type")
     kinds = kind if isinstance(kind, list) else [kind]
     if kinds and all(isinstance(k, str) and k in NON_TEXT_TYPES for k in kinds):
