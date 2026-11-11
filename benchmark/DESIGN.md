@@ -444,6 +444,8 @@ Known over-tagging risks to watch: `channel` is both U and P, so channel listing
   - Generic API passthroughs such as Square's `make_api_request(service, method, request)` get no tags at all.
   - Inclusive E and U precision is under 40%, mostly from URL and open-world rules on Microsoft 365's Graph tools.
 
+**Next: an AgentDojo run with real models** (plan in `AGENTDOJO_RUN.md`). It adds measured attack success to the offline cross-check above, so H1 can be tested against attacks with a non-zero base rate.
+
 ## 10. Safety rules
 
 - Mock code imports no networking library, and a test scans for that. The MCP SDK does bring in an HTTP stack, so each server also installs a `sys.addaudithook` that kills it on `socket.connect`, on starting a subprocess, and on file access outside its own log.
